@@ -3,7 +3,7 @@
 trigger: always_on
 description: >
   Scaffold a new filesystem-backed SOA module (Entity, Reader, Writer, Service, index.js)
-  following the conventions established in ADR-007 v0.1.0. Use whenever creating a new
+  following established SOA module conventions. Use whenever creating a new
   module for a filesystem-backed domain concept in `src/modules/`, or extending an existing
   one. Trigger on phrases like "create a module for X", "new SOA module for filesystem data",
   "entity + reader + service for X", or whenever the work involves loading, persisting,
@@ -12,12 +12,11 @@ description: >
 
 # Filesystem SOA Module Scaffolding
 
-This skill creates filesystem-backed SOA modules following the conventions established in
-[ADR-007 v0.1.0](../../docs/adr/ADR-007/ADR-007-application-materials-generator-0.1.0.md).
-Modules live in `src/modules/`. Each module is self-contained and composes capabilities
+This skill creates filesystem-backed SOA modules following the project's SOA module
+conventions. Modules live in `src/modules/`. Each module is self-contained and composes capabilities
 from `src/common/`.
 
-The companion skill `soa-module.md` covers the DB-backed pattern (Objection.js + Postgres).
+The companion skill [`soa-module`](../soa-module/SKILL.md) covers the DB-backed pattern (Objection.js + Postgres).
 This skill covers the **filesystem pattern** — no DB, in-memory entities, file / HTTP /
 cloud-storage I/O via mixins.
 
@@ -582,7 +581,6 @@ Before considering the module complete:
 
 ## Reference
 
-- [ADR-007 v0.1.0 — ApplicationEngine](../../docs/adr/ADR-007/ADR-007-application-materials-generator-0.1.0.md)
 - Existing entity following a similar pattern (pre-mixin, retained as-is for now):
   `src/entities/JobListingEntity.js`
-- Companion skill for DB-backed modules: [soa-module.md](./soa-module.md)
+- Companion skill for DB-backed modules: [soa-module](../soa-module/SKILL.md)

@@ -18,7 +18,7 @@ server-v1 codebase. Read this before writing any tests for this project.
 - **User cleanup:** `tests/jest.globalTeardown.js` deletes test users
 - **User helper:** `tests/test-user-helper.js` — `createTestUser()`,
   `getTestUsers()`, `cleanupOrphanedTestUsers()`, `writeTestUsers()`
-- **Email pattern:** `lewiscot+test-{role}-{shortId}@gmail.com`
+- **Email pattern:** `user+test-{role}-{shortId}@example.com`
 - **DB access:** `const DB = require('@vectopus.com/db');` (note: integration
   tests in tests/ use `@vectopus.com/db`, event-bus code uses
   `@vectoricons.net/db`)
@@ -161,12 +161,13 @@ const createMockContext = () => ({
 
 ## Test email addresses
 
-- **User-facing test emails:** `lewiscot+eventbus@gmail.com`
-- **Admin test emails:** `scott@vectoricons.net`
-- **Test user registration:** `lewiscot+test-{role}-{shortId}@gmail.com`
+- **User-facing test emails:** `user+eventbus@example.com`
+- **Admin test emails:** `admin@example.com`
+- **Test user registration:** `user+test-{role}-{shortId}@example.com`
 
-These are real Gmail addresses using the `+folder` alias feature. Emails sent
-to these addresses can be verified via Gmail search.
+These use the `+folder` sub-addressing pattern (supported by Gmail and others),
+so test mail lands in a single searchable inbox. Substitute an address you
+control when running the tests.
 
 ## Environment variables for tests
 
@@ -178,10 +179,10 @@ process.env.VECTORICONS_SITE_NAME      = 'VectorIcons';
 process.env.VECTORICONS_SERVER_URL     = 'https://vectoricons.net';
 process.env.NODE_MAILER_HOST           = 'smtp.example.com';
 process.env.NODE_MAILER_PORT           = '465';
-process.env.NODE_MAILER_USER           = 'noreply@vectoricons.net';
+process.env.NODE_MAILER_USER           = 'noreply@example.com';
 process.env.NODE_MAILER_PASSWORD       = 'test-password';
 process.env.REMOTE_MESSENGER_TOPIC_ARN = 'arn:aws:sns:us-east-1:123456789:test-topic';
-process.env.ADMIN_EMAIL                = 'scott@vectoricons.net';
+process.env.ADMIN_EMAIL                = 'admin@example.com';
 process.env.ENV_NAME                   = 'local';
 ```
 

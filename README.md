@@ -10,7 +10,7 @@ Managed with [`@brickhouse-tech/sync-agents`](https://github.com/brickhouse-tech
 The source folders are visible at the repo root; a hidden `.agents/` overlay of
 relative symlinks points back to them so `sync-agents` (which expects a
 `.agents/` directory) works inside this repo. See
-[ADR-001](docs/adr/ADR-001/ADR-001-agents-repo-layout.md) for the rationale.
+[ADR-001](docs/adr/ADR-001-agents-repo-layout/ADR-001-agents-repo-layout.md) for the rationale.
 
 ```
 rules/        # shared rules (edit here)

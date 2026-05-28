@@ -68,7 +68,7 @@ Before writing code, deconstruct the task as:
    - What are the failure modes?
    - How should failures be handled?
 
-7. Pattern / Algorithm
+6. Pattern / Algorithm
    - Is there an identifiable algorithm being used in this problem?
    - Is there an identifiable design pattern that fits this problem type? (Think Gang of Four design patterns)
    - What are the known pitfalls of this pattern/algorithm?
@@ -79,7 +79,7 @@ Before writing code, deconstruct the task as:
    - Does this pattern/algorithm support testability?
    - Does this pattern/algorithm avoid coupling?
   
-8. Existing Tools (build vs. buy vs. reuse)
+7. Existing Tools (build vs. buy vs. reuse)
    - Has this  problem or a similar problem already been solved in this codebase?
    - Has this problem been solved in a well-known library or framework?
    - What patterns are known to fit this problem type?

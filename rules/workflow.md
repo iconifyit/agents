@@ -7,7 +7,7 @@ trigger: always_on
 
 Each task should follow the workflow below. This workflow is designed to ensure that we are building the right thing, building it right, and maintaining a high standard of quality and reliability in our codebase. It also makes sure we are on the same page and are coordinating expectations and plans before taking action.
 
-Do not think of tasks as discreet items to be checked off of a list. Every task is connected to a larger whole - to a system. View each task as a piece of a larger puzzle, and always consider how it fits into the bigger picture. Always consider the long-term implications of your design and implementation choices on the overall system.
+Do not think of tasks as discrete items to be checked off of a list. Every task is connected to a larger whole - to a system. View each task as a piece of a larger puzzle, and always consider how it fits into the bigger picture. Always consider the long-term implications of your design and implementation choices on the overall system.
 
 ## Describe
 
