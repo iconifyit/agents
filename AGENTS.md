@@ -44,6 +44,7 @@ This file indexes all rules, skills, and workflows defined in `.agents/`.
 
 ## Workflows
 
+- [agentic-collaboration](.agents/workflows/agentic-collaboration.md)
 - [architecture-change](.agents/workflows/architecture-change.md)
 - [bugfix](.agents/workflows/bugfix.md)
 - [feature-development](.agents/workflows/feature-development.md)

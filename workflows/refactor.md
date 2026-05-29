@@ -34,6 +34,7 @@ Focus on:
 - Hidden side effects
 - Existing patterns
 - Downstream consumers
+- Reachability: if the refactor removes code, confirm what's actually reachable using a tool (esbuild `--metafile`, `knip`, dependency-cruiser, or the stack's equivalent) — NOT eyeball analysis. Re-exports and ghost imports keep "dead-looking" code alive in the bundle, and conversely make live code look unreferenced.
 
 Do not modify code.
 
@@ -71,6 +72,7 @@ Rules:
 - Avoid bundling feature work
 - Avoid broad cleanup outside scope
 - Maintain or improve test coverage
+- Hold to the plan's scope contract. A refactor that starts touching adjacent code "while we're in here" is how a clean refactor becomes an unreviewable tangle. New cleanup opportunities discovered mid-refactor are follow-ups, not additions to this one.
 
 ### 7. Verify
 
@@ -81,6 +83,7 @@ Verify:
 - Public APIs still work
 - Downstream consumers are not broken
 - Edge cases still behave correctly
+- If code was removed: confirm via the reachability tool that it's gone from the reachable graph (not merely unreferenced in source but still bundled), and that any dependencies only the removed code needed were dropped from the manifest.
 
 ### 8. Iterate
 

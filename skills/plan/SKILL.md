@@ -105,6 +105,12 @@ Return a plan with this structure:
 ```markdown
 # Plan: {task}
 
+## Scope Contract
+
+This plan does **{one sentence: X}**, and nothing else. Anything that surfaces
+during implementation but isn't required for X to work or ship becomes a
+follow-up, not a mid-stream addition.
+
 ## Summary
 
 Brief description of the proposed work.
@@ -156,3 +162,5 @@ Implementation must not begin until the user explicitly approves this plan.
 - Do not introduce new patterns without justification.
 - Do not hide uncertainty.
 - Stop after the plan and wait for explicit approval.
+- Open the plan with a one-line scope contract; treat it as the test for whether mid-implementation additions belong (default new concerns to a follow-up PR).
+- If implementation would accumulate three additions beyond the scope contract, stop and surface the drift (split / merge-and-restart / abandon-and-recut) rather than letting the PR sprawl.
