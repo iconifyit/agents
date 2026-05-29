@@ -52,7 +52,7 @@ This file indexes all rules, skills, and workflows defined in `.agents/`.
 - [destructive-operation](.agents/workflows/destructive-operation.md)
 - [feature-development](.agents/workflows/feature-development.md)
 - [module-pr](.agents/workflows/module-pr.md)
-- [obsolescence-sweep](.agents/workflows/obsolescence-sweep.md)
+- [prune-obsolete](.agents/workflows/prune-obsolete.md)
 - [refactor](.agents/workflows/refactor.md)
 
 ## State

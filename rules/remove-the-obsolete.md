@@ -12,4 +12,4 @@ So, as part of any change that obsoletes something:
 
 - **Verify before removing.** Re-exports and ghost imports make dead code look live and live code look dead — confirm what is actually obsolete with authoritative tooling, not eyeballs (see the `destructive-operations` skill). Removal is itself a destructive action, so the `destructive-actions` gates apply.
 - The `documentation` rule's "Code being removed" ADR section and the `architecture-change` / `refactor` workflows already enforce this at decision time.
-- The `obsolescence-sweep` workflow is the periodic safety net for whatever still slips through.
+- The `prune-obsolete` workflow is the periodic safety net for whatever still slips through.

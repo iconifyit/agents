@@ -1,5 +1,5 @@
 ---
-name: obsolescence-sweep
+name: prune-obsolete
 description: >
   Find and remove obsoleted artifacts — code, dependencies, files, docs, config, feature
   flags — that a prior change made dead but never removed. The discipline is to remove the
@@ -7,7 +7,7 @@ description: >
   periodic safety net for what slips through. On-demand and manual.
 ---
 
-# Obsolescence Sweep Workflow
+# Prune Obsolete Workflow
 
 The safety net for the `remove-the-obsolete` rule: a periodic, on-demand pass that finds and removes obsoleted artifacts a prior change left behind. Run it on demand — when a change supersedes a subsystem, or as an occasional manual audit. Start manual; automate (CI, scheduled, auto-opened PRs) only once the shape proves out.
 
