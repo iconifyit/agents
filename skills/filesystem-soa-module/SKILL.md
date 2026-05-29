@@ -1,5 +1,5 @@
-
 ---
+name: filesystem-soa-module
 trigger: always_on
 description: >
   Scaffold a new filesystem-backed SOA module (Entity, Reader, Writer, Service, index.js)

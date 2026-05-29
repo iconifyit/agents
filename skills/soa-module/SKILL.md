@@ -1,5 +1,5 @@
-
 ---
+name: soa-module
 trigger: always_on
 description: >
   Scaffold a new SOA service module (Entity, Repository, Service, index.js) following the

@@ -1,10 +1,10 @@
 ---
+name: problem-solving
 trigger: always_on
-# description: >
-#   Scaffold a new SOA service module (Entity, Repository, Service, index.js) following the
-#   project's established patterns. Use this skill whenever creating a new service, SOA module,
-#   or entity/repository/service layer for a domain concept. Also use when the user mentions
-#   "create a service for X", "new SOA module", "entity and repository for X", or similar.
+description: >
+  First-principles problem decomposition: break a task down to data in -> transformation -> data out,
+  identify the underlying problem type and the design patterns that fit, weigh reuse vs. build, and plan
+  a testable, maintainable approach before writing code. Use for non-trivial design decisions.
 ---
 
 # First Principles Problem Solving

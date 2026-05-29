@@ -1,5 +1,10 @@
 ---
+name: architectural-decomposition
 trigger: always_on
+description: >
+  Systems-thinking mental model for non-trivial coding tasks — decompose the problem into a system design
+  (responsibilities, boundaries, data flow) before writing code rather than jumping to implementation.
+  Use when starting any non-trivial feature, refactor, or architectural decision.
 ---
 
 # Architectural Decomposition & Systems Thinking

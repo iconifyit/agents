@@ -1,5 +1,10 @@
 ---
+name: db-migration
 trigger: always_on
+description: >
+  Best practices for performing database migrations safely with Knex/Objection — planning, testing in a
+  staging copy, versioning the DB package, and creating PRs for human review rather than executing or
+  publishing directly. Use when adding or changing database schema, tables, views, or migrations.
 ---
 
 # db-migration
