@@ -12,7 +12,7 @@ description: >
 
 ## The principle
 
-Destructive-action disasters share one root cause: **acting on a faulty assumption about an action's side effects without verifying it first.** The *domain* is incidental — a git history rewrite, a `DROP TABLE`, an `rm -rf`, a force-deploy, killing a process all fail the same way: you *thought* you knew what would happen, you were wrong, and the result couldn't be undone.
+Destructive-action disasters share one root cause: **acting on a faulty assumption about an action's side effects without verifying it first.** The *domain* is incidental — a git history rewrite, a `DROP TABLE`, an `rm -rf`, a force-deploy, or killing a process — they all fail the same way: you *thought* you knew what would happen, you were wrong, and the result couldn't be undone.
 
 So, before any destructive or irreversible action:
 
@@ -41,7 +41,7 @@ Record each verified destructive action so the verification is explicit, auditab
 ## The durable gates (every destructive action)
 
 1. **Verified side effects + blast radius** — from the catalog, not from a guess.
-2. **Per-command approval** — show the exact action and get a specific "yes" for it. Intent-level approval ("clean these up") is not per-action approval.
+2. **Per-action approval** — show the exact action and get a specific "yes" for it. Intent-level approval ("clean these up") is not per-action approval.
 3. **A confirmed recovery path** that the action itself cannot destroy.
 
 ## Kill-switch
