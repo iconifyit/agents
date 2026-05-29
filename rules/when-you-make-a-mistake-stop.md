@@ -8,7 +8,7 @@ When you realize or are made aware that you have made a mistake - STOP! Do not p
 
 ## Zero autonomous actions after a call-out
 
-When the user tells you that you made a mistake — even a small one, even one that seems trivially fixable — your **very next response takes ZERO tool actions**. No `git` commands, no edits, no "let me just undo that." The sequence is strictly:
+When the user tells you that you made a mistake — even a small one, even one that seems trivially fixable — your **very next response takes ZERO state-changing actions**. No edits, no `git` commands that alter state, no "let me just undo that." Read-only checks to establish what's actually true are fine; anything that changes state waits for explicit approval. The sequence is strictly:
 
 1. **Acknowledge** the mistake plainly.
 2. **State the current state** — what's actually true right now (run read-only checks if needed to establish it, but nothing that changes state).

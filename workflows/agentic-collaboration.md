@@ -1,3 +1,13 @@
+---
+name: agentic-collaboration
+description: >
+  A portable, multi-step cadence for collaborating with AI coding agents on
+  non-trivial work — describe, analyze, plan, discuss, document, implement,
+  verify — plus the standing disciplines (one PR at a time, scope contracts,
+  plan-doc-as-checklist) and guidance on scaling from single- to multi-agent.
+  Use when setting up or running an agentic collaboration workflow on a project.
+---
+
 # Agentic Collaboration Workflow
 
 > Version: 0.0.2 · Date: 2026-05-25
@@ -45,7 +55,7 @@ For substantial design decisions, an ADR with semantic versioning. Mark supersed
 
 ### 6. Implement (agent → repo)
 
-Branch off the integration branch (typically `develop`). Branch names prefixed with a convention that distinguishes agent-authored work (e.g. `claude-cowork/`). Tasks tracked via a structured todo list with one item in-progress at a time; commit-per-task with focused messages. Each task ends with the test suite green — never accumulate broken intermediate states.
+Branch off the integration branch (typically `develop`). Branch names prefixed with a convention that distinguishes agent-authored work (e.g. `claude/`). Tasks tracked via a structured todo list with one item in-progress at a time; commit-per-task with focused messages. Each task ends with the test suite green — never accumulate broken intermediate states.
 
 When the implementation deviates from the plan, **update the plan or stop and re-discuss**. Don't silently drift.
 
@@ -156,7 +166,7 @@ These are mistakes from actual collaboration sessions. Concrete enough to teach 
 
 ## Pointers to artifacts (from one team's adoption)
 
-The team that derived this pattern (the Eagle plugin project this doc lives in) uses these artifacts as the as-written form of the abstractions above. They're concrete examples, not required context.
+The team that derived this pattern (an Eagle plugin project) uses these artifacts as the as-written form of the abstractions above. They're concrete examples, not required context.
 
 - **Plan docs:** `docs/plans/{slug}/{slug}-N.N.N.md` per implementation effort. Each plan opens with goal + acceptance criteria, lists the implementation order as the literal commit checklist, and explicitly enumerates out-of-scope items.
 - **ADR supersession chain:** `docs/adr/ADR-001/` runs from v0.0.1 (deprecated) through v0.0.4 (current). Each superseded version carries a `[DEPRECATED]` h1 + forward-pointer note. v0.0.3 superseded v0.0.2's §4 only; v0.0.4 superseded v0.0.3's §2 only. Demonstrates scoped supersession.

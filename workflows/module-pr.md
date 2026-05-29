@@ -30,7 +30,7 @@ on every push). Smaller PRs are more upfront work but far less back-and-forth.
 
 ### 1. Branch
 
-`git checkout develop && git pull`, then `git checkout -b claude-cowork/<concern>`.
+`git checkout develop && git pull`, then `git checkout -b claude/<concern>`.
 One concern only. Never target `main`/`master`.
 
 ### 2. Analyze
