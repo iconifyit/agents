@@ -91,7 +91,7 @@ Rules:
 - Keep changes incremental where possible
 - Preserve compatibility unless breaking changes were approved
 - Do not introduce unrelated refactors
-- If the ADR supersedes existing code (its "Code being removed" section is non-empty), DELETE that code in THIS PR. The pivot and the cleanup are one change, not two. Leaving superseded code "for reference" is what git history is for.
+- If the ADR's "Code being removed" section lists actual removals (i.e. not "None"), DELETE that code in THIS PR. The pivot and the cleanup are one change, not two. Leaving superseded code "for reference" is what git history is for.
 - Before deleting, confirm reachability with a real tool — an esbuild `--metafile` audit, `knip`, or the stack's equivalent. Re-exports in `index.js` files keep superseded code reachable from the bundle even when nothing invokes it directly; eyeball analysis misses these "ghost imports."
 
 ### 7. Verify

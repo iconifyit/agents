@@ -32,7 +32,7 @@ Folder structure:
 
 ### Required section: "Code being removed"
 
-An ADR that supersedes prior behavior must include a **"Code being removed"** section listing the files/modules/exports the new decision makes dead — or stating explicitly "None" if the change is purely additive. This section is never absent.
+Every ADR must include a **"Code being removed"** section. If the decision supersedes prior behavior, list the files/modules/exports it makes dead; if the change is purely additive, state explicitly "None". This section is never absent.
 
 The rationale: a "Supersedes X" header documents what's *new* but is silent on what's now *dead*. Dead code doesn't announce itself — a superseded subsystem can stay reachable through a re-export in an `index.js` long after nothing invokes it, bloating the bundle and confusing future readers about what's live. Naming the removals at decision time makes the cleanup part of the same PR that introduces the new design (see the architecture-change and refactor workflows).
 
