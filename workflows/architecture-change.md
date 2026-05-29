@@ -64,7 +64,7 @@ The plan must include:
 
 ### 4. ADR
 
-Use the `adr` skill.
+Follow the ADR process (see the `documentation` rule).
 
 The ADR must capture:
 

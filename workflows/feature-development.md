@@ -55,7 +55,7 @@ Implementation must not begin until the user explicitly approves the plan.
 
 If needed:
 
-- Use the `adr` skill for architectural decisions
+- For architectural decisions, follow the ADR process (see the `documentation` rule)
 - Use the `document` skill for durable documentation
 - Preserve documentation history and semantic versions
 
@@ -72,7 +72,7 @@ Rules:
 
 ### 7. Verify
 
-Use the `verify` process or skill.
+Follow the verification process (see the `verification` rule).
 
 Verify:
 

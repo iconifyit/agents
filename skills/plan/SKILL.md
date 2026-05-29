@@ -95,7 +95,7 @@ State whether the task requires:
 - Migration notes
 - Operational runbook updates
 
-Use the `adr` skill for significant architectural decisions.
+For significant architectural decisions, follow the ADR process (see the `documentation` rule).
 Use the `document` skill for durable code documentation.
 
 ## Output

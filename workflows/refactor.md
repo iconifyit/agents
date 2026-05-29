@@ -58,7 +58,7 @@ Stop and wait for explicit approval.
 
 ### 5. Document
 
-Use the `adr` skill if the refactor changes architecture, boundaries, or major patterns.
+If the refactor changes architecture, boundaries, or major patterns, follow the ADR process (see the `documentation` rule).
 
 ### 6. Implement
 

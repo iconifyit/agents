@@ -22,6 +22,8 @@ proposed/     # staged changes under review, not yet promoted
 docs/adr/     # architecture decision records
 ```
 
+> **Browsing on GitHub:** the `.agents/` entries are directory symlinks (mode 120000), so GitHub won't render `.agents/.../<file>` paths. `AGENTS.md` is primarily for local tooling — on GitHub, browse the visible `rules/`, `skills/`, and `workflows/` folders directly.
+
 ## Usage
 
 1. Clone this repo to a global location, outside any project repo.

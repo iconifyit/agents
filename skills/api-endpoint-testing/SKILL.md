@@ -42,7 +42,7 @@ auth, DB, and response formatting.
 **Trade-off:** Most realistic, but requires server infrastructure. Slower. Test
 failures can be caused by server state, not just code bugs.
 
-See `<references/running-server.md>` for setup patterns and examples.
+See [references/running-server.md](references/running-server.md) for setup patterns and examples.
 
 ### Pattern 2: In-process tests
 
@@ -57,7 +57,7 @@ exercises Express routing and middleware.
 importable without side effects that blow up (DB connections, external service
 init). May need careful module mocking.
 
-See `<references/in-process.md>` for setup patterns and examples.
+See [references/in-process.md](references/in-process.md) for setup patterns and examples.
 
 ### Pattern 3: Direct invocation
 
@@ -73,7 +73,7 @@ Call the entry point directly and assert on what happened downstream.
 **Trade-off:** Tests exactly the code path you care about without HTTP noise.
 But won't catch routing/middleware bugs.
 
-See `<references/direct-invocation.md>` for setup patterns and examples.
+See [references/direct-invocation.md](references/direct-invocation.md) for setup patterns and examples.
 
 ## Test design principles
 

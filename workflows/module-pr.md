@@ -74,7 +74,7 @@ that review with a **dedicated review sub-agent** (via the Agent tool,
 `general-purpose`) pointed at `git diff develop...HEAD`. A separate agent reviews
 more adversarially than re-reading your own work, and catches the next round's
 findings before they're filed. Address everything it flags (real issues), then
-push. Also run the `security-review` skill if the change touches security-
+push. Also run a security review — e.g. the `security-review` skill in Claude Code — if the change touches security-
 sensitive surface.
 
 Give the sub-agent: the branch + base, the changed files, the bucket checklist
