@@ -24,7 +24,7 @@ cloud-storage I/O via mixins.
 
 | Concern lives in...        | Use                       |
 |----------------------------|---------------------------|
-| Postgres / Objection.js    | `soa-module.md`           |
+| Postgres / Objection.js    | [soa-module](../soa-module/SKILL.md) |
 | Filesystem, HTTP, S3, etc. | This skill                |
 | Pure in-memory (no I/O)    | This skill (Entity + Service only) |
 
