@@ -169,7 +169,7 @@ For each Mermaid diagram in the document:
 1. Extract the Mermaid source to `diagrams/{name}.mmd`
 2. Keep the fenced Mermaid code block inline in the markdown — it renders
    natively in VS Code, Notion, and other Mermaid-aware markdown viewers
-   (Note: GitHub only renders Mermaid in issues/PRs, not in repo file views)
+   (Note: GitHub renders Mermaid in file views and issues/PRs; some other Markdown viewers don't render Mermaid at all)
 3. Validate syntax by reviewing the Mermaid code for correctness before saving
 4. **PNG conversion (when egress is available):** Use mermaid.ink to convert
    diagrams to PNG. Encode the diagram as base64 and fetch from
@@ -181,7 +181,7 @@ For each Mermaid diagram in the document:
 
 The markdown should reference diagrams like this:
 
-```markdown
+~~~markdown
 ### Architecture
 
 ```mermaid
@@ -191,10 +191,10 @@ graph LR
 ```
 
 *Source: [diagrams/architecture.mmd](diagrams/architecture.mmd)*
-```
+~~~
 
 This gives two layers of access (three when PNGs are available):
-- **Inline rendering** in VS Code / Notion / Mermaid-aware viewers (not GitHub repo file views)
+- **Inline rendering** in GitHub, VS Code, Notion, and other Mermaid-aware viewers
 - **`.mmd` source files** for future editing, diffing, or batch conversion
 - **`.png` files** (optional) for embedding in contexts that don't render Mermaid
 
