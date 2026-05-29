@@ -11,5 +11,6 @@ So, as part of any change that obsoletes something:
 > **Remove the obsoleted artifact in the same change that obsoletes it. Do not leave it "for reference" — that is what version control is for.**
 
 - **Verify before removing.** Re-exports and ghost imports make dead code look live and live code look dead — confirm what is actually obsolete with authoritative tooling, not eyeballs (see the `destructive-operations` skill). Removal is itself a destructive action, so the `destructive-actions` gates apply.
+- **Versioned documentation and ADRs are the exception.** The `documentation` rule governs them: supersede by versioning and marking the old version `[DEPRECATED]` — do *not* delete. Their history is the artifact, so "version control is for that" does not apply.
 - The `documentation` rule's "Code being removed" ADR section and the `architecture-change` / `refactor` workflows already enforce this at decision time.
 - The `prune-obsolete` workflow is the periodic safety net for whatever still slips through.
