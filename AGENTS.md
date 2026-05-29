@@ -20,6 +20,7 @@ This file indexes all rules, skills, and workflows defined in `.agents/`.
 - [idiomatic-beats-clever](.agents/rules/idiomatic-beats-clever.md)
 - [persona](.agents/rules/persona.md)
 - [pre-existing-issues](.agents/rules/pre-existing-issues.md)
+- [remove-the-obsolete](.agents/rules/remove-the-obsolete.md)
 - [solve-for-intent](.agents/rules/solve-for-intent.md)
 - [test-design](.agents/rules/test-design.md)
 - [testing](.agents/rules/testing.md)
@@ -51,6 +52,7 @@ This file indexes all rules, skills, and workflows defined in `.agents/`.
 - [destructive-operation](.agents/workflows/destructive-operation.md)
 - [feature-development](.agents/workflows/feature-development.md)
 - [module-pr](.agents/workflows/module-pr.md)
+- [prune-obsolete](.agents/workflows/prune-obsolete.md)
 - [refactor](.agents/workflows/refactor.md)
 
 ## State
