@@ -141,6 +141,10 @@ to `~/github/@agents`. The agreed direction:
 The packaging mechanics are implementation detail and may warrant their own ADR
 if they grow.
 
+## Code being removed
+
+None — this ADR is additive. It establishes the initial repository layout and removes no existing code or modules.
+
 ## Consequences
 
 **Positive**

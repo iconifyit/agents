@@ -62,7 +62,7 @@ removed. Real fixtures under `test/.../__fixtures__/`; no symbolic data.
 
 ```
 # One module, one branch, one PR:
-git checkout -b claude-cowork/resume-module
+git checkout -b claude/resume-module
 # scaffold src/modules/resume/ via filesystem-soa-module
 # write tests (happy/edge/error) under test/modules/resume/
 npm test                       # full suite green

@@ -7,7 +7,7 @@ trigger: always_on
 ## Branching
 
 - Create new branches from `develop` before making changes
-- Prefix branches with `claude-cowork/` (e.g., `claude-cowork/add-login-history-tests`)
+- Prefix branches with `claude/` (e.g., `claude/add-login-history-tests`)
 - Use descriptive branch names that reflect the changes
 - NEVER use "main", "master", or "develop" in branch names
 - NEVER delete a branch you did not create
@@ -30,6 +30,22 @@ Utilize the Gitflow branching model with `develop` as the main integration branc
 - Keep PRs focused on a single concern
 - Avoid mixing unrelated changes
 - Break large changes into smaller, manageable PRs
+
+### Scope contract
+
+Every PR opens with a one-line scope contract, stated in the plan doc and the PR body: **"This PR does X, and nothing else."** The contract is the test for whether a mid-PR addition belongs.
+
+When a new concern surfaces while a PR is in flight, the default answer is **"follow-up PR"**, not "while I'm here." A change belongs in the current PR only if X literally cannot work or ship without it. Tidy-ups, adjacent improvements, "we should also…" ideas, and newly-noticed tech debt are follow-ups — capture them (memory note, TODO, issue) and move on.
+
+### Three-strike rule
+
+If a PR accumulates **three additions beyond its scope contract**, STOP and surface the drift to the user with three options:
+
+1. **Split** — carve the extra work into separate PRs.
+2. **Merge-and-restart** — land what's coherent now, start fresh branches for the rest.
+3. **Abandon-and-recut** — if the branch has become a tangle, cut a clean branch and cherry-pick the coherent commits.
+
+A sprawling PR is hard to review, hard to verify, and a bigger blast radius if anything goes wrong with the branch. Catching the drift at three strikes keeps PRs reviewable and recoverable.
 
 ## PR Format
 
