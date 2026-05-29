@@ -10,6 +10,8 @@ description: >
 
 # Destructive Operations Skill
 
+Verify a destructive action's side effects before taking it — even if you think you know them — then act from a catalog of what you verified.
+
 ## The principle
 
 Destructive-action disasters share one root cause: **acting on a faulty assumption about an action's side effects without verifying it first.** The *domain* is incidental — a git history rewrite, a `DROP TABLE`, an `rm -rf`, a force-deploy, or killing a process — they all fail the same way: you *thought* you knew what would happen, you were wrong, and the result couldn't be undone.
