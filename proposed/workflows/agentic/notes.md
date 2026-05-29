@@ -1,6 +1,6 @@
- Just as an aside, this workflow is working very well. It would be      
-  great to capture the details of the workflow so I - we - can turn this 
-   into a repeatable agentic pattern for other projects.                 
+ Just as an aside, this workflow is working very well. It would be
+  great to capture the details of the workflow so I - we - can turn this
+   into a repeatable agentic pattern for other projects.
 
 ⏺ Re: capturing the workflow — strong yes, and the timing is perfect (the
    pattern is fresh in both our heads). To respect the one-PR-at-a-time
@@ -21,7 +21,7 @@ We could have different configurations to adapt for different size projects. For
 
 Typical array (draft):
 
-The items below are just a first pass, off the top of my head. 
+The items below are just a first pass, off the top of my head.
 
 - Orchestrator / Architect Agent: Responsible for high-level planning, task assignment, and overall project coordination.
 - Implementation Agent(s): Focused on executing specific tasks or features, such as coding, testing, or documentation.

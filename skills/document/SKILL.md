@@ -22,12 +22,12 @@ Given a file path (repo root, subfolder, single module), this skill:
 2. Produces a structured markdown document covering architecture, modules, data flows, and dependencies
 3. Generates Mermaid diagrams for visual understanding (process flows, class relationships, DB schemas, infrastructure topology, etc.)
 4. Converts diagrams to PNG via mermaid.ink
-5. Saves everything to `vectopus-code/docs/{target-name}/`
+5. Saves everything to `docs/{target-name}/`
 
 ## Output Structure
 
 ```
-vectopus-code/docs/{target-name}/
+docs/{target-name}/
   README.md              # The main documentation
   diagrams/
     {diagram-name}.mmd   # Mermaid source files (kept for future editing)

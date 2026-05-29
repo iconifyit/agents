@@ -11,18 +11,18 @@ description: >-
 
 ---
 
-Latest Stripe API version: **2026-03-25.dahlia**. Always use the latest API version and SDK unless the user specifies otherwise.
+Pin an explicit Stripe API version for the integration (or inherit the account's default pinned version), and treat version upgrades as a deliberate, reviewed change rather than always adopting the newest. Determine the current API version from Stripe's API changelog or Dashboard rather than relying on a hardcoded value here.
 
 ## Integration routing
 
 | Building…                             | Recommended API                     | Details                  |
 | ------------------------------------- | ----------------------------------- | ------------------------ |
-| One-time payments                     | Checkout Sessions                   | <references/payments.md> |
-| Custom payment form with embedded UI  | Checkout Sessions + Payment Element | <references/payments.md> |
-| Saving a payment method for later     | Setup Intents                       | <references/payments.md> |
-| Connect platform or marketplace       | Accounts v2 (`/v2/core/accounts`)   | <references/connect.md>  |
-| Subscriptions or recurring billing    | Billing APIs + Checkout Sessions    | <references/billing.md>  |
-| Embedded financial accounts / banking | v2 Financial Accounts               | <references/treasury.md> |
+| One-time payments                     | Checkout Sessions                   | [payments.md](references/payments.md) |
+| Custom payment form with embedded UI  | Checkout Sessions + Payment Element | [payments.md](references/payments.md) |
+| Saving a payment method for later     | Setup Intents                       | [payments.md](references/payments.md) |
+| Connect platform or marketplace       | Accounts v2 (`/v2/core/accounts`)   | [connect.md](references/connect.md) |
+| Subscriptions or recurring billing    | Billing APIs + Checkout Sessions    | [billing.md](references/billing.md) |
+| Embedded financial accounts / banking | v2 Financial Accounts               | [treasury.md](references/treasury.md) |
 
 Read the relevant reference file before answering any integration question or writing code.
 

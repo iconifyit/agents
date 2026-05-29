@@ -19,7 +19,7 @@ Use this skill when you need to perform a database migration, whether it's addin
 - DO NOT execute migration scripts in production.
 - If you make a mistake - STOP! Do not attempt to fix it yourself. Instead, report the issue to a human immediately so that they can assess the situation and determine the best course of action. Panicking and trying to make a fix on-the-fly, without proper planning, often leads to even worse mistakes.
 - DO NOT MAKE UNFOUNDED ASSUMPTIONS! The code is the source of truth. Read the code.
-- Before asking the human about details of the codebase, check if the information is available in the code itself, docs, and/or docs/ADRS/*.
+- Before asking the human about details of the codebase, check if the information is available in the code itself, docs, and/or docs/adr/*.
 
 ## Steps
 1. **Planning**: Assess the scope of the migration, identify the changes needed, and create a detailed plan that includes timelines, resources, and rollback strategies. Our database uses Knex.js for migrations and Objection.js for the ORM, so ensure that your migration scripts are compatible with these tools. All migrations that create or modify tables or views must include the required Objection.js model definitions to ensure consistency and maintainability. This will help prevent issues with data integrity and make it easier for other developers to understand the changes being made. Additionally, consider the impact of the migration on existing data and how it may affect application performance during the migration process.
