@@ -1,0 +1,25 @@
+query($owner: String!, $name: String!, $number: Int!) {
+  repository(owner: $owner, name: $name) {
+    pullRequest(number: $number) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          comments(first: 50) {
+            nodes {
+              databaseId
+              path
+              line
+              originalLine
+              body
+              author { login }
+              createdAt
+              commit { oid }
+            }
+          }
+        }
+      }
+    }
+  }
+}
