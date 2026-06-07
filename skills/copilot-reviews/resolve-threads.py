@@ -102,7 +102,10 @@ def process(cfg):
     number = cfg['number']
     mapping = cfg['mapping']
     commit_base = cfg.get('commit_base', '')
-    delay = cfg.get('reply_delay_seconds', 12)
+    # Floor the pacing at 12s regardless of config — anything faster risks
+    # GitHub's abuse limiter (see module docstring). int() also rejects a
+    # non-numeric config value loudly rather than silently bursting.
+    delay = max(12, int(cfg.get('reply_delay_seconds', 12)))
 
     threads = load_threads(cfg['threads'])
     stats = {'replied': 0, 'resolved': 0, 'unmatched': 0, 'errors': []}
@@ -132,18 +135,20 @@ def process(cfg):
         reply_body = f"Addressed in {link} — {summary}."
 
         ok, msg = post_reply(owner, repo, number, first['databaseId'], reply_body)
-        if not ok:
+        if ok:
+            stats['replied'] += 1
+            ok_resolve, resolve_msg = resolve_thread(thread['id'])
+            if ok_resolve:
+                stats['resolved'] += 1
+            else:
+                stats['errors'].append(f"resolve {thread['id']}: {resolve_msg[:200]}")
+        else:
             stats['errors'].append(f"reply to {first['databaseId']}: {msg[:200]}")
-            continue
-        stats['replied'] += 1
 
-        ok, msg = resolve_thread(thread['id'])
-        if not ok:
-            stats['errors'].append(f"resolve {thread['id']}: {msg[:200]}")
-            continue
-        stats['resolved'] += 1
-
-        time.sleep(delay)  # stay under GitHub's abuse limiter
+        # Pace after EVERY reply attempt — success or failure — so a failed
+        # reply/resolve can't drop us straight into the next POST. That burst
+        # is exactly what trips GitHub's abuse limiter.
+        time.sleep(delay)
 
     print(f"\n=== {owner}/{repo} PR #{number} ===")
     print(f"  replied:   {stats['replied']}")

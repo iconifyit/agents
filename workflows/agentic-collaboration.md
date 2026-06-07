@@ -42,9 +42,9 @@ Reconcile findings before proceeding:
 
 ---
 
-## The seven-step cadence
+## The core seven-step cadence
 
-Each step has a distinct purpose. Not every step runs for every task — small work can collapse Describe + Analyze + Plan into a single sentence; large work expands every step into its own round. See [Sizing the loop](#sizing-the-loop).
+These seven steps (Describe → Verify) are the core cadence. They are wrapped by Pre-flight (runs every session, before Describe) and Wind-down (runs before a long break or end of session, after Verify), and Verify can loop back through Iterate — see those sections below. Each step has a distinct purpose. Not every step runs for every task — small work can collapse Describe + Analyze + Plan into a single sentence; large work expands every step into its own round. See [Sizing the loop](#sizing-the-loop).
 
 ### 1. Describe (human → agent)
 
@@ -119,6 +119,8 @@ Invoke the **`session-state-handoff`** skill: write a self-contained `.claude/ST
 | Non-trivial feature | All seven stages; plan-doc in Stage 5 |
 | Architecture / design change | All seven + ADR in Stage 5 + the `architecture-change` workflow's removal discipline |
 | Large parallelizable feature | All seven + `multi-agent-orchestration` in Stage 6 |
+
+The "stages that run" column refers to the **core seven** (Describe → Verify). The wrapper stages apply regardless of size: **Pre-flight** runs at the start of every session and **Wind-down** before any long break or end of session, even for a one-line fix. **Iterate** runs whenever Verify finds something.
 
 The skill of running this well is **matching the ceremony to the task** — never skipping the plan on something with design surface, never writing a plan doc for a typo.
 
