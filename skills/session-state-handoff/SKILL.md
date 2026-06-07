@@ -140,7 +140,7 @@ branch deleted). Reconcile, then proceed from "What's pending."
 - {e.g. Review-response: fix code, leave cosmetic with a policy reply.}
 
 ## Resume sequence
-1. `git fetch origin --prune && git status && gh pr list --state open`
+1. `git fetch origin --prune && git status && gh pr list --state open && git branch --list 'claude/*'`
 2. Read this file; reconcile against git (trust git on conflict).
 3. {effort-specific first step}
 ```
