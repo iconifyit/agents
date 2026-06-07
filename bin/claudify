@@ -51,6 +51,14 @@ reset_scan_state() {
 }
 
 # ----------------------------------------------------------------------------
+# Self-test bootstrap signatures (populated by capture_bootstrap_signatures,
+# consumed by assert_bootstrap_untouched and assert_no_unexpected_entries).
+# ----------------------------------------------------------------------------
+BOOTSTRAP_FIND_SKILLS_INODE=""
+declare -a BOOTSTRAP_SKILLS=()
+declare -a BOOTSTRAP_COMMANDS=()
+
+# ----------------------------------------------------------------------------
 # Logging
 # ----------------------------------------------------------------------------
 log()  { printf '%s\n' "$*"; }
@@ -320,7 +328,19 @@ do_apply() {
 # ----------------------------------------------------------------------------
 self_test() {
     log "Running self-test against $TEST_TARGET..."
+
+    # Phase 1: Negative scenarios — verify the safety nets actually catch the
+    # conditions they're supposed to catch. Each phase fully re-bootstraps so
+    # they don't pollute each other.
+    test_negative_collision
+    test_negative_stale
+    test_negative_orphan
+
+    # Phase 2: Happy path — apply against fresh bootstrap, assert expected
+    # post-state, assert bootstrap content untouched, assert nothing unexpected
+    # was created.
     bootstrap_test_target
+    capture_bootstrap_signatures
     local saved_target="$TARGET"
     TARGET="$TEST_TARGET"
     reset_scan_state
@@ -333,17 +353,16 @@ self_test() {
     fi
     do_apply
     assert_test_target_post_apply
+    assert_bootstrap_untouched
+    assert_no_unexpected_entries
 
-    # Idempotency: a second scan should produce no TODO.
+    # Phase 3: Idempotency — re-scan, only the rules entry is allowed in TODO
+    # (the sentinel block is always rewritten; skill/workflow symlinks should
+    # all NOOP).
     reset_scan_state
     do_scan
-    if [[ ${#TODO[@]} -gt 0 ]] && [[ "$TYPE" != "rules" && "$TYPE" != "all" ]]; then
-        TARGET="$saved_target"
-        die "self-test idempotency failed: $(printf '%s; ' "${TODO[@]}")"
-    fi
-    # For rules-only / all, the rules entry is always TODO (because we always
-    # rewrite the block). Filter that out for the idempotency check.
-    local non_rules_todo=()
+    local -a non_rules_todo=()
+    local x
     for x in "${TODO[@]:-}"; do
         [[ -n "$x" && "$x" != "rules:"* ]] && non_rules_todo+=("$x")
     done
@@ -354,6 +373,146 @@ self_test() {
 
     TARGET="$saved_target"
     log "Self-test passed."
+}
+
+# ----------------------------------------------------------------------------
+# Negative-scenario tests — each verifies a specific safety-net path.
+# ----------------------------------------------------------------------------
+test_negative_collision() {
+    bootstrap_test_target
+    local victim
+    victim=$(basename "$(find "$REPO_ROOT/skills" -maxdepth 1 -mindepth 1 -type d | sort | head -1)")
+    # Synthesize collision: a REAL dir at the expected symlink path.
+    mkdir -p "$TEST_TARGET/skills/$victim"
+    : > "$TEST_TARGET/skills/$victim/.collision-marker"
+
+    local saved_target="$TARGET" saved_type="$TYPE"
+    TARGET="$TEST_TARGET"; TYPE="skills"
+    reset_scan_state
+    do_scan
+
+    [[ ${#COLLISIONS[@]} -gt 0 ]] || die "self-test: collision synthesized but COLLISIONS empty"
+    have_issues || die "self-test: collision synthesized but have_issues=false"
+
+    TARGET="$saved_target"; TYPE="$saved_type"
+    vlog "self-test: collision detection verified ($victim)"
+}
+
+test_negative_stale() {
+    bootstrap_test_target
+    local victim
+    victim=$(basename "$(find "$REPO_ROOT/skills" -maxdepth 1 -mindepth 1 -type d | sort | head -1)")
+    mkdir -p "$TEST_TARGET/skills"
+    # Synthesize stale: a symlink at the expected path pointing somewhere unexpected.
+    ln -s /tmp/claudify-stale-target "$TEST_TARGET/skills/$victim"
+
+    local saved_target="$TARGET" saved_type="$TYPE"
+    TARGET="$TEST_TARGET"; TYPE="skills"
+    reset_scan_state
+    do_scan
+
+    [[ ${#STALE[@]} -gt 0 ]] || die "self-test: stale symlink synthesized but STALE empty"
+    have_issues || die "self-test: stale symlink synthesized but have_issues=false"
+
+    TARGET="$saved_target"; TYPE="$saved_type"
+    vlog "self-test: stale detection verified ($victim)"
+}
+
+test_negative_orphan() {
+    bootstrap_test_target
+    mkdir -p "$TEST_TARGET/skills"
+    # Synthesize orphan: a symlink pointing INTO the repo at a path that
+    # doesn't exist (i.e. a skill the repo no longer has).
+    local ghost="claudify-orphan-ghost-skill"
+    ln -s "$REPO_ROOT/skills/$ghost" "$TEST_TARGET/skills/$ghost"
+
+    local saved_target="$TARGET" saved_type="$TYPE"
+    TARGET="$TEST_TARGET"; TYPE="skills"
+    reset_scan_state
+    do_scan
+
+    [[ ${#ORPHANS[@]} -gt 0 ]] || die "self-test: orphan synthesized but ORPHANS empty"
+    have_issues || die "self-test: orphan synthesized but have_issues=false"
+
+    TARGET="$saved_target"; TYPE="$saved_type"
+    vlog "self-test: orphan detection verified ($ghost)"
+}
+
+# ----------------------------------------------------------------------------
+# Capture bootstrap signatures for tamper-detection assertions.
+# ----------------------------------------------------------------------------
+capture_bootstrap_signatures() {
+    BOOTSTRAP_FIND_SKILLS_INODE=""
+    BOOTSTRAP_SKILLS=()
+    BOOTSTRAP_COMMANDS=()
+    if [[ -f "$TEST_TARGET/skills/find-skills/SKILL.md" ]]; then
+        BOOTSTRAP_FIND_SKILLS_INODE=$(stat -f %i "$TEST_TARGET/skills/find-skills/SKILL.md")
+    fi
+    if [[ -d "$TEST_TARGET/skills" ]]; then
+        local d
+        while IFS= read -r d; do
+            BOOTSTRAP_SKILLS+=("$(basename "$d")")
+        done < <(find "$TEST_TARGET/skills" -maxdepth 1 -mindepth 1 | sort)
+    fi
+    if [[ -d "$TEST_TARGET/commands" ]]; then
+        local f
+        while IFS= read -r f; do
+            BOOTSTRAP_COMMANDS+=("$(basename "$f")")
+        done < <(find "$TEST_TARGET/commands" -maxdepth 1 -mindepth 1 | sort)
+    fi
+}
+
+# Verify pre-existing bootstrap content was not touched by apply.
+assert_bootstrap_untouched() {
+    if [[ -n "$BOOTSTRAP_FIND_SKILLS_INODE" ]]; then
+        local current
+        current=$(stat -f %i "$TEST_TARGET/skills/find-skills/SKILL.md" 2>/dev/null || echo "missing")
+        [[ "$current" == "$BOOTSTRAP_FIND_SKILLS_INODE" ]] \
+            || die "assert: find-skills/SKILL.md inode changed ($BOOTSTRAP_FIND_SKILLS_INODE -> $current)"
+    fi
+}
+
+# Verify nothing exists in the test target outside the expected set
+# (bootstrap-copied content + repo-source-symlinks).
+assert_no_unexpected_entries() {
+    local -a expected_skills=()
+    local x
+    for x in "${BOOTSTRAP_SKILLS[@]:-}"; do
+        [[ -n "$x" ]] && expected_skills+=("$x")
+    done
+    local d
+    while IFS= read -r d; do
+        expected_skills+=("$(basename "$d")")
+    done < <(find "$REPO_ROOT/skills" -maxdepth 1 -mindepth 1 -type d | sort)
+    if [[ -d "$TEST_TARGET/skills" ]]; then
+        local entry name found e
+        while IFS= read -r entry; do
+            name=$(basename "$entry"); found=0
+            for e in "${expected_skills[@]}"; do
+                [[ "$e" == "$name" ]] && { found=1; break; }
+            done
+            [[ $found -eq 1 ]] || die "assert: unexpected entry in skills/: $entry"
+        done < <(find "$TEST_TARGET/skills" -maxdepth 1 -mindepth 1)
+    fi
+
+    local -a expected_commands=()
+    for x in "${BOOTSTRAP_COMMANDS[@]:-}"; do
+        [[ -n "$x" ]] && expected_commands+=("$x")
+    done
+    local f
+    while IFS= read -r f; do
+        expected_commands+=("$(basename "$f")")
+    done < <(find "$REPO_ROOT/workflows" -maxdepth 1 -type f -name '*.md' | sort)
+    if [[ -d "$TEST_TARGET/commands" ]]; then
+        local entry name found e
+        while IFS= read -r entry; do
+            name=$(basename "$entry"); found=0
+            for e in "${expected_commands[@]}"; do
+                [[ "$e" == "$name" ]] && { found=1; break; }
+            done
+            [[ $found -eq 1 ]] || die "assert: unexpected entry in commands/: $entry"
+        done < <(find "$TEST_TARGET/commands" -maxdepth 1 -mindepth 1)
+    fi
 }
 
 bootstrap_test_target() {
