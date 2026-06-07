@@ -96,7 +96,7 @@ If the work is large enough to parallelize, invoke the **`multi-agent-orchestrat
 ### 7. Verify (agent → human → agent)
 
 1. Tests + lint + rebuild any distributable artifact (bundle, package, image).
-2. Open the PR; its body cites the plan doc and acceptance criteria, opens with the scope contract, and targets the integration branch (never `main`/`master`).
+2. Open the PR; its body cites the plan doc and acceptance criteria, opens with the scope contract, and targets the project's integration branch — Gitflow's `develop`, never a protected release branch like `main`/`master` (for trunk-based repos the integration branch may itself be `main`/`trunk`).
 3. **Arm the review watcher and run the review loop** — follow the **`copilot-review-loop`** workflow (it drives the `copilot-reviews` skill's primitives). Every PR open and every push triggers an automatic review on many setups, so arm the watcher *proactively*, without being asked.
 4. Apply a **review-response policy**: code findings get fixes; cosmetic / wording findings get a brief "leaving per policy" reply. Reply on each thread with the addressing SHA, resolve it, then **re-request review** via the GraphQL `requestReviews` mutation with `botIds` (Copilot's `__typename` is `Bot`, so `userIds` does not work) and `union: true` (to preserve existing human reviewer requests). This programmatic re-request path *works* — there is no need to fall back to clicking the UI button. Loop until sign-off.
 

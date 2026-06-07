@@ -49,14 +49,30 @@ import time
 
 
 def load_threads(path):
-    """Read fetch-threads.gql output; tolerate a leading non-JSON preamble."""
+    """Read fetch-threads.gql output; tolerate a leading non-JSON preamble.
+
+    Surfaces GraphQL error payloads (auth, bad query, rate limit) and
+    unexpected JSON shapes as a clear ValueError pointing back to the fetch
+    step, rather than letting a bare KeyError/TypeError escape.
+    """
     with open(path) as f:
         text = f.read()
     start = text.find('{')
     if start < 0:
         raise ValueError(f"no JSON object found in {path}")
     data = json.loads(text[start:])
-    return data['data']['repository']['pullRequest']['reviewThreads']['nodes']
+    if data.get('errors'):
+        raise ValueError(
+            f"GraphQL returned errors in {path}: {data['errors']} — re-run the "
+            "fetch-threads.gql step and check auth, query, and rate limits."
+        )
+    try:
+        return data['data']['repository']['pullRequest']['reviewThreads']['nodes']
+    except (KeyError, TypeError) as exc:
+        raise ValueError(
+            f"unexpected JSON shape in {path} (at {exc}) — expected the output "
+            "of fetch-threads.gql; re-run the fetch step."
+        ) from exc
 
 
 def match_topic(body, mapping):
