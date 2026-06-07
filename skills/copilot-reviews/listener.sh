@@ -1,8 +1,10 @@
 #!/bin/bash
 #
-# Poll both Copilot review streams every 60s. On a newer-than-last review,
-# emit a single notification line to stdout. The Monitor tool streams stdout
-# lines as notifications, so each line surfaces to the assistant.
+# Poll the Copilot review stream for a single PR every 60s. On a newer-than-last
+# review, emit a single notification line to stdout. The Monitor tool streams
+# stdout lines as notifications, so each line surfaces to the assistant.
+#
+# Usage: listener.sh <owner> <repo> <pr>
 #
 # IMPORTANT: uses `gh api --paginate` because the default first page of
 # 30 results may not include the latest Copilot review if many other
@@ -11,50 +13,46 @@
 
 set -u
 
-# Get the latest Copilot review's <submitted_at>|<commit_id> for one PR.
-# Output is empty if no Copilot review exists.
-latest_copilot_review() {
-    local owner="$1" repo="$2" pr="$3"
-    gh api --paginate "repos/${owner}/${repo}/pulls/${pr}/reviews" 2>/dev/null \
+if [ $# -ne 3 ]; then
+    echo "usage: $0 <owner> <repo> <pr>" >&2
+    exit 1
+fi
+
+OWNER="$1"
+REPO="$2"
+PR="$3"
+
+# Fetch Copilot reviews. Output: each line is "<submitted_at>|<commit_id>"
+# in chronological order. Empty output if there are no Copilot reviews.
+fetch_copilot_reviews() {
+    gh api --paginate "repos/${OWNER}/${REPO}/pulls/${PR}/reviews" 2>/dev/null \
         | python3 -c "
 import json, sys
-data = []
-for line in sys.stdin:
-    s = line.strip()
-    if s.startswith('['):
-        try: data.extend(json.loads(s))
-        except: pass
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    data = []
 copilot = [r for r in data if r.get('user', {}).get('login', '').startswith('copilot-pull-request-reviewer')]
-if copilot:
-    latest = sorted(copilot, key=lambda r: r['submitted_at'])[-1]
-    print(latest['submitted_at'] + '|' + latest['commit_id'])
+for r in sorted(copilot, key=lambda r: r['submitted_at']):
+    print(r['submitted_at'] + '|' + r['commit_id'])
 "
 }
 
 # Baseline = whatever Copilot's latest is RIGHT NOW. Future-only notifications.
-baseline_server=$(latest_copilot_review vectopus-org vectopus-server 922)
-baseline_eventbus=$(latest_copilot_review iconifyit event-bus 2)
-last_server="$baseline_server"
-last_eventbus="$baseline_eventbus"
+baseline_data=$(fetch_copilot_reviews)
+baseline_count=$(printf '%s' "$baseline_data" | grep -c . 2>/dev/null || echo 0)
+last=$(printf '%s\n' "$baseline_data" | tail -n 1)
 
-echo "[listener] started. baseline server=${baseline_server%%|*} event-bus=${baseline_eventbus%%|*}"
+echo "WATCH ARMED: ${OWNER}/${REPO} PR #${PR} Copilot. Baseline: ${baseline_count} review(s)."
 
 while true; do
     sleep 60
 
-    cur_server=$(latest_copilot_review vectopus-org vectopus-server 922)
-    if [ -n "$cur_server" ] && [ "$cur_server" != "$last_server" ]; then
-        ts="${cur_server%%|*}"
-        commit="${cur_server##*|}"
-        echo "[NEW REVIEW] server-v1 PR #922 — commit ${commit:0:7} — submitted ${ts}"
-        last_server="$cur_server"
-    fi
-
-    cur_eventbus=$(latest_copilot_review iconifyit event-bus 2)
-    if [ -n "$cur_eventbus" ] && [ "$cur_eventbus" != "$last_eventbus" ]; then
-        ts="${cur_eventbus%%|*}"
-        commit="${cur_eventbus##*|}"
-        echo "[NEW REVIEW] event-bus PR #2 — commit ${commit:0:7} — submitted ${ts}"
-        last_eventbus="$cur_eventbus"
+    cur=$(fetch_copilot_reviews | tail -n 1)
+    if [ -n "$cur" ] && [ "$cur" != "$last" ]; then
+        ts="${cur%%|*}"
+        commit="${cur##*|}"
+        echo "[NEW REVIEW] ${OWNER}/${REPO} PR #${PR} — commit ${commit:0:7} — submitted ${ts}"
+        last="$cur"
     fi
 done

@@ -1,5 +1,11 @@
 ---
-trigger: always_on
+name: copilot-review-loop
+description: >
+  The repeatable, low-friction loop for handling Copilot's review feedback
+  on an actively-iterated PR: arm a listener, receive review events, fetch
+  findings, triage, fix, verify green, commit, reply with addressing SHA,
+  resolve threads, and re-request — until Copilot signs off. Pairs with
+  the copilot-reviews skill (primitives) and listener.sh (event signal).
 ---
 
 # copilot-review-loop
@@ -32,7 +38,7 @@ Do NOT activate when:
 
 ### 1. Arm the listener (once per PR)
 
-Launch the `copilot-reviews` listener in a persistent Monitor. It polls `/pulls/<PR>/reviews` and `/pulls/<PR>/comments` (paginated — critical, see the skill's notes on why) and emits one stdout line per new Copilot event.
+Launch the `copilot-reviews` listener in a persistent Monitor. It polls `/pulls/<PR>/reviews` (paginated — critical, see the skill's notes on why) and emits one stdout line per new Copilot review. Inline-comment findings are fetched on-demand after each review event (see step 3) rather than polled separately.
 
 ```python
 Monitor(
@@ -43,7 +49,7 @@ Monitor(
 )
 ```
 
-When you see `WATCH ARMED: PR #<pr> Copilot. Baseline: ... review(s), ... inline comment(s)` in the Monitor's first emission, you're listening.
+When you see `WATCH ARMED: <owner>/<repo> PR #<pr> Copilot. Baseline: <count> review(s).` in the Monitor's first emission, you're listening.
 
 ### 2. Receive a `NEW REVIEW` event
 
@@ -51,7 +57,7 @@ The Monitor surfaces it as a task notification. The summary will include the rev
 
 If the body says **"generated no new comments"** → Copilot has signed off. Skip to step 11.
 
-Otherwise the next emission(s) will be `NEW COMMENT <id>: ...` events for each inline finding. Read each one's `path` and `body[:280]`.
+Otherwise, fetch the inline-comment findings directly via `gh api` (see step 3). The listener only emits review-level events; inline comments are pulled on demand after each `NEW REVIEW`.
 
 ### 3. Fetch full findings
 
@@ -59,7 +65,7 @@ The notification truncates the body. Fetch full content for triage:
 
 ```bash
 gh api --paginate repos/<org>/<repo>/pulls/<PR>/comments \
-  --jq 'sort_by(.created_at) | reverse | .[] | select(.user.login | ascii_downcase | startswith("copilot")) | select(.in_reply_to_id == null) | "---\nID: \(.id)\nPATH: \(.path)\nLINE: \(.line // .original_line)\nBODY:\n\(.body)\n"' | head -<3 * N>
+  --jq 'sort_by(.created_at) | reverse | .[] | select(.user.login | ascii_downcase | startswith("copilot")) | select(.in_reply_to_id == null) | "---\nID: \(.id)\nPATH: \(.path)\nLINE: \(.line // .original_line)\nBODY:\n\(.body)\n"'
 ```
 
 `select(.in_reply_to_id == null)` filters to top-level findings only — replies don't need re-triage.
@@ -67,7 +73,7 @@ gh api --paginate repos/<org>/<repo>/pulls/<PR>/comments \
 ### 4. Triage each finding (1-2 sentences each)
 
 - **Valid + cheap** → address now.
-- **Valid + worth pushing back** → reply with citation per the `copilot-reviews` skill's [push-back pattern](#). Resolve the thread but no code change.
+- **Valid + worth pushing back** → reply with citation per the `copilot-reviews` skill's push-back pattern. Resolve the thread but no code change.
 - **Categorize by file type** (code / test / doc) so the fix commit groups cleanly.
 
 ### 5. Set up TaskCreate entries

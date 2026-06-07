@@ -1,5 +1,10 @@
 ---
-trigger: always_on
+name: adr-authoring
+description: >
+  Author an Architecture Decision Record (ADR) for a significant technical
+  decision. Use when the user asks to create, write, document, or capture
+  an architectural decision, or when a non-trivial design choice needs to
+  be recorded with context, rationale, consequences, and alternatives.
 ---
 
 # Generate ADR Skill
@@ -15,9 +20,13 @@ Create Architecture Decision Records for technical decisions.
 
 ## Quick Reference
 
+ADR creation is currently manual — there is no helper script. Create the directory and seed the versioned file by hand, matching the storage layout below:
+
 ```bash
-./scripts/create_adr.sh "Decision Title"
-# Creates: docs/adr/ADR-XXX-decision-title.md
+ADR_NUM=001                    # next available
+TITLE=decision-title           # kebab-case
+mkdir -p "docs/adr/ADR-${ADR_NUM}-${TITLE}"
+touch "docs/adr/ADR-${ADR_NUM}-${TITLE}/ADR-${ADR_NUM}-${TITLE}-0.0.1.md"
 ```
 
 ## Workflow

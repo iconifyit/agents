@@ -1,5 +1,11 @@
 ---
-trigger: always_on
+name: cover-letter-writing
+description: >
+  Generate a highly effective, personalized cover letter by analyzing the
+  target job description, the user's resume, and the user's past writing
+  samples — aligning tone, voice, and style, and following a 4-paragraph
+  structural blueprint (Hook, Core Impact, Versatility, Why-Them + CTA).
+  Use when the user asks to draft, write, or generate a cover letter.
 ---
 
 # cover-letter-writing
