@@ -25,9 +25,12 @@ OWNER="$1"
 REPO="$2"
 PR="$3"
 
-# Emit "<submitted_at>|<commit_id>" per Copilot review, chronological.
-# Empty output if there are none. Tolerates --paginate's concatenated arrays
-# and transient gh failures (prints nothing rather than crashing the loop).
+# Emit "<submitted_at>|<commit_id>|<review_id>|<body_first_line>" per Copilot
+# review, chronological. The review id and body opening line let the consumer
+# (copilot-review-loop workflow) detect the "generated no new comments" sign-off
+# straight from the notification. Empty output if there are none. Tolerates
+# --paginate's concatenated arrays and transient gh failures (prints nothing
+# rather than crashing the loop).
 fetch_copilot_reviews() {
     gh api --paginate "repos/${OWNER}/${REPO}/pulls/${PR}/reviews" 2>/dev/null \
         | python3 -c "
@@ -51,7 +54,15 @@ while idx < n:
 copilot = [r for r in items
            if str(r.get('user', {}).get('login', '')).lower().startswith('copilot')]
 for r in sorted(copilot, key=lambda r: r.get('submitted_at') or ''):
-    print((r.get('submitted_at') or '') + '|' + str(r.get('commit_id') or ''))
+    # First body line only, with pipes/CR stripped so it can't break the
+    # 4-field record, truncated to keep the notification line readable.
+    snippet = (r.get('body') or '').replace('\r', ' ').split('\n')[0].replace('|', ' ').strip()[:100]
+    print('|'.join([
+        r.get('submitted_at') or '',
+        str(r.get('commit_id') or ''),
+        str(r.get('id') or ''),
+        snippet,
+    ]))
 "
 }
 
@@ -76,9 +87,9 @@ while true; do
 
     cur=$(fetch_copilot_reviews | tail -n 1)
     if [ -n "$cur" ] && [ "$cur" != "$last" ]; then
-        ts="${cur%%|*}"
-        commit="${cur##*|}"
-        echo "[NEW REVIEW] ${OWNER}/${REPO} PR #${PR} — commit ${commit:0:7} — submitted ${ts}"
+        IFS='|' read -r ts commit rid snippet <<< "$cur"
+        echo "[NEW REVIEW] ${OWNER}/${REPO} PR #${PR} — review ${rid} — commit ${commit:0:7} — submitted ${ts}"
+        [ -n "$snippet" ] && echo "  ${snippet}"
         last="$cur"
     fi
 done

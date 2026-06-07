@@ -82,7 +82,7 @@ gh pr list --state open        # or your forge's open-PR command
 git branch --list 'claude/*'   # claude/ marks agent branches
 ```
 
-Then read `STATE.md`. **Trust `git`, not the file, where they disagree** — the
+Then read `.claude/STATE.md`. **Trust `git`, not the file, where they disagree** — the
 file is a point-in-time snapshot and the world may have moved (a PR merged, a
 branch deleted). Reconcile, then proceed from "What's pending."
 
