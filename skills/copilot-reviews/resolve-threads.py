@@ -8,12 +8,13 @@ it, then resolves the thread — building the "what was found → where it was
 fixed" linkage that Copilot's UI can't show on its own.
 
 Usage:
-    1. Fetch current thread state:
+    1. Fetch current thread state (use the skill-relative path to the .gql so
+       the command works from any working directory):
          gh api graphql -F owner=<owner> -F name=<repo> -F number=<pr> \\
-           -F query=@fetch-threads.gql > /tmp/threads.json
+           -F query=@<path-to-skill>/fetch-threads.gql > /tmp/threads.json
     2. Write a config JSON (see CONFIG SCHEMA below).
     3. Run:
-         python3 resolve-threads.py config.json
+         python3 <path-to-skill>/resolve-threads.py config.json
 
 CONFIG SCHEMA (config.json):
     {
