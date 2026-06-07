@@ -112,7 +112,7 @@ def process(cfg):
             continue
         copilot_comments = [
             c for c in thread['comments']['nodes']
-            if 'copilot' in (c['author']['login'] or '').lower()
+            if 'copilot' in ((c.get('author') or {}).get('login') or '').lower()
         ]
         if not copilot_comments:
             continue

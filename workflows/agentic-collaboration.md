@@ -6,8 +6,8 @@ description: >
   philosophy) and the drivable runbook that executes it: pre-flight → describe →
   analyze → plan → discuss → document → implement → verify → iterate → wind-down.
   Drives the supporting skills (analyze, plan, plan-doc-checklist, adr-authoring,
-  implement, copilot-review-loop, session-state-handoff, multi-agent-orchestration)
-  in sequence. Use when setting up or running an agentic collaboration on a
+  implement, session-state-handoff, multi-agent-orchestration) and the
+  copilot-review-loop workflow in sequence. Use when setting up or running an agentic collaboration on a
   project; collapses to a few stages for small work, expands every stage for large
   work.
 ---
@@ -97,7 +97,7 @@ If the work is large enough to parallelize, invoke the **`multi-agent-orchestrat
 
 1. Tests + lint + rebuild any distributable artifact (bundle, package, image).
 2. Open the PR; its body cites the plan doc and acceptance criteria, opens with the scope contract, and targets the integration branch (never `main`/`master`).
-3. **Arm the review watcher and run the review loop** — invoke the **`copilot-review-loop`** skill. Every PR open and every push triggers an automatic review on many setups, so arm the watcher *proactively*, without being asked.
+3. **Arm the review watcher and run the review loop** — follow the **`copilot-review-loop`** workflow (it drives the `copilot-reviews` skill's primitives). Every PR open and every push triggers an automatic review on many setups, so arm the watcher *proactively*, without being asked.
 4. Apply a **review-response policy**: code findings get fixes; cosmetic / wording findings get a brief "leaving per policy" reply. Reply on each thread with the addressing SHA, resolve it, then **re-request review** via the GraphQL `requestReviews` mutation with `botIds` (Copilot's `__typename` is `Bot`, so `userIds` does not work) and `union: true` (to preserve existing human reviewer requests). This programmatic re-request path *works* — there is no need to fall back to clicking the UI button. Loop until sign-off.
 
 ### Iterate
@@ -124,17 +124,20 @@ The skill of running this well is **matching the ceremony to the task** — neve
 
 ---
 
-## The skills this workflow drives
+## The skills and workflows this workflow drives
 
-| Stage | Skill |
-|---|---|
-| Pre-flight / branch | `gh-new-branch` (+ `new-claude-branch` runbook) |
-| Analyze | `analyze` |
-| Plan | `plan` |
-| Document | `plan-doc-checklist`, `adr-authoring` |
-| Implement | `implement`, `multi-agent-orchestration` |
-| Verify | `copilot-review-loop` |
-| Wind-down | `session-state-handoff` |
+`copilot-review-loop` is a **workflow** (it orchestrates the `copilot-reviews`
+skill's primitives); everything else below is a skill.
+
+| Stage | Artifact | Kind |
+|---|---|---|
+| Pre-flight / branch | `gh-new-branch` (+ `new-claude-branch` runbook) | skill / workflow |
+| Analyze | `analyze` | skill |
+| Plan | `plan` | skill |
+| Document | `plan-doc-checklist`, `adr-authoring` | skill |
+| Implement | `implement`, `multi-agent-orchestration` | skill |
+| Verify | `copilot-review-loop` (drives `copilot-reviews`) | workflow (+ skill) |
+| Wind-down | `session-state-handoff` | skill |
 
 ---
 
@@ -208,7 +211,7 @@ The team that derived this pattern (an Eagle plugin project) uses these artifact
 
 - **Plan docs:** `docs/plans/{slug}/{slug}-N.N.N.md` per implementation effort. Each plan opens with goal + acceptance criteria, lists the implementation order as the literal commit checklist, and explicitly enumerates out-of-scope items.
 - **ADR supersession chain:** `docs/adr/ADR-001/` runs from v0.0.1 (deprecated) through v0.0.4 (current). Each superseded version carries a `[DEPRECATED]` h1 + forward-pointer note. v0.0.3 superseded v0.0.2's §4 only; v0.0.4 superseded v0.0.3's §2 only. Demonstrates scoped supersession.
-- **PR + review-watcher pattern:** AI reviewer requested at PR creation; a background subagent polls the reviews API for the response and reports back when the review posts. See the `copilot-review-loop` skill.
+- **PR + review-watcher pattern:** AI reviewer requested at PR creation; a background subagent polls the reviews API for the response and reports back when the review posts. See the `copilot-review-loop` workflow.
 - **STATE handoff:** `.claude/STATE.md` is written before any long break (lunch, end of day, end of session). The cold-check sequence at the bottom (`git fetch && git status && gh pr list`) lets the next session pick up cleanly without context excavation.
 - **Memory for promises:** when a discussion surfaces a follow-up that isn't this PR's job, the promise gets saved to a memory file (typed "project" or "feedback") so the next session sees it automatically.
 
