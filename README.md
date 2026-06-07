@@ -18,6 +18,7 @@ skills/       # shared skills (<name>/SKILL.md)
 workflows/    # shared workflows
 AGENTS.md     # generated index — run `sync-agents index` after edits
 .agents/      # overlay: rules -> ../rules, skills -> ../skills, workflows -> ../workflows
+bin/          # scripts (see docs/claudify.md)
 proposed/     # staged changes under review, not yet promoted
 docs/adr/     # architecture decision records
 ```
@@ -34,3 +35,13 @@ docs/adr/     # architecture decision records
    either way changes land here and propagate to every linked project via the
    symlinks.
 4. Run `sync-agents index` after edits to regenerate `AGENTS.md`.
+
+## Syncing globally with `claudify`
+
+To make this repo's rules, skills, and workflows available to **every** Claude
+Code session globally (not just per-project), use the `bin/claudify` script. It
+syncs into `~/.claude/` via `@`-imports + symlinks, with a self-test gate,
+backups, and pre-flight safety checks.
+
+See [`docs/claudify.md`](docs/claudify.md) for full details, output locations,
+the safety stack, and recovery procedures.

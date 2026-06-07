@@ -24,10 +24,12 @@ SENTINEL_START="<!-- BEGIN @agents managed imports — do not edit by hand. Mana
 SENTINEL_END="<!-- END @agents managed imports -->"
 RETENTION_DAYS=7
 CONFIRM_TOKEN="claude"
-TEST_TARGET="$REPO_ROOT/tmp/.claude-test"
-# BACKUP_BASE is derived from TARGET after arg parsing so backups land next to
-# the target dir, not in $HOME/.claude-backups by default.
-BACKUP_BASE=""
+# Self-test sandbox: visible (no leading dot) so it's easy to inspect. Sits
+# under tmp/ — ephemeral, gitignored, wiped + re-bootstrapped each live run.
+TEST_TARGET="$REPO_ROOT/tmp/claude-test"
+# Backups: persistent (under data/, not tmp/), single location regardless of
+# TARGET, 7-day retention. Gitignored.
+BACKUP_BASE="$REPO_ROOT/data/claude-backups"
 
 # ----------------------------------------------------------------------------
 # Parsed args
@@ -88,11 +90,11 @@ OPTIONS:
   --verbose        Per-item logging.
   -h, --help       Show this message.
 
-SAFETY:
-  - Every live run first runs against a throwaway test target (tmp/.claude-test).
+SAFETY (see docs/claudify.md for full details):
+  - Every live run first runs against a throwaway test target (tmp/claude-test).
     The live run only proceeds if the test target ends in the expected state and
     a second run is a no-op (idempotency check).
-  - Backups of the live target's non-symlink content go to ~/.claude-backups/
+  - Backups of the live target's non-symlink content go to data/claude-backups/
     with 7-day retention. Symlinked artifacts are NOT backed up — the source is
     the @agents repo, which is already versioned.
   - Pre-flight refuses to touch collisions (real files in target with our names),
@@ -632,7 +634,6 @@ confirm_or_exit() {
 # ----------------------------------------------------------------------------
 main() {
     parse_args "$@"
-    BACKUP_BASE="$(dirname "$TARGET")/.claude-backups"
     preflight_paths
 
     if $DRY_RUN; then
