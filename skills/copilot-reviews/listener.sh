@@ -88,8 +88,11 @@ while true; do
     cur=$(fetch_copilot_reviews | tail -n 1)
     if [ -n "$cur" ] && [ "$cur" != "$last" ]; then
         IFS='|' read -r ts commit rid snippet <<< "$cur"
-        echo "[NEW REVIEW] ${OWNER}/${REPO} PR #${PR} — review ${rid} — commit ${commit:0:7} — submitted ${ts}"
-        [ -n "$snippet" ] && echo "  ${snippet}"
+        # One stdout line per review event = one notification. Fold the body
+        # snippet onto the same line rather than emitting a second line.
+        line="[NEW REVIEW] ${OWNER}/${REPO} PR #${PR} — review ${rid} — commit ${commit:0:7} — submitted ${ts}"
+        [ -n "$snippet" ] && line="${line} — ${snippet}"
+        echo "$line"
         last="$cur"
     fi
 done
