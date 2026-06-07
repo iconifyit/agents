@@ -62,7 +62,7 @@ def load_threads(path):
 def match_topic(body, mapping):
     """Return (sha, summary) for the first regex that matches, else (None, None)."""
     for pattern, sha, summary in mapping:
-        if re.search(pattern, body, re.IGNORECASE):
+        if re.search(pattern, body, re.IGNORECASE | re.DOTALL):
             return sha, summary
     return None, None
 

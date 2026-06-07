@@ -128,8 +128,9 @@ The skill of running this well is **matching the ceremony to the task** — neve
 
 ## The skills and workflows this workflow drives
 
-`copilot-review-loop` is a **workflow** (it orchestrates the `copilot-reviews`
-skill's primitives); everything else below is a skill.
+`copilot-review-loop` and the `new-claude-branch` runbook are **workflows**
+(they orchestrate lower-level primitives); the rest are skills. The **Kind**
+column below states each artifact's taxonomy explicitly.
 
 | Stage | Artifact | Kind |
 |---|---|---|

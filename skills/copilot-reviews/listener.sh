@@ -52,7 +52,7 @@ while idx < n:
         items.extend(obj)
     idx = end
 copilot = [r for r in items
-           if str(r.get('user', {}).get('login', '')).lower().startswith('copilot')]
+           if str(r.get('user', {}).get('login', '')).lower().startswith('copilot-pull-request-reviewer')]
 for r in sorted(copilot, key=lambda r: r.get('submitted_at') or ''):
     # First body line only, with pipes/CR stripped so it can't break the
     # 4-field record, truncated to keep the notification line readable.
