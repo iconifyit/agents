@@ -1,0 +1,673 @@
+#!/usr/bin/env bash
+#
+# claudify — sync this @agents repo's rules, skills, and workflows into a
+# Claude config directory (default ~/.claude/) so every Claude session
+# globally has access to them.
+#
+# Rules     → @-imports inside a managed sentinel block in CLAUDE.md.
+# Skills    → per-skill symlinks under skills/<name>.
+# Workflows → per-file symlinks under commands/<name>.md (slash commands).
+#
+# Usage:
+#   claudify [TYPE] [--dry-run] [--target DIR] [--verbose] [--help]
+#
+# Source of truth is this repo. The Claude config dir holds pointers, never copies.
+
+set -euo pipefail
+IFS=$'\n\t'
+
+# ----------------------------------------------------------------------------
+# Constants
+# ----------------------------------------------------------------------------
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SENTINEL_START="<!-- BEGIN @agents managed imports — do not edit by hand. Managed by bin/claudify. -->"
+SENTINEL_END="<!-- END @agents managed imports -->"
+RETENTION_DAYS=7
+CONFIRM_TOKEN="claude"
+# Self-test sandbox: visible (no leading dot) so it's easy to inspect. Sits
+# under tmp/ — ephemeral, gitignored, wiped + re-bootstrapped each live run.
+TEST_TARGET="$REPO_ROOT/tmp/claude-test"
+# Backups: persistent (under data/, not tmp/), single location regardless of
+# TARGET, 7-day retention. Gitignored.
+BACKUP_BASE="$REPO_ROOT/data/claude-backups"
+
+# ----------------------------------------------------------------------------
+# Parsed args
+# ----------------------------------------------------------------------------
+TYPE="all"
+DRY_RUN=false
+TARGET="$HOME/.claude"
+VERBOSE=false
+
+# ----------------------------------------------------------------------------
+# Scan state (populated by scan_*; consumed by report_* / apply_*)
+# ----------------------------------------------------------------------------
+declare -a COLLISIONS=()   # real files/dirs blocking a planned write
+declare -a STALE=()        # symlinks pointing somewhere other than expected
+declare -a ORPHANS=()      # symlinks pointing to deleted-in-repo items
+declare -a TODO=()         # writes to perform
+declare -a NOOP=()         # already in desired state
+
+reset_scan_state() {
+    COLLISIONS=(); STALE=(); ORPHANS=(); TODO=(); NOOP=()
+}
+
+# ----------------------------------------------------------------------------
+# Self-test bootstrap signatures (populated by capture_bootstrap_signatures,
+# consumed by assert_bootstrap_untouched and assert_no_unexpected_entries).
+# ----------------------------------------------------------------------------
+BOOTSTRAP_FIND_SKILLS_INODE=""
+declare -a BOOTSTRAP_SKILLS=()
+declare -a BOOTSTRAP_COMMANDS=()
+
+# ----------------------------------------------------------------------------
+# Logging
+# ----------------------------------------------------------------------------
+log()  { printf '%s\n' "$*"; }
+vlog() { $VERBOSE && printf '%s\n' "$*" || true; }
+die()  { printf 'claudify: %s\n' "$*" >&2; exit 1; }
+
+# ----------------------------------------------------------------------------
+# Args
+# ----------------------------------------------------------------------------
+print_help() {
+    cat <<'EOF'
+Usage: claudify [TYPE] [OPTIONS]
+
+Sync this @agents repo's rules, skills, and workflows into a Claude config
+directory (default ~/.claude/), so global Claude sessions can use them.
+
+  Rules     → @-imports inside a managed sentinel block in CLAUDE.md.
+  Skills    → per-skill symlinks under skills/<name>.
+  Workflows → per-file symlinks under commands/<name>.md (slash commands).
+
+ARGS:
+  TYPE             rules | skills | workflows | all          (default: all)
+
+OPTIONS:
+  --dry-run        Print plan only; no writes; no confirmation.
+  --target DIR     Target Claude config dir                  (default: ~/.claude)
+  --verbose        Per-item logging.
+  -h, --help       Show this message.
+
+SAFETY (see docs/claudify.md for full details):
+  - Every live run first runs against a throwaway test target (tmp/claude-test).
+    The live run only proceeds if the test target ends in the expected state and
+    a second run is a no-op (idempotency check).
+  - Backups of the live target's non-symlink content go to data/claude-backups/
+    with 7-day retention. Symlinked artifacts are NOT backed up — the source is
+    the @agents repo, which is already versioned.
+  - Pre-flight refuses to touch collisions (real files in target with our names),
+    stale symlinks (pointing somewhere we don't expect), and orphan symlinks
+    (pointing to deleted-in-repo items). Surface and fix, then re-run.
+EOF
+}
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            rules|skills|workflows|all) TYPE="$1"; shift ;;
+            --dry-run)   DRY_RUN=true; shift ;;
+            --target)    [[ $# -ge 2 ]] || die "--target requires DIR"; TARGET="$2"; shift 2 ;;
+            --verbose)   VERBOSE=true; shift ;;
+            -h|--help)   print_help; exit 0 ;;
+            *)           printf 'unknown arg: %s\n\n' "$1" >&2; print_help; exit 1 ;;
+        esac
+    done
+}
+
+# ----------------------------------------------------------------------------
+# Path pre-flight (sources + target dir exist)
+# ----------------------------------------------------------------------------
+preflight_paths() {
+    [[ -d "$REPO_ROOT/rules"     ]] || die "no rules/ in $REPO_ROOT"
+    [[ -d "$REPO_ROOT/skills"    ]] || die "no skills/ in $REPO_ROOT"
+    [[ -d "$REPO_ROOT/workflows" ]] || die "no workflows/ in $REPO_ROOT"
+    if ! $DRY_RUN && [[ "$TARGET" == "$TEST_TARGET" ]]; then
+        die "--target cannot equal the self-test sandbox ($TEST_TARGET); the self-test would wipe it"
+    fi
+    if [[ ! -d "$TARGET" ]]; then
+        if $DRY_RUN; then
+            log "[DRY-RUN] would create target dir: $TARGET"
+        else
+            mkdir -p "$TARGET"
+            vlog "created target dir: $TARGET"
+        fi
+    fi
+}
+
+# ----------------------------------------------------------------------------
+# Scanning
+# ----------------------------------------------------------------------------
+# Examine an expected symlink location and classify it.
+scan_symlink() {
+    local link="$1" expected="$2" cat="$3"
+    if [[ -L "$link" ]]; then
+        local actual
+        actual=$(readlink "$link")
+        if [[ "$actual" == "$expected" ]]; then
+            NOOP+=("$cat: $link -> $expected")
+        else
+            STALE+=("$cat: $link -> $actual (expected $expected)")
+        fi
+    elif [[ -e "$link" ]]; then
+        COLLISIONS+=("$cat: $link is a real file/dir (would collide)")
+    else
+        TODO+=("$cat: create symlink $link -> $expected")
+    fi
+}
+
+# Detect symlinks in $1 pointing into $REPO_ROOT/$2/ for items no longer present.
+scan_orphans() {
+    local dir="$1" subdir="$2"
+    [[ -d "$dir" ]] || return 0
+    while IFS= read -r link; do
+        local actual name
+        actual=$(readlink "$link" || true)
+        if [[ "$actual" == "$REPO_ROOT/$subdir/"* ]]; then
+            name=$(basename "$link")
+            if [[ ! -e "$REPO_ROOT/$subdir/$name" ]]; then
+                ORPHANS+=("$link -> $actual (source removed from repo)")
+            fi
+        fi
+    done < <(find "$dir" -maxdepth 1 -mindepth 1 -type l 2>/dev/null || true)
+}
+
+scan_rules() {
+    local claude_md="$TARGET/CLAUDE.md"
+    if [[ -f "$claude_md" && ! -w "$claude_md" ]]; then
+        COLLISIONS+=("rules: $claude_md not writable")
+        return
+    fi
+    if [[ ! -f "$claude_md" && ! -w "$TARGET" ]]; then
+        COLLISIONS+=("rules: cannot create $claude_md (target dir not writable)")
+        return
+    fi
+    TODO+=("rules: write/replace managed @-imports block in $claude_md")
+}
+
+scan_skills() {
+    local skills_dir="$TARGET/skills"
+    while IFS= read -r d; do
+        local name
+        name=$(basename "$d")
+        scan_symlink "$skills_dir/$name" "$d" "skills"
+    done < <(find "$REPO_ROOT/skills" -maxdepth 1 -mindepth 1 -type d | sort)
+    scan_orphans "$skills_dir" "skills"
+}
+
+scan_workflows() {
+    local commands_dir="$TARGET/commands"
+    while IFS= read -r f; do
+        local name
+        name=$(basename "$f")
+        scan_symlink "$commands_dir/$name" "$f" "workflows"
+    done < <(find "$REPO_ROOT/workflows" -maxdepth 1 -type f -name '*.md' | sort)
+    scan_orphans "$commands_dir" "workflows"
+}
+
+do_scan() {
+    case "$TYPE" in
+        rules)     scan_rules ;;
+        skills)    scan_skills ;;
+        workflows) scan_workflows ;;
+        all)       scan_rules; scan_skills; scan_workflows ;;
+    esac
+}
+
+have_issues() {
+    [[ ${#COLLISIONS[@]} -gt 0 || ${#STALE[@]} -gt 0 || ${#ORPHANS[@]} -gt 0 ]]
+}
+
+# ----------------------------------------------------------------------------
+# Reporting
+# ----------------------------------------------------------------------------
+report_plan() {
+    local prefix=""
+    $DRY_RUN && prefix="[DRY-RUN] "
+    log "${prefix}claudify plan — target: $TARGET, type: $TYPE"
+    log ""
+    if have_issues; then
+        log "BLOCKING ISSUES (resolve before re-running):"
+        local x
+        for x in "${COLLISIONS[@]:-}"; do [[ -n "$x" ]] && log "  collision: $x"; done
+        for x in "${STALE[@]:-}";      do [[ -n "$x" ]] && log "  stale:     $x"; done
+        for x in "${ORPHANS[@]:-}";    do [[ -n "$x" ]] && log "  orphan:    $x"; done
+        log ""
+    fi
+    if [[ ${#TODO[@]} -gt 0 ]]; then
+        log "PLANNED CHANGES:"
+        for x in "${TODO[@]}"; do log "  + $x"; done
+        log ""
+    fi
+    if [[ ${#NOOP[@]} -gt 0 ]]; then
+        log "ALREADY IN DESIRED STATE: ${#NOOP[@]} item(s)"
+        if $VERBOSE; then
+            for x in "${NOOP[@]}"; do log "  = $x"; done
+        fi
+    fi
+}
+
+# ----------------------------------------------------------------------------
+# Apply
+# ----------------------------------------------------------------------------
+apply_rules() {
+    local claude_md="$TARGET/CLAUDE.md"
+    local rule_files block_body=""
+    rule_files=$(find "$REPO_ROOT/rules" -maxdepth 1 -type f -name '*.md' | sort)
+
+    block_body+="$SENTINEL_START"$'\n'
+    while IFS= read -r f; do
+        [[ -n "$f" ]] && block_body+="@$f"$'\n'
+    done <<<"$rule_files"
+    block_body+="$SENTINEL_END"$'\n'
+
+    if [[ -f "$claude_md" ]]; then
+        local tmp
+        tmp=$(mktemp)
+        SENTINEL_START_ENV="$SENTINEL_START" SENTINEL_END_ENV="$SENTINEL_END" \
+            python3 - "$claude_md" "$tmp" <<'PY'
+import sys, re, os
+src, dst = sys.argv[1], sys.argv[2]
+start = re.escape(os.environ['SENTINEL_START_ENV'])
+end = re.escape(os.environ['SENTINEL_END_ENV'])
+with open(src, 'r') as f: text = f.read()
+pattern = re.compile(r'\n*' + start + r'.*?' + end + r'\n*', re.DOTALL)
+stripped = pattern.sub('\n', text).rstrip()
+if stripped:
+    stripped += '\n'
+with open(dst, 'w') as f: f.write(stripped)
+PY
+        mv "$tmp" "$claude_md"
+        printf '\n%s' "$block_body" >> "$claude_md"
+    else
+        printf '%s' "$block_body" > "$claude_md"
+    fi
+    local count
+    count=$(printf '%s\n' "$rule_files" | grep -c . || true)
+    vlog "rules: wrote $count imports to $claude_md"
+}
+
+apply_skills() {
+    local skills_dir="$TARGET/skills"
+    mkdir -p "$skills_dir"
+    while IFS= read -r d; do
+        local name link
+        name=$(basename "$d")
+        link="$skills_dir/$name"
+        if [[ ! -e "$link" && ! -L "$link" ]]; then
+            ln -s "$d" "$link"
+            vlog "skills: linked $link -> $d"
+        fi
+    done < <(find "$REPO_ROOT/skills" -maxdepth 1 -mindepth 1 -type d | sort)
+}
+
+apply_workflows() {
+    local commands_dir="$TARGET/commands"
+    mkdir -p "$commands_dir"
+    while IFS= read -r f; do
+        local name link
+        name=$(basename "$f")
+        link="$commands_dir/$name"
+        if [[ ! -e "$link" && ! -L "$link" ]]; then
+            ln -s "$f" "$link"
+            vlog "workflows: linked $link -> $f"
+        fi
+    done < <(find "$REPO_ROOT/workflows" -maxdepth 1 -type f -name '*.md' | sort)
+}
+
+do_apply() {
+    case "$TYPE" in
+        rules)     apply_rules ;;
+        skills)    apply_skills ;;
+        workflows) apply_workflows ;;
+        all)       apply_rules; apply_skills; apply_workflows ;;
+    esac
+}
+
+# ----------------------------------------------------------------------------
+# Self-test gate
+# ----------------------------------------------------------------------------
+self_test() {
+    log "Running self-test against $TEST_TARGET..."
+
+    # Phase 1: Negative scenarios — verify the safety nets actually catch the
+    # conditions they're supposed to catch. Each phase fully re-bootstraps so
+    # they don't pollute each other.
+    test_negative_collision
+    test_negative_stale
+    test_negative_orphan
+
+    # Phase 2: Happy path — apply against fresh bootstrap, assert expected
+    # post-state, assert bootstrap content untouched, assert nothing unexpected
+    # was created.
+    bootstrap_test_target
+    capture_bootstrap_signatures
+    local saved_target="$TARGET"
+    TARGET="$TEST_TARGET"
+    reset_scan_state
+
+    do_scan
+    if have_issues; then
+        report_plan
+        TARGET="$saved_target"
+        die "self-test pre-flight failed (bootstrap should produce a clean target)"
+    fi
+    do_apply
+    assert_test_target_post_apply
+    assert_bootstrap_untouched
+    assert_no_unexpected_entries
+
+    # Phase 3: Idempotency — re-scan, only the rules entry is allowed in TODO
+    # (the sentinel block is always rewritten; skill/workflow symlinks should
+    # all NOOP).
+    reset_scan_state
+    do_scan
+    local -a non_rules_todo=()
+    local x
+    for x in "${TODO[@]:-}"; do
+        [[ -n "$x" && "$x" != "rules:"* ]] && non_rules_todo+=("$x")
+    done
+    if [[ ${#non_rules_todo[@]} -gt 0 ]]; then
+        TARGET="$saved_target"
+        die "self-test idempotency failed: $(printf '%s; ' "${non_rules_todo[@]}")"
+    fi
+
+    TARGET="$saved_target"
+    log "Self-test passed."
+}
+
+# ----------------------------------------------------------------------------
+# Negative-scenario tests — each verifies a specific safety-net path.
+# ----------------------------------------------------------------------------
+test_negative_collision() {
+    bootstrap_test_target
+    local victim
+    victim=$(basename "$(find "$REPO_ROOT/skills" -maxdepth 1 -mindepth 1 -type d | sort | head -1)")
+    # Synthesize collision: a REAL dir at the expected symlink path.
+    mkdir -p "$TEST_TARGET/skills/$victim"
+    : > "$TEST_TARGET/skills/$victim/.collision-marker"
+
+    local saved_target="$TARGET" saved_type="$TYPE"
+    TARGET="$TEST_TARGET"; TYPE="skills"
+    reset_scan_state
+    do_scan
+
+    [[ ${#COLLISIONS[@]} -gt 0 ]] || die "self-test: collision synthesized but COLLISIONS empty"
+    have_issues || die "self-test: collision synthesized but have_issues=false"
+
+    TARGET="$saved_target"; TYPE="$saved_type"
+    vlog "self-test: collision detection verified ($victim)"
+}
+
+test_negative_stale() {
+    bootstrap_test_target
+    local victim
+    victim=$(basename "$(find "$REPO_ROOT/skills" -maxdepth 1 -mindepth 1 -type d | sort | head -1)")
+    mkdir -p "$TEST_TARGET/skills"
+    # Synthesize stale: a symlink at the expected path pointing somewhere unexpected.
+    ln -s /tmp/claudify-stale-target "$TEST_TARGET/skills/$victim"
+
+    local saved_target="$TARGET" saved_type="$TYPE"
+    TARGET="$TEST_TARGET"; TYPE="skills"
+    reset_scan_state
+    do_scan
+
+    [[ ${#STALE[@]} -gt 0 ]] || die "self-test: stale symlink synthesized but STALE empty"
+    have_issues || die "self-test: stale symlink synthesized but have_issues=false"
+
+    TARGET="$saved_target"; TYPE="$saved_type"
+    vlog "self-test: stale detection verified ($victim)"
+}
+
+test_negative_orphan() {
+    bootstrap_test_target
+    mkdir -p "$TEST_TARGET/skills"
+    # Synthesize orphan: a symlink pointing INTO the repo at a path that
+    # doesn't exist (i.e. a skill the repo no longer has).
+    local ghost="claudify-orphan-ghost-skill"
+    ln -s "$REPO_ROOT/skills/$ghost" "$TEST_TARGET/skills/$ghost"
+
+    local saved_target="$TARGET" saved_type="$TYPE"
+    TARGET="$TEST_TARGET"; TYPE="skills"
+    reset_scan_state
+    do_scan
+
+    [[ ${#ORPHANS[@]} -gt 0 ]] || die "self-test: orphan synthesized but ORPHANS empty"
+    have_issues || die "self-test: orphan synthesized but have_issues=false"
+
+    TARGET="$saved_target"; TYPE="$saved_type"
+    vlog "self-test: orphan detection verified ($ghost)"
+}
+
+# ----------------------------------------------------------------------------
+# Capture bootstrap signatures for tamper-detection assertions.
+# ----------------------------------------------------------------------------
+capture_bootstrap_signatures() {
+    BOOTSTRAP_FIND_SKILLS_INODE=""
+    BOOTSTRAP_SKILLS=()
+    BOOTSTRAP_COMMANDS=()
+    if [[ -f "$TEST_TARGET/skills/find-skills/SKILL.md" ]]; then
+        BOOTSTRAP_FIND_SKILLS_INODE=$(stat -f %i "$TEST_TARGET/skills/find-skills/SKILL.md")
+    fi
+    if [[ -d "$TEST_TARGET/skills" ]]; then
+        local d
+        while IFS= read -r d; do
+            BOOTSTRAP_SKILLS+=("$(basename "$d")")
+        done < <(find "$TEST_TARGET/skills" -maxdepth 1 -mindepth 1 | sort)
+    fi
+    if [[ -d "$TEST_TARGET/commands" ]]; then
+        local f
+        while IFS= read -r f; do
+            BOOTSTRAP_COMMANDS+=("$(basename "$f")")
+        done < <(find "$TEST_TARGET/commands" -maxdepth 1 -mindepth 1 | sort)
+    fi
+}
+
+# Verify pre-existing bootstrap content was not touched by apply.
+assert_bootstrap_untouched() {
+    if [[ -n "$BOOTSTRAP_FIND_SKILLS_INODE" ]]; then
+        local current
+        current=$(stat -f %i "$TEST_TARGET/skills/find-skills/SKILL.md" 2>/dev/null || echo "missing")
+        [[ "$current" == "$BOOTSTRAP_FIND_SKILLS_INODE" ]] \
+            || die "assert: find-skills/SKILL.md inode changed ($BOOTSTRAP_FIND_SKILLS_INODE -> $current)"
+    fi
+}
+
+# Verify nothing exists in the test target outside the expected set
+# (bootstrap-copied content + repo-source-symlinks).
+assert_no_unexpected_entries() {
+    local -a expected_skills=()
+    local x
+    for x in "${BOOTSTRAP_SKILLS[@]:-}"; do
+        [[ -n "$x" ]] && expected_skills+=("$x")
+    done
+    local d
+    while IFS= read -r d; do
+        expected_skills+=("$(basename "$d")")
+    done < <(find "$REPO_ROOT/skills" -maxdepth 1 -mindepth 1 -type d | sort)
+    if [[ -d "$TEST_TARGET/skills" ]]; then
+        local entry name found e
+        while IFS= read -r entry; do
+            name=$(basename "$entry"); found=0
+            for e in "${expected_skills[@]}"; do
+                [[ "$e" == "$name" ]] && { found=1; break; }
+            done
+            [[ $found -eq 1 ]] || die "assert: unexpected entry in skills/: $entry"
+        done < <(find "$TEST_TARGET/skills" -maxdepth 1 -mindepth 1)
+    fi
+
+    local -a expected_commands=()
+    for x in "${BOOTSTRAP_COMMANDS[@]:-}"; do
+        [[ -n "$x" ]] && expected_commands+=("$x")
+    done
+    local f
+    while IFS= read -r f; do
+        expected_commands+=("$(basename "$f")")
+    done < <(find "$REPO_ROOT/workflows" -maxdepth 1 -type f -name '*.md' | sort)
+    if [[ -d "$TEST_TARGET/commands" ]]; then
+        local entry name found e
+        while IFS= read -r entry; do
+            name=$(basename "$entry"); found=0
+            for e in "${expected_commands[@]}"; do
+                [[ "$e" == "$name" ]] && { found=1; break; }
+            done
+            [[ $found -eq 1 ]] || die "assert: unexpected entry in commands/: $entry"
+        done < <(find "$TEST_TARGET/commands" -maxdepth 1 -mindepth 1)
+    fi
+}
+
+bootstrap_test_target() {
+    rm -rf "$TEST_TARGET"
+    mkdir -p "$TEST_TARGET"
+    if [[ -f "$HOME/.claude/CLAUDE.md" ]]; then
+        cp "$HOME/.claude/CLAUDE.md" "$TEST_TARGET/CLAUDE.md"
+    fi
+    if [[ -d "$HOME/.claude/skills" ]]; then
+        cp -R "$HOME/.claude/skills" "$TEST_TARGET/skills"
+    fi
+    vlog "bootstrapped test target at $TEST_TARGET"
+}
+
+assert_test_target_post_apply() {
+    local types_to_check
+    case "$TYPE" in
+        rules|skills|workflows) types_to_check="$TYPE" ;;
+        all) types_to_check="rules skills workflows" ;;
+    esac
+
+    for t in $types_to_check; do
+        case "$t" in
+            rules)
+                local md="$TEST_TARGET/CLAUDE.md"
+                [[ -f "$md" ]] || die "assert: $md missing after rules apply"
+                grep -qF "$SENTINEL_START" "$md" || die "assert: sentinel start missing"
+                grep -qF "$SENTINEL_END"   "$md" || die "assert: sentinel end missing"
+                local expected actual
+                expected=$(find "$REPO_ROOT/rules" -maxdepth 1 -type f -name '*.md' | wc -l | tr -d ' ')
+                actual=$(grep -c "^@$REPO_ROOT/rules/" "$md" || true)
+                [[ "$actual" == "$expected" ]] || die "assert: expected $expected rule imports, found $actual"
+                ;;
+            skills)
+                while IFS= read -r d; do
+                    local name link
+                    name=$(basename "$d")
+                    link="$TEST_TARGET/skills/$name"
+                    [[ -L "$link" ]] || die "assert: $link is not a symlink"
+                    [[ "$(readlink "$link")" == "$d" ]] || die "assert: $link target wrong"
+                done < <(find "$REPO_ROOT/skills" -maxdepth 1 -mindepth 1 -type d | sort)
+                if [[ -e "$TEST_TARGET/skills/find-skills" ]]; then
+                    [[ ! -L "$TEST_TARGET/skills/find-skills" ]] || die "assert: find-skills should be a real dir, not a symlink"
+                fi
+                ;;
+            workflows)
+                while IFS= read -r f; do
+                    local name link
+                    name=$(basename "$f")
+                    link="$TEST_TARGET/commands/$name"
+                    [[ -L "$link" ]] || die "assert: $link is not a symlink"
+                    [[ "$(readlink "$link")" == "$f" ]] || die "assert: $link target wrong"
+                done < <(find "$REPO_ROOT/workflows" -maxdepth 1 -type f -name '*.md' | sort)
+                ;;
+        esac
+    done
+}
+
+# ----------------------------------------------------------------------------
+# Backups
+# ----------------------------------------------------------------------------
+do_backup() {
+    local ts dir
+    ts="$(date +%Y%m%d-%H%M%S)"
+    dir="$BACKUP_BASE/$ts"
+    mkdir -p "$dir"
+
+    [[ -f "$TARGET/CLAUDE.md" ]] && cp "$TARGET/CLAUDE.md" "$dir/CLAUDE.md"
+
+    for subdir in skills commands; do
+        local src="$TARGET/$subdir"
+        [[ -d "$src" ]] || continue
+        mkdir -p "$dir/$subdir"
+        while IFS= read -r entry; do
+            local name
+            name=$(basename "$entry")
+            if [[ -L "$entry" ]]; then
+                printf '%s -> %s\n' "$entry" "$(readlink "$entry")" >> "$dir/$subdir-manifest.txt"
+            else
+                cp -R "$entry" "$dir/$subdir/$name"
+            fi
+        done < <(find "$src" -maxdepth 1 -mindepth 1 2>/dev/null | sort)
+    done
+
+    log "Backed up to $dir"
+}
+
+prune_old_backups() {
+    [[ -d "$BACKUP_BASE" ]] || return 0
+    find "$BACKUP_BASE" -maxdepth 1 -mindepth 1 -type d -mtime "+$RETENTION_DAYS" -exec rm -rf {} + 2>/dev/null || true
+    vlog "pruned backups older than $RETENTION_DAYS days from $BACKUP_BASE"
+}
+
+# ----------------------------------------------------------------------------
+# Confirmation
+# ----------------------------------------------------------------------------
+confirm_or_exit() {
+    log ""
+    log "About to write to: $TARGET"
+    case "$TYPE" in
+        rules|all)     log "  Rules     -> CLAUDE.md (managed sentinel block)" ;;
+    esac
+    case "$TYPE" in
+        skills|all)    log "  Skills    -> per-skill symlinks under skills/" ;;
+    esac
+    case "$TYPE" in
+        workflows|all) log "  Workflows -> per-workflow symlinks under commands/" ;;
+    esac
+    log ""
+    local input
+    read -r -p "Type \"$CONFIRM_TOKEN\" to confirm: " input
+    [[ "$input" == "$CONFIRM_TOKEN" ]] || die "aborted"
+}
+
+# ----------------------------------------------------------------------------
+# Main
+# ----------------------------------------------------------------------------
+main() {
+    parse_args "$@"
+    preflight_paths
+
+    if $DRY_RUN; then
+        do_scan
+        report_plan
+        have_issues && exit 1
+        exit 0
+    fi
+
+    # Live mode
+    prune_old_backups
+
+    # 1. Self-test gate
+    self_test
+
+    # 2. Pre-flight scan against the real target; abort on any issue
+    reset_scan_state
+    do_scan
+    if have_issues; then
+        report_plan
+        die "blocking issues found; resolve and re-run"
+    fi
+
+    # 3. Backup
+    do_backup
+
+    # 4. Confirm
+    confirm_or_exit
+
+    # 5. Apply
+    do_apply
+
+    log ""
+    log "claudify done."
+}
+
+main "$@"
