@@ -37,8 +37,8 @@ git branch --list 'claude/*'   # claude/ marks agent branches
 Reconcile findings before proceeding:
 
 - **An open agent PR or a second agent-prefixed branch?** Resolve it first (the `one-claude-branch` discipline — see the `gh-new-branch` skill). One branch / one PR at a time.
-- **Local integration branch behind origin?** Fast-forward it (`git checkout develop && git merge --ff-only origin/develop`) before cutting a new branch, so you don't branch off stale history.
-- **A `STATE.md` from a prior session?** Read it — it tells you what landed, what's pending, and the resume sequence (see the `session-state-handoff` skill). Trust `git` over the file where they disagree.
+- **Local integration branch behind origin?** Fast-forward it (`git checkout <integration-branch> && git merge --ff-only origin/<integration-branch>` — `<integration-branch>` is typically `develop`) before cutting a new branch, so you don't branch off stale history.
+- **A `.claude/STATE.md` from a prior session?** Read it — it tells you what landed, what's pending, and the resume sequence (see the `session-state-handoff` skill). Trust `git` over the file where they disagree.
 
 ---
 
