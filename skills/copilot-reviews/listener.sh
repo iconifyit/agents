@@ -57,7 +57,9 @@ for r in sorted(copilot, key=lambda r: r.get('submitted_at') or ''):
 
 # Baseline = whatever Copilot's latest is RIGHT NOW; notify only on newer.
 baseline_data=$(fetch_copilot_reviews)
-baseline_count=$(printf '%s' "$baseline_data" | grep -c . 2>/dev/null || echo 0)
+# grep -c already prints "0" on no matches (and exits 1); swallow that exit
+# with `|| true` rather than `|| echo 0`, which would append a second "0".
+baseline_count=$(printf '%s' "$baseline_data" | grep -c . 2>/dev/null || true)
 last=$(printf '%s\n' "$baseline_data" | tail -n 1)
 
 echo "WATCH ARMED: ${OWNER}/${REPO} PR #${PR} Copilot. Baseline: ${baseline_count} review(s)."
