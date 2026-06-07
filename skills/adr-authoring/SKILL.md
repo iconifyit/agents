@@ -33,7 +33,7 @@ touch "docs/adr/ADR-${ADR_NUM}-${TITLE}/ADR-${ADR_NUM}-${TITLE}-0.0.1.md"
 
 1. **Identify decision** - What choice needs documentation?
 2. **Research alternatives** - Gather evidence and performance data
-3. **Create ADR** - Run script with title
+3. **Create ADR** - Create the directory and versioned file manually (see Quick Reference)
 4. **Fill sections** - Context, Decision, Rationale, Consequences, Alternatives
 5. **Review** - Get team approval
 6. **Update status** - Change from "Proposed" to "Accepted"

@@ -8,7 +8,7 @@ description: >
   the copilot-reviews skill (primitives) and listener.sh (event signal).
 ---
 
-# copilot-review-loop
+# Copilot Review Loop Workflow
 
 The repeatable, low-friction loop for handling Copilot's review feedback on an actively-iterated PR. Pairs with the `copilot-reviews` skill (which owns the primitives — reply, resolve, re-request) and the `copilot-reviews/listener.sh` listener that drives the event signal.
 
