@@ -11,13 +11,20 @@ This file indexes all rules, skills, and workflows defined in `.agents/`.
 
 ## Rules
 
+- [adr-required](.agents/rules/adr-required.md)
 - [ask-first](.agents/rules/ask-first.md)
+- [autonomy](.agents/rules/autonomy.md)
+- [coding-options](.agents/rules/coding-options.md)
 - [coding-style](.agents/rules/coding-style.md)
+- [concise-answers](.agents/rules/concise-answers.md)
 - [database](.agents/rules/database.md)
 - [destructive-actions](.agents/rules/destructive-actions.md)
 - [documentation](.agents/rules/documentation.md)
 - [git-workflow](.agents/rules/git-workflow.md)
+- [how-to-use-adrs](.agents/rules/how-to-use-adrs.md)
 - [idiomatic-beats-clever](.agents/rules/idiomatic-beats-clever.md)
+- [memory-updates](.agents/rules/memory-updates.md)
+- [one-claude-branch](.agents/rules/one-claude-branch.md)
 - [persona](.agents/rules/persona.md)
 - [pre-existing-issues](.agents/rules/pre-existing-issues.md)
 - [remove-the-obsolete](.agents/rules/remove-the-obsolete.md)
@@ -30,13 +37,17 @@ This file indexes all rules, skills, and workflows defined in `.agents/`.
 
 ## Skills
 
+- [adr-authoring](.agents/skills/adr-authoring/SKILL.md)
 - [analyze](.agents/skills/analyze/SKILL.md)
 - [api-endpoint-testing](.agents/skills/api-endpoint-testing/SKILL.md)
 - [architectural-decomposition](.agents/skills/architectural-decomposition/SKILL.md)
+- [copilot-reviews](.agents/skills/copilot-reviews/SKILL.md)
+- [cover-letter-writing](.agents/skills/cover-letter-writing/SKILL.md)
 - [db-migration](.agents/skills/db-migration/SKILL.md)
 - [destructive-operations](.agents/skills/destructive-operations/SKILL.md)
 - [document](.agents/skills/document/SKILL.md)
 - [filesystem-soa-module](.agents/skills/filesystem-soa-module/SKILL.md)
+- [gh-new-branch](.agents/skills/gh-new-branch/SKILL.md)
 - [implement](.agents/skills/implement/SKILL.md)
 - [module-pr](.agents/skills/module-pr/SKILL.md)
 - [plan](.agents/skills/plan/SKILL.md)
@@ -49,9 +60,11 @@ This file indexes all rules, skills, and workflows defined in `.agents/`.
 - [agentic-collaboration](.agents/workflows/agentic-collaboration.md)
 - [architecture-change](.agents/workflows/architecture-change.md)
 - [bugfix](.agents/workflows/bugfix.md)
+- [copilot-review-loop](.agents/workflows/copilot-review-loop.md)
 - [destructive-operation](.agents/workflows/destructive-operation.md)
 - [feature-development](.agents/workflows/feature-development.md)
 - [module-pr](.agents/workflows/module-pr.md)
+- [new-claude-branch](.agents/workflows/new-claude-branch.md)
 - [prune-obsolete](.agents/workflows/prune-obsolete.md)
 - [refactor](.agents/workflows/refactor.md)
 

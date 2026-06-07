@@ -143,3 +143,11 @@ vite.config.ts.timestamp-*
 
 # Added by ggshield
 .cache_ggshield
+
+# sync-agents (generated symlinks)
+.claude/
+CLAUDE.md
+
+**/_archive
+**/_bak
+**/STATE.md
