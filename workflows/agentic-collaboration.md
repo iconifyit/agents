@@ -1,73 +1,140 @@
 ---
 name: agentic-collaboration
 description: >
-  A portable, multi-step cadence for collaborating with AI coding agents on
-  non-trivial work — describe, analyze, plan, discuss, document, implement,
-  verify — plus the standing disciplines (one PR at a time, scope contracts,
-  plan-doc-as-checklist) and guidance on scaling from single- to multi-agent.
-  Use when setting up or running an agentic collaboration workflow on a project.
+  The single source of truth for human-in-the-loop agentic coding on non-trivial
+  work — both the pattern (why each stage exists, anti-patterns, design
+  philosophy) and the drivable runbook that executes it: pre-flight → describe →
+  analyze → plan → discuss → document → implement → verify → iterate → wind-down.
+  Drives the supporting skills (analyze, plan, plan-doc-checklist, adr-authoring,
+  implement, copilot-review-loop, session-state-handoff, multi-agent-orchestration)
+  in sequence. Use when setting up or running an agentic collaboration on a
+  project; collapses to a few stages for small work, expands every stage for large
+  work.
 ---
 
 # Agentic Collaboration Workflow
 
-> Version: 0.0.2 · Date: 2026-05-25
+> Version: 0.0.3 · Date: 2026-06-07
 > A portable pattern for working with AI coding agents on non-trivial software projects.
 
-This document captures a multi-step collaboration pattern between a human and one or more coding agents that has held up across bug fixes, feature work, refactors, and architecture-level changes. It is **portable** — written to apply to any project a team runs with AI assistance, not tied to one codebase. Concrete examples from one team's adoption are cited where they illustrate the pattern but never as required context.
+This document is both the **description** of a multi-step collaboration pattern between a human and one or more coding agents *and* the **drivable runbook** that executes it. Each stage explains *why* it exists and names the concrete action and skill to invoke. It is **portable** — written to apply to any project a team runs with AI assistance, not tied to one codebase. Concrete examples from one team's adoption are cited where they illustrate the pattern but never as required context.
 
-The pattern's purpose is to prevent the default failure mode of agentic coding: *"user asks → agent does → user reviews diff."* That loop works for trivial changes; it breaks down for anything with design surface, cross-cutting concerns, or non-obvious tradeoffs. The cadence below has different work happening at different steps so the small stuff stays cheap while the big stuff stays correct.
+The pattern's purpose is to prevent the default failure mode of agentic coding: *"user asks → agent does → user reviews diff."* That loop works for trivial changes; it breaks down for anything with design surface, cross-cutting concerns, or non-obvious tradeoffs. The cadence below has different work happening at different stages so the small stuff stays cheap while the big stuff stays correct.
+
+---
+
+## Pre-flight (every session)
+
+Run the cold-check before touching anything, so you act on current state, not a stale memory of it:
+
+```bash
+git fetch origin --prune
+git status
+gh pr list --state open        # or your forge's open-PR command
+git branch --list 'claude/*'   # claude/ marks agent branches
+```
+
+Reconcile findings before proceeding:
+
+- **An open agent PR or a second agent-prefixed branch?** Resolve it first (the `one-claude-branch` discipline — see the `gh-new-branch` skill). One branch / one PR at a time.
+- **Local integration branch behind origin?** Fast-forward it (`git checkout develop && git merge --ff-only origin/develop`) before cutting a new branch, so you don't branch off stale history.
+- **A `STATE.md` from a prior session?** Read it — it tells you what landed, what's pending, and the resume sequence (see the `session-state-handoff` skill). Trust `git` over the file where they disagree.
 
 ---
 
 ## The seven-step cadence
 
-Each step has a distinct purpose. Not every step runs for every task — small work can collapse Describe + Analyze + Plan into a single sentence; large work expands every step into its own round.
+Each step has a distinct purpose. Not every step runs for every task — small work can collapse Describe + Analyze + Plan into a single sentence; large work expands every step into its own round. See [Sizing the loop](#sizing-the-loop).
 
 ### 1. Describe (human → agent)
 
 The human states intent, context, references, target outcome. **Not the implementation — the problem.** The instinct to pre-design the solution at this step costs more turns than it saves; the agent's analysis often surfaces options the human didn't see.
 
-A good describe is one to three sentences plus any pointers to files / issues / prior conversations the agent will need.
+A good describe is one to three sentences plus any pointers to files / issues / prior conversations the agent will need. If the description is missing a constraint the agent needs (which file, which branch, what "done" looks like), ask **one** focused question and wait. Do not stack questions.
 
 ### 2. Analyze (agent → human)
 
-The agent reads the actual code, docs, and state. Reports findings (and any gaps in the human's description) *before* proposing anything.
+Invoke the **`analyze`** skill. The agent reads the actual code, docs, and state. Reports findings (and any gaps in the human's description) *before* proposing anything.
 
 **Read the actual file every time** rather than paraphrasing from prior context. Summaries decay; the file is canonical. There is a recurring failure mode where an agent cites a doc from a prior conversation's summary, misses a section that was added since, and recommends the wrong thing. The cost of one extra file read is dwarfed by the cost of a wrong-direction PR.
 
 **Sometimes "analyze" means a small spike, not just reading.** When the relevant behavior isn't documented — a third-party library's edge cases, an encoder's undocumented defaults, an OS-level interaction — the only way to know the truth is to probe it. Write a 50-line script, run it, inspect the output, throw the script away. Doing this BEFORE the plan is cheap; discovering the behavior was different during implementation costs a planning round AND a rewrite. The spike's findings belong in the plan doc (so a future reader knows the assumption was tested, not assumed).
 
+Do not modify code in this stage.
+
 ### 3. Plan (agent → human)
 
-The agent proposes a concrete approach: files to change, tests to write, ADR or doc impact, explicit out-of-scope items, risks. **No code at this step.**
+Invoke the **`plan`** skill. The agent proposes a concrete approach: files to change, tests to write, ADR or doc impact, explicit out-of-scope items, risks. **No code at this step.**
 
 When there are real branches in the decision tree, use a structured-choice mechanism (e.g. the agent presents 2–4 concrete options with a "Something else" escape) rather than asking open-ended *"what should we do?"* questions. Option-laden questions compress decision loops dramatically.
+
+State the PR's **scope contract** here in one line: *"This PR does X, and nothing else."* It becomes the test for every later "while I'm here" temptation.
 
 ### 4. Discuss (human ↔ agent)
 
 The human accepts, redirects, or asks for another planning round. **Still no code.** Most planning rounds resolve in one turn; the ones that don't typically have a missing constraint that the agent didn't know about.
 
+> **Gate:** Do not proceed past this stage without explicit approval to start.
+
 ### 5. Document (agent → repo)
 
-For non-trivial work, the plan goes into a file: `docs/plans/{slug}/{slug}-N.N.N.md` (or whatever convention the team uses). It is **committed first on the new branch** as the implementation's checklist — the "Implementation order" section gets walked commit-by-commit during the next step.
+For non-trivial work, invoke the **`plan-doc-checklist`** skill to write the plan into `docs/plans/{slug}/{slug}-N.N.N.md` (or whatever convention the team uses). It is **committed first on the new branch** as the implementation's checklist — the "Implementation order" section gets walked commit-by-commit during the next step.
 
-For substantial design decisions, an ADR with semantic versioning. Mark superseded ADR versions `[DEPRECATED]` at the top with a forward pointer to the current version. **Supersession can be scoped to specific sections** — e.g. v0.0.3 supersedes v0.0.2's §4 only; the rest of v0.0.2 remains canonical. This preserves the history of decisions without forcing every doc rewrite to be all-or-nothing.
+For substantial design decisions, invoke the **`adr-authoring`** skill: an ADR with semantic versioning. Mark superseded ADR versions `[DEPRECATED]` at the top with a forward pointer to the current version. **Supersession can be scoped to specific sections** — e.g. v0.0.3 supersedes v0.0.2's §4 only; the rest of v0.0.2 remains canonical. This preserves the history of decisions without forcing every doc rewrite to be all-or-nothing. Every ADR includes a **"Code being removed"** section (state "None" if purely additive).
 
 ### 6. Implement (agent → repo)
 
-Branch off the integration branch (typically `develop`). Branch names prefixed with a convention that distinguishes agent-authored work (e.g. `claude/`). Tasks tracked via a structured todo list with one item in-progress at a time; commit-per-task with focused messages. Each task ends with the test suite green — never accumulate broken intermediate states.
+1. Cut the branch (run the `gh-new-branch` / `new-claude-branch` discipline if you have not already): off the integration branch (typically `develop`), agent-prefixed (e.g. `claude/`), descriptively named.
+2. Track tasks with a structured todo list — **one item in-progress at a time**.
+3. Commit per task with focused messages (no co-author lines). When a commit message contains backticks or apostrophes, write it to a temp file and use `git commit -F <file>` — inline heredocs break under shell escaping.
+4. **Each task ends with the test suite green.** Never accumulate a broken intermediate state.
+5. Verify post-commit on case-insensitive filesystems: `git show --stat HEAD` catches the "added the file but git tracks it under a different case" trap.
+6. When the implementation deviates from the plan, **update the plan in the same PR** (a brief honest amendment) or stop and re-discuss. Don't silently drift.
 
-When the implementation deviates from the plan, **update the plan or stop and re-discuss**. Don't silently drift.
+If the work is large enough to parallelize, invoke the **`multi-agent-orchestration`** skill to fan out lead/worker agents — but only when serial work is the actual bottleneck.
 
 ### 7. Verify (agent → human → agent)
 
-Tests + lint + build artifact rebuild. Open a PR whose body cites the plan doc and the acceptance criteria. Request an AI code review (e.g. GitHub Copilot's pull-request reviewer) at PR creation; spawn a background watcher to poll for the review without burning the main session's context.
-
-Apply a **review-response policy**: code findings get fixes; cosmetic / wording findings get a brief "leaving per policy" reply. Push fixes; re-request review (note: some AI reviewers' re-request endpoints silently no-op after submit — the UI "re-request" button is the reliable path).
+1. Tests + lint + rebuild any distributable artifact (bundle, package, image).
+2. Open the PR; its body cites the plan doc and acceptance criteria, opens with the scope contract, and targets the integration branch (never `main`/`master`).
+3. **Arm the review watcher and run the review loop** — invoke the **`copilot-review-loop`** skill. Every PR open and every push triggers an automatic review on many setups, so arm the watcher *proactively*, without being asked.
+4. Apply a **review-response policy**: code findings get fixes; cosmetic / wording findings get a brief "leaving per policy" reply. Reply on each thread with the addressing SHA, resolve it, then **re-request review** via the GraphQL `requestReviews` mutation with `botIds` (Copilot's `__typename` is `Bot`, so `userIds` does not work) and `union: true` (to preserve existing human reviewer requests). This programmatic re-request path *works* — there is no need to fall back to clicking the UI button. Loop until sign-off.
 
 ### Iterate
 
 If verification surfaces issues, return to Plan (or Describe if the surface changed materially). Don't paper over a real design issue with a quick code patch.
+
+### Wind-down (end of session / before a long break)
+
+Invoke the **`session-state-handoff`** skill: write a self-contained `.claude/STATE.md` (current branch, what landed, what's pending, standing policies, resume sequence) so the next session — or the next agent — picks up cold without context excavation. Save durable cross-session truths to memory (preferences, slow-changing project facts, validated approaches), not ephemeral task state.
+
+---
+
+## Sizing the loop
+
+| Task size | Stages that run |
+|---|---|
+| One-line fix / typo | Describe + Implement + Verify (collapse 1–4 into a sentence) |
+| Small, well-scoped change | Describe → Analyze → Plan (brief) → Implement → Verify |
+| Non-trivial feature | All seven stages; plan-doc in Stage 5 |
+| Architecture / design change | All seven + ADR in Stage 5 + the `architecture-change` workflow's removal discipline |
+| Large parallelizable feature | All seven + `multi-agent-orchestration` in Stage 6 |
+
+The skill of running this well is **matching the ceremony to the task** — never skipping the plan on something with design surface, never writing a plan doc for a typo.
+
+---
+
+## The skills this workflow drives
+
+| Stage | Skill |
+|---|---|
+| Pre-flight / branch | `gh-new-branch` (+ `new-claude-branch` runbook) |
+| Analyze | `analyze` |
+| Plan | `plan` |
+| Document | `plan-doc-checklist`, `adr-authoring` |
+| Implement | `implement`, `multi-agent-orchestration` |
+| Verify | `copilot-review-loop` |
+| Wind-down | `session-state-handoff` |
 
 ---
 
@@ -76,11 +143,15 @@ If verification surfaces issues, return to Plan (or Describe if the surface chan
 These are the rules that, if dropped, cause the cadence to collapse back into the default failure mode.
 
 - **One PR at a time** against the integration branch. Resolve the current PR (merge or close) before starting the next branch. Two parallel PRs fragment review attention and complicate merge ordering.
+- **Scope contract per PR.** Every PR opens with "does X, and nothing else." Mid-PR concerns default to follow-ups; three unrelated additions → stop and surface the drift.
 - **No co-author lines in commit messages.** Agent-authored commits are implicitly co-authored; explicit "Co-Authored-By" lines add noise without information.
-- **`.claude/STATE.md` (or equivalent) for resume.** Before closing a long session, write a self-contained state file: current branch, what landed, what's pending, standing policies, how-to-resume sequence. The cold-check on resume is `git fetch origin --prune && git status && <your PR-listing command>` — e.g. `gh pr list --state open` if the team uses GitHub + the `gh` CLI; substitute whatever shows open PRs against the integration branch for your forge.
+- **`.claude/STATE.md` for resume.** Before closing a long session, write a self-contained state file: current branch, what landed, what's pending, standing policies, how-to-resume sequence. The cold-check on resume is `git fetch origin --prune && git status && <your PR-listing command>` — e.g. `gh pr list --state open` if the team uses GitHub + the `gh` CLI; substitute whatever shows open PRs against the integration branch for your forge.
 - **Memory for cross-session truths.** Use a persistent memory layer for: user preferences, project facts that change slowly, references to external systems, validated approaches (confirmation memories, not just correction memories). Do *not* use memory for: code patterns derivable by reading the repo, ephemeral task state, anything already in project-level instruction files.
-- **Plan doc as implementation checklist.** The plan committed in step 5 is not aspirational — it is the literal list of commits the implementation step walks. If the plan is wrong, fix the plan before writing the code.
-- **Amend the plan in the same PR when implementation surfaces a planning-time inaccuracy.** Plans are durable artifacts that future readers consult to understand *why* the code looks the way it does. When implementation discovers the plan was wrong about something — an assumption that didn't hold, an edge case that was actually the common case, a library API that doesn't behave as documented — fix the plan text in the same PR rather than leaving the inaccuracy as a "historical curiosity." Future readers shouldn't have to cross-reference the implementation against the plan to know which parts of the plan are still true. The amendment can be a brief parenthetical noting the original assumption was wrong, not a wholesale rewrite — just enough that the plan reads as honest documentation of what was learned.
+- **Plan doc as implementation checklist.** The plan committed in Stage 5 is not aspirational — it is the literal list of commits the implementation step walks. If the plan is wrong, fix the plan before writing the code.
+- **Amend the plan in the same PR when implementation surfaces a planning-time inaccuracy.** Plans are durable artifacts that future readers consult to understand *why* the code looks the way it does. When implementation discovers the plan was wrong about something — an assumption that didn't hold, an edge case that was actually the common case, a library API that doesn't behave as documented — fix the plan text in the same PR rather than leaving the inaccuracy as a "historical curiosity." The amendment can be a brief parenthetical noting the original assumption was wrong, not a wholesale rewrite — just enough that the plan reads as honest documentation of what was learned.
+- **Read source-of-truth files; never paraphrase from a prior summary.**
+- **Verify before asserting facts about the codebase — name the evidence.** A claim that names a specific file, function, or symbol is a claim that it exists as stated; confirm it before the user acts on it.
+- **Remove obsoleted artifacts in the same change that obsoletes them.**
 - **ADR semantic versioning with scoped supersession.** Don't rewrite history; mark old versions `[DEPRECATED]` and link forward. Allow supersession to be scoped to sections so partial revisions don't invalidate unrelated material.
 - **Atomic git commits via heredoc-to-file when in doubt.** Inline `git commit -m "$(cat <<'EOF'…EOF)"` is fragile under shell escaping when the body contains backticks or apostrophes. Write the message to `/tmp/commit-msg-X.txt` and use `git commit -F <file>`.
 - **Verify post-commit on case-insensitive filesystems.** macOS / Windows can swallow case mismatches in `git add` paths. `git show --stat HEAD` after every commit catches the "I added the file but git already tracked it under a different case" trap.
@@ -91,39 +162,7 @@ These are the rules that, if dropped, cause the cadence to collapse back into th
 
 The default is **single-agent**. Multi-agent should only be added when serial work is the actual bottleneck — not when "more agents sounds faster." Brooks' law (adding people to a late project makes it later) applies to agents too; coordination cost can swamp parallelism gains.
 
-### Configuration heuristic
-
-| Project shape | Configuration | Rationale |
-|---|---|---|
-| Single fix / small feature | Single agent, current workflow | Coordination overhead exceeds parallelism savings |
-| Larger feature with independent subsystems | Lead + 2–3 worker agents in isolated worktrees | Lead owns plan; workers execute disjoint pieces; lead integrates at PR boundary |
-| Big refactor / migration | Planner + N layer-workers + reviewer | Planner does architecture once; workers parallel on layers; reviewer cross-checks |
-| Spike / research | One agent issues parallel research subagents | A pattern most agentic tools already support — formalize it as a pattern, not a new tool |
-
-### Patterns worth using
-
-- **Map-reduce on independent units.** Lead decomposes the work; workers execute in isolated worktrees; lead integrates results. The plan-doc-as-checklist from step 5 is the natural handoff artifact — each worker gets the plan and a section of the implementation order to walk.
-- **Role specialization (often serial, not parallel).** Different prompts / contexts for different cognitive jobs — planner, implementer, reviewer. They take turns rather than running concurrently. This is what the seven-step cadence above is implicitly doing within a single agent; formalizing the roles is the iteration.
-- **Independent feature branches.** Git is the coordination layer. Worktrees + PRs are how human teams handle independent parallel work; multi-agent inherits the same primitives.
-
-### Patterns to avoid
-
-- **Custom messaging bus between agents.** Real-time chatter has high context-switching cost — every message read is a token spent.
-- **Central coordinator registry.** State to maintain is not work getting done.
-- **File-level locks.** Git is already the lock for code-shaped work.
-- **Agents that "talk" mid-task.** Each turn doubles context window pressure.
-
-### What modern agentic tooling already gives you
-
-No new infrastructure is required to start with multi-agent — most tools (e.g. Claude Code) already expose:
-
-- A subagent / Agent tool for spawning specialized workers
-- Worktree-isolated execution so parallel workers don't trample each other
-- Background tasks for async polling / watching
-- A memory layer for cross-session state
-- The plan-doc artifact for sequential handoff
-
-The deeper coordination-mechanism design (when to use shared state vs. message passing, role taxonomy, conflict resolution policy) is a follow-up topic. Start with the patterns above; iterate based on what friction actually emerges.
+The decomposition heuristics, role taxonomy (lead / worker / reviewer), map-reduce-on-independent-units pattern, the worktree-isolation mechanics, the over-engineering traps to avoid, and the worker-brief template all live in the **`multi-agent-orchestration`** skill. Reach for it from Stage 6 only when both the trigger conditions hold: serial work is genuinely the bottleneck AND the units are genuinely independent.
 
 ---
 
@@ -157,7 +196,6 @@ These are mistakes from actual collaboration sessions. Concrete enough to teach 
 - **Test assertions too strict for race scenarios.** Asserting a concurrent operation will produce a specific deterministic outcome (e.g. *"the two suffixes will be `''` and `'-1'`"*) when the actual race can resolve multiple correct ways. Lesson: assert *invariants* (no overwrites, complete pairs, all results distinct), not specific outcomes, when the test exercises real concurrency.
 - **Inline heredoc commit messages.** Single-quoted heredoc delimiters in `git commit -m "$(cat <<'EOF'…EOF)"` get tripped by literal apostrophes or backticks inside the body under some shell-escaping paths. Lesson: write commit messages to a temp file and use `git commit -F <file>`.
 - **Adding optional fields with defaults instead of making them required.** Tempting because it "doesn't break existing tests." But optional-with-default fields hide state — required fields force every construction site to think about the value, which catches the regression of "I forgot to wire this through." Lesson: prefer required + explicit-default-at-construction over optional + magic-default.
-- **Re-requesting an AI reviewer after a code change and assuming it ran.** Some review bots' re-request APIs silently no-op after the bot has already reviewed once. The reply on the comment is the audit trail either way; the UI button is the reliable path for a fresh pass.
 - **Starting a "small" parallel PR while the current one is in review.** Two parallel PRs fragment review attention, complicate merge ordering, and erode the linear-history discipline. Resolve current before next, even when next "seems orthogonal."
 - **Cross-module contract drift between caller and callee.** When the same shared module is called from multiple places, validating inputs differently at each call site leads to format-dependent or caller-dependent surprises that are hard to debug — value X is accepted via one path and rejected via another, with the error surface depending on which downstream code happens to break first. Lesson: validate the same shape at every entry point that funnels into the shared module. The cleanest implementation is a shared validator helper that the entry points all call; the discipline alone (without the helper) drifts as code evolves.
 - **Overwrite-only-the-last-instance for "exactly one of X" constraints.** When a format spec or invariant says "exactly one of X is allowed" and the implementation walks a list while tracking only the *last* X seen (`while …: lastX = current`), a malformed input with multiple X's leaves duplicates in the output — the loop overwrites the cursor on each match but never strips the earlier ones. Lesson: collect *all* instances and strip them, then insert exactly one fresh. The "rebuild the stream skipping all matches" pattern is two lines longer than "track the last match" and always produces a spec-conformant output regardless of input pathology.
@@ -170,7 +208,7 @@ The team that derived this pattern (an Eagle plugin project) uses these artifact
 
 - **Plan docs:** `docs/plans/{slug}/{slug}-N.N.N.md` per implementation effort. Each plan opens with goal + acceptance criteria, lists the implementation order as the literal commit checklist, and explicitly enumerates out-of-scope items.
 - **ADR supersession chain:** `docs/adr/ADR-001/` runs from v0.0.1 (deprecated) through v0.0.4 (current). Each superseded version carries a `[DEPRECATED]` h1 + forward-pointer note. v0.0.3 superseded v0.0.2's §4 only; v0.0.4 superseded v0.0.3's §2 only. Demonstrates scoped supersession.
-- **PR + review-watcher pattern:** AI reviewer requested at PR creation; a background subagent polls the reviews API for the response and reports back when the review posts.
+- **PR + review-watcher pattern:** AI reviewer requested at PR creation; a background subagent polls the reviews API for the response and reports back when the review posts. See the `copilot-review-loop` skill.
 - **STATE handoff:** `.claude/STATE.md` is written before any long break (lunch, end of day, end of session). The cold-check sequence at the bottom (`git fetch && git status && gh pr list`) lets the next session pick up cleanly without context excavation.
 - **Memory for promises:** when a discussion surfaces a follow-up that isn't this PR's job, the promise gets saved to a memory file (typed "project" or "feedback") so the next session sees it automatically.
 
@@ -178,18 +216,17 @@ The team that derived this pattern (an Eagle plugin project) uses these artifact
 
 ## Out of scope of this document
 
-- **Coordination-mechanism design for multi-agent.** The framing is here; the protocol design (shared state schema, message format, role taxonomy, conflict resolution) is a deferred topic. Pick a small experiment when the need arises.
-- **Tooling automation around the pattern.** No CLI, no template generator, no project-init script. The pattern is described; teams adopt it manually. Automation comes later if/when actual reuse demands it.
-- **Prescriptive templates.** This doc describes the shape of plan docs and ADRs in prose rather than shipping template files. Each project's templates should reflect the project's own conventions.
+- **Coordination-mechanism design for multi-agent.** The framing is in the `multi-agent-orchestration` skill; the deeper protocol design (shared state schema, message format, role taxonomy, conflict resolution) is a deferred topic. Pick a small experiment when the need arises.
+- **Tooling automation around the pattern.** No template generator or project-init script beyond what `sync-agents` and `claudify` already provide. The pattern is described; teams adopt it through the skills it drives.
+- **Prescriptive templates.** This doc describes the shape of plan docs and ADRs in prose; the `plan-doc-checklist` and `adr-authoring` skills carry the actual structure. Each project's templates should reflect the project's own conventions.
 - **Tool-specific instructions.** Agentic tooling evolves rapidly; pinning commands or flags here would date the doc within months. Adapt the pattern to whatever tool the team is using.
 
 ---
 
 ## Evolve this document
 
-This document started as v0.0.1 (written immediately after the pattern that produced it was fresh in head). v0.0.2 added four patterns surfaced over the next session: the "spike as part of Analyze" extension in step 2, the "amend the plan in the same PR when implementation surfaces a planning-time inaccuracy" standing discipline, and two new anti-patterns (cross-module contract drift, overwrite-only-the-last-instance for exactly-one constraints). Continue to refine through reuse:
+This document started as v0.0.1 (written immediately after the pattern that produced it was fresh in head). v0.0.2 added four patterns surfaced over the next session: the "spike as part of Analyze" extension, the "amend the plan in the same PR" standing discipline, and two new anti-patterns. v0.0.3 **merged the separate imperative runbook into this doc as a single source of truth** — the seven-step cadence now names the concrete skill to invoke at each stage, and adds the Pre-flight cold-check, Wind-down stage, "Sizing the loop" table, and "skills this workflow drives" table. v0.0.3 also corrected the stale claim that AI-reviewer re-request endpoints silently no-op (the GraphQL `requestReviews`+`botIds` path works) and slimmed the multi-agent scaling section to a pointer to the `multi-agent-orchestration` skill. Continue to refine through reuse:
 
-- Each session that adopts the pattern should be willing to amend this doc when something doesn't translate — that's exactly what produced v0.0.2.
+- Each session that adopts the pattern should be willing to amend this doc when something doesn't translate — that's exactly what produced v0.0.2 and v0.0.3.
 - New anti-patterns observed in real work belong in the anti-patterns section.
-- The scaling section will get sharper as multi-agent experiments accumulate.
-- Promote to a shared-across-projects location (`@agents` skill, team wiki, etc.) once two or three teams have used it and the project-specific seams have been smoothed.
+- The scaling guidance evolves in the `multi-agent-orchestration` skill as multi-agent experiments accumulate.
