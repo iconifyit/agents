@@ -50,8 +50,11 @@ This file indexes all rules, skills, and workflows defined in `.agents/`.
 - [gh-new-branch](.agents/skills/gh-new-branch/SKILL.md)
 - [implement](.agents/skills/implement/SKILL.md)
 - [module-pr](.agents/skills/module-pr/SKILL.md)
+- [multi-agent-orchestration](.agents/skills/multi-agent-orchestration/SKILL.md)
 - [plan](.agents/skills/plan/SKILL.md)
+- [plan-doc-checklist](.agents/skills/plan-doc-checklist/SKILL.md)
 - [problem-solving](.agents/skills/problem-solving/SKILL.md)
+- [session-state-handoff](.agents/skills/session-state-handoff/SKILL.md)
 - [soa-module](.agents/skills/soa-module/SKILL.md)
 - [stripe-best-practices](.agents/skills/stripe-best-practices/SKILL.md)
 

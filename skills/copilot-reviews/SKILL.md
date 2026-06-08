@@ -214,7 +214,7 @@ query($owner: String!, $name: String!, $number: Int!) {
 }
 ```
 
-Run via `gh api graphql -F owner=<org> -F name=<repo> -F number=<pr> -F query=@fetch-threads.gql > /tmp/threads.json`.
+Run via `gh api graphql -F owner=<org> -F name=<repo> -F number=<pr> -F query=@<path-to-skill>/fetch-threads.gql > /tmp/threads.json` (use the skill-relative path so it works from any cwd).
 
 For each unresolved thread (`isResolved: false`), filter for `author.login` containing `copilot`. The thread `id` is the GraphQL node ID needed for `resolveReviewThread`; the comment `databaseId` is the int ID needed for the reply endpoint.
 
@@ -271,14 +271,31 @@ gh api graphql -f query='mutation($prId: ID!, $botId: ID!) { requestReviews(inpu
 ### Pattern B (batch cleanup)
 
 ```bash
-# 1. Fetch thread state for both PRs.
+# 1. Fetch thread state. Use the skill-relative path so it works from any cwd.
 gh api graphql -F owner=org -F name=repo -F number=922 \
-  -F query=@/tmp/fetch-threads.gql > /tmp/server-threads.json
+  -F query=@<path-to-skill>/fetch-threads.gql > /tmp/threads.json
 
-# 2. Resolve in batches, paced.
-python3 /path/to/resolve-threads.py
+# 2. Write a config JSON (see resolve-threads.py's CONFIG SCHEMA docstring):
+#    owner/repo/number, "threads": "/tmp/threads.json", commit_base,
+#    reply_delay_seconds (>=12), and the ordered (regex, sha, summary) mapping.
+cat > /tmp/cleanup-config.json <<'JSON'
+{
+  "owner": "org",
+  "repo": "repo",
+  "number": 922,
+  "threads": "/tmp/threads.json",
+  "commit_base": "https://github.com/org/repo/commit/",
+  "reply_delay_seconds": 12,
+  "mapping": [
+    ["regex matched against the thread's first Copilot comment", "<sha>", "<one-line fix summary>"]
+  ]
+}
+JSON
 
-# 3. Re-request Copilot.
+# 3. Reply + resolve in batches, paced (the script requires the config path).
+python3 <path-to-skill>/resolve-threads.py /tmp/cleanup-config.json
+
+# 4. Re-request Copilot.
 gh api graphql -f 'query=mutation { requestReviews(input: { pullRequestId: "PR_...", botIds: ["BOT_..."], union: true }) { pullRequest { number } } }'
 ```
 
