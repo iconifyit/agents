@@ -29,7 +29,7 @@ export function formatCollision({ entry, fullPath, inspection, reason }) {
     '',
     `Collision: ${fullPath} blocks a managed entry.`,
     '',
-    `  managed source: ${entry.source ?? '(managed block)'}`,
+    `  managed source: ${entry?.source ?? '(managed block)'}`,
     `  existing path:  ${fullPath} (${describeState(inspection.state, inspection.currentTarget)})`,
     '',
     'Resolution:',
@@ -59,6 +59,14 @@ function resolutionSteps({ fullPath, reason }) {
     return [
       `  - The symlink at this path is not managed by agentify.`,
       `  - Move it aside or remove it, then re-run agentify.`,
+    ];
+  }
+  if (reason === 'legacy-symlink-not-ours') {
+    return [
+      `  - This is a whole-directory symlink pointing outside the agents repo,`,
+      `    so it was not created by agentify and will not be removed for you.`,
+      `  - It may belong to sync-agents or to your own setup — check the target first.`,
+      `  - If it is genuinely obsolete: rm "${fullPath}", then re-run agentify.`,
     ];
   }
   return ['  - Re-run agentify after resolving the conflict.'];

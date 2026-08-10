@@ -204,3 +204,52 @@ test('reconcile dry-run does not mutate filesystem', () => {
     assert.ok(!existsSync(join(dir, '.claude/.agentify.lock')));
   });
 });
+
+// A legacy directory symlink that points INSIDE the agents repo is our own
+// earlier layout, so replacing it is safe. One that points elsewhere is not
+// ours — it belongs to the user or to sync-agents, which creates exactly these
+// directory symlinks at project scope and is documented to coexist with this
+// tool. Cleanup runs as a planned step and --yes skips the prompt, so an
+// unclassified removal would destroy foreign state with no chance to intervene.
+test('reconcile refuses to remove a legacy symlink pointing outside the agents repo', () => {
+  withTempProject((dir) => {
+    seedAgents(dir, { rules: [], skills: ['s1'], workflows: [] });
+
+    const foreign = join(dir, 'somewhere-else');
+    mkdirSync(foreign, { recursive: true });
+    mkdirSync(join(dir, '.claude'), { recursive: true });
+    symlinkSync(foreign, join(dir, '.claude/skills'));
+
+    const result = reconcile(projectScopeArgs(dir));
+
+    assert.equal(result.ok, false, 'a foreign symlink must block, not be deleted');
+    const collision = result.collisions.find((c) => c.reason === 'legacy-symlink-not-ours');
+    assert.ok(collision, 'expected a legacy-symlink-not-ours collision');
+    assert.equal(
+      result.plan.steps.filter((s) => s.action === ACTION.CLEANUP_LEGACY).length,
+      0,
+      'no cleanup step may be planned for a symlink we do not own',
+    );
+
+    // The decisive assertion: the foreign link is still on disk and still
+    // points where the user put it.
+    const link = join(dir, '.claude/skills');
+    assert.ok(lstatSync(link).isSymbolicLink(), 'foreign symlink was deleted');
+    assert.equal(readlinkSync(link), foreign, 'foreign symlink target changed');
+  });
+});
+
+test('reconcile still cleans a legacy symlink that resolves inside the agents repo', () => {
+  withTempProject((dir) => {
+    seedAgents(dir, { rules: [], skills: ['s1'], workflows: [] });
+    mkdirSync(join(dir, '.claude'), { recursive: true });
+    symlinkSync(join(dir, '.agents/skills'), join(dir, '.claude/skills'));
+
+    const result = reconcile(projectScopeArgs(dir));
+
+    assert.equal(result.ok, true);
+    const cleanup = result.plan.steps.find((s) => s.action === ACTION.CLEANUP_LEGACY);
+    assert.ok(cleanup, 'an absolute link into the agents repo is still ours');
+    assert.equal(cleanup.legacy.ours, true);
+  });
+});

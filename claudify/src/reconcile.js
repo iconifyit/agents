@@ -120,10 +120,25 @@ export function buildPlan({ scope, scopePaths, dotAgents, lock }) {
   const steps = [];
   const collisions = [];
 
-  const legacy = detectLegacyArtifacts({ claudeRoot: scopePaths.claudeRoot });
+  const legacy = detectLegacyArtifacts({
+    claudeRoot: scopePaths.claudeRoot,
+    dotAgents,
+  });
   const legacyTopLevels = new Set(legacy.map((item) => item.path));
   for (const item of legacy) {
-    steps.push({ action: ACTION.CLEANUP_LEGACY, legacy: item });
+    if (item.ours) {
+      steps.push({ action: ACTION.CLEANUP_LEGACY, legacy: item });
+      continue;
+    }
+    // Not ours: refuse rather than delete. Legacy cleanup is a planned step and
+    // --yes skips the prompt, so removing a foreign directory symlink would
+    // destroy another tool's state with no chance to intervene.
+    collisions.push({
+      entry: { path: item.path, source: null },
+      fullPath: item.fullPath,
+      inspection: { state: 'wrong_symlink', currentTarget: item.currentTarget },
+      reason: 'legacy-symlink-not-ours',
+    });
   }
 
   for (const entry of toAdd) {
