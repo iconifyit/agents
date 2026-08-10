@@ -10,7 +10,8 @@
 #
 # Config contract (set/define in cli/deploy.config.sh before this is sourced):
 #   STACK_NAME           string, for display                         (optional)
-#   DEPLOY_TITLE         cyan banner title (default "<STACK> — CDK Deployment") (optional)
+#   DEPLOY_TITLE         cyan banner title (default "<STACK> — Deployment")     (optional)
+#                        Set it per stack to name the tool (e.g. "CDK Deployment").
 #   REQUIRED_TOOLS       array of CLIs that must be on PATH           (optional)
 #   REQUIRED_VARS        array of env var names that must be set      (optional)
 #   VERIFY_AWS_ACCOUNT   "true"|"false" (default true)                (optional)
@@ -46,7 +47,7 @@ section() {
 title_banner() {
     echo ""
     hrc
-    echo -e "${CYAN}    ${DEPLOY_TITLE:-${STACK_NAME:-Stack} — CDK Deployment}${NC}"
+    echo -e "${CYAN}    ${DEPLOY_TITLE:-${STACK_NAME:-Stack} — Deployment}${NC}"
     hrc
     echo ""
 }

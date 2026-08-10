@@ -15,6 +15,10 @@
 # Shown in the deployment summary.
 STACK_NAME="MyServiceStack"
 
+# Banner title. The engine defaults to "<STACK> — Deployment" because it is
+# action-agnostic; name the tool here, where CDK is actually the action.
+DEPLOY_TITLE="${STACK_NAME} — CDK Deployment"
+
 # CLIs that must be on PATH. `cdk` is invoked via the LOCAL binary below (not on
 # PATH), so it is intentionally NOT listed here.
 REQUIRED_TOOLS=(aws node npm)

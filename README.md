@@ -43,7 +43,8 @@ This is the way we sync this repo into **every** Claude Code session now — it 
 **1. One-time bridge.** Symlink the tool's expected global root to this repo's `.agents/` subtree:
 
 ```bash
-ln -s /Users/scott/github/@agents/.agents ~/.agents
+# from the root of this repo checkout:
+ln -s "$(pwd)/.agents" ~/.agents
 ```
 
 Why the symlink (and not just pointing `--global-root` here): `sync-agents global` derives the per-tool output dirs from the **parent** of the global root, *lexically* — it does not resolve the symlink. With the root at `$HOME/.agents`, the parent is `$HOME`, so output lands in `~/.claude`. (Pointing the root straight at `…/@agents/.agents` would instead derive `…/@agents/.claude`.)
