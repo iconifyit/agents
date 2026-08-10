@@ -62,6 +62,9 @@ web_modules/
 # Output of 'npm pack'
 *.tgz
 
+# Distribution archives (build/delivery artifacts, not source)
+*.zip
+
 # Yarn Integrity file
 .yarn-integrity
 
@@ -155,3 +158,11 @@ CLAUDE.md
 tmp/
 # claudify — persistent backup store (7-day retention)
 data/
+# Python bytecode (from running skills/copilot-reviews/resolve-threads.py locally)
+**/__pycache__/
+*.pyc
+# Stray self-test collision markers — should only live inside tmp/ but defensive
+**/.collision-marker
+# Patch files (one-time delivery artifacts, not source)
+*.patch
+patches/

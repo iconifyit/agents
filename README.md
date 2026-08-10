@@ -45,3 +45,40 @@ backups, and pre-flight safety checks.
 
 See [`docs/claudify.md`](docs/claudify.md) for full details, output locations,
 the safety stack, and recovery procedures.
+
+## Syncing globally to `~/.claude` with `sync-agents` (current method)
+
+This is the way we sync this repo into **every** Claude Code session now —
+it supersedes `claudify` above. One-time bridge, then one command per change.
+
+**1. One-time bridge.** Symlink the tool's expected global root to this repo's
+`.agents/` subtree:
+
+```bash
+ln -s /Users/scott/github/@agents/.agents ~/.agents
+```
+
+Why the symlink (and not just pointing `--global-root` here): `sync-agents
+global` derives the per-tool output dirs from the **parent** of the global root,
+*lexically* — it does not resolve the symlink. With the root at `$HOME/.agents`,
+the parent is `$HOME`, so output lands in `~/.claude`. (Pointing the root
+straight at `…/@agents/.agents` would instead derive `…/@agents/.claude`.)
+
+**2. Sync** (run after adding or editing any rule / skill / workflow):
+
+```bash
+sync-agents-dev global sync --targets claude
+```
+
+It fans the repo out to:
+
+- **rules** → an `@`-imports block in `~/.claude/CLAUDE.md`
+- **skills** → `~/.claude/skills/<name>/SKILL.md` symlinks
+- **workflows** → `~/.claude/commands/<name>.md` (slash commands)
+
+**Caveat — multi-file skills.** The sync links only `<name>/SKILL.md`, so any
+sibling files (scripts, `.gql`, `references/`) are stranded. Single-file skills
+migrate cleanly; for a skill with sibling files, keep the older whole-directory
+symlink (`~/.claude/skills/<name> -> …/@agents/skills/<name>`) instead. **Never
+run `--force`** against an existing whole-dir symlink — it writes *through* the
+link into this repo and can rename the real `SKILL.md` files.

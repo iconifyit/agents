@@ -3,6 +3,12 @@
 Tests import the Express app directly and pass it to supertest. No running
 server needed — supertest creates an ephemeral listener for each test.
 
+> **Not applicable to the vectoricons v1 API.** Requiring its `server/app.js`
+> / `server/index.js` triggers real side effects at import time (DB pool
+> creation, event-bus startup, mail poller). Use the running-server pattern
+> for that project — see [vectoricons.md](vectoricons.md). This pattern
+> remains valid for Express apps whose `app` module imports cleanly.
+
 ## When to use
 
 - CI pipelines where you can't guarantee a server is running
@@ -79,6 +85,13 @@ const adminToken = jwt.sign(
 
 Use Option A when you're testing the route handler logic and auth is just
 noise. Use Option B when you're testing auth enforcement itself.
+
+Either way, match the REAL shapes your app uses — read the auth middleware
+and JWT strategy before mocking. The `req.user` and payload shapes above are
+illustrative; e.g. in the vectoricons v1 API, roles live at
+`req.user.roles[i].role.value` (an array from the `user_to_roles` xref, not
+a `role` string) and the JWT payload is keyed on `uuid` + `token_version`.
+A mock with the wrong shape passes where production fails.
 
 ## When to avoid this pattern
 
