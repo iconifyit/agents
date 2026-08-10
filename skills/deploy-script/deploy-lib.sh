@@ -151,7 +151,7 @@ _restore_on_failure() {
     while IFS= read -r -d '' f; do
         rel="${f#"$_backup_dir"/}"
         aws s3 cp "$f" "s3://$BACKUP_BUCKET/$rel" \
-            --profile "$AWS_PROFILE" --region "${AWS_REGION:-us-east-1}" --quiet \
+            ${AWS_PROFILE:+--profile "$AWS_PROFILE"} --region "${AWS_REGION:-us-east-1}" --quiet \
             || warn "  failed to restore: $rel"
     done < <(find "$_backup_dir" -type f -print0)
 }
@@ -181,8 +181,14 @@ backup_state() {
     # explicit request for a restore-on-failure safety net; proceeding without
     # one because auth/region/network failed would deploy with no way back,
     # and the "nothing to back up" branch below would misreport the cause.
+    # The profile flag is conditional because VERIFY_AWS_ACCOUNT=false skips
+    # verify_account, which is the only place AWS_PROFILE gets set. A bare
+    # "$AWS_PROFILE" would then abort under `set -u` before any backup ran.
+    # Omitting the flag falls back to the default credential chain, which is
+    # the whole point of running with account verification disabled (CI roles,
+    # instance profiles, env-var credentials). Same form the CDK preset uses.
     if ! aws s3 sync "s3://${BACKUP_BUCKET}/${BACKUP_PREFIX}/" "$_backup_dir/${BACKUP_PREFIX}/" \
-        --profile "$AWS_PROFILE" --region "${AWS_REGION:-us-east-1}" --only-show-errors; then
+        ${AWS_PROFILE:+--profile "$AWS_PROFILE"} --region "${AWS_REGION:-us-east-1}" --only-show-errors; then
         error "Backup of s3://${BACKUP_BUCKET}/${BACKUP_PREFIX}/ failed. Refusing to deploy without the backup that BACKUP_BUCKET requested."
     fi
     n=$(find "$_backup_dir" -type f | wc -l | tr -d '[:space:]')
