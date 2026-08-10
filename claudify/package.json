@@ -7,7 +7,7 @@
     "agentify": "./bin/agentify.js"
   },
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test",
     "start": "node bin/agentify.js"
   },
   "engines": {
