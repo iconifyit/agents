@@ -84,7 +84,10 @@ require_vars() {
         [ -z "$v" ] && continue
         [ -n "${!v:-}" ] || missing="$missing $v"
     done
-    [ -z "$missing" ] || error "Missing required environment variables in .env:$missing"
+    # Names the environment, not `.env` specifically — these may legitimately
+    # come from an export, CI secrets, or the shell, and blaming `.env` sends
+    # debugging down the wrong path.
+    [ -z "$missing" ] || error "Missing required environment variables (checked the environment, which may be populated from .env, exports, or CI):$missing"
     info "Environment variables validated."
 }
 
@@ -167,8 +170,14 @@ backup_state() {
     # The prefix directory is preserved locally ("$_backup_dir/$BACKUP_PREFIX/")
     # because _restore_on_failure derives the destination key from the path
     # relative to $_backup_dir — mirroring the prefix keeps that mapping exact.
-    aws s3 sync "s3://${BACKUP_BUCKET}/${BACKUP_PREFIX}/" "$_backup_dir/${BACKUP_PREFIX}/" \
-        --profile "$AWS_PROFILE" --region "${AWS_REGION:-us-east-1}" --only-show-errors || true
+    # A sync failure is fatal, not a warning. BACKUP_BUCKET being set is an
+    # explicit request for a restore-on-failure safety net; proceeding without
+    # one because auth/region/network failed would deploy with no way back,
+    # and the "nothing to back up" branch below would misreport the cause.
+    if ! aws s3 sync "s3://${BACKUP_BUCKET}/${BACKUP_PREFIX}/" "$_backup_dir/${BACKUP_PREFIX}/" \
+        --profile "$AWS_PROFILE" --region "${AWS_REGION:-us-east-1}" --only-show-errors; then
+        error "Backup of s3://${BACKUP_BUCKET}/${BACKUP_PREFIX}/ failed. Refusing to deploy without the backup that BACKUP_BUCKET requested."
+    fi
     n=$(find "$_backup_dir" -type f | wc -l | tr -d '[:space:]')
     if [ "$n" -gt 0 ]; then
         info "  backed up $n object(s)"

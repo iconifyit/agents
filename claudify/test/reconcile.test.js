@@ -66,7 +66,7 @@ function projectScopeArgs(projectDir) {
   };
 }
 
-test('reconcile creates per-file symlinks for skills and workflows on first run', () => {
+test('reconcile symlinks each skill directory and each workflow file on first run', () => {
   withTempProject((dir) => {
     seedAgents(dir, {
       rules: ['lint', 'test'],
