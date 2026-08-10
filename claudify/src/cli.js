@@ -21,7 +21,10 @@ OPTIONS
   -h, --help               Show this help
 
 ENVIRONMENT
-  AGENTIFY_AGENTS_ROOT     Override the default global agents repo location
+  CLAUDIFY_AGENTS_ROOT     Override the default global agents repo location.
+                           Defaults to the repo this package lives in; set this
+                           when running from a global npm install.
+  AGENTIFY_AGENTS_ROOT     Deprecated alias for CLAUDIFY_AGENTS_ROOT
 
 NOTES
   Symlinks only. agentify never modifies, renames, or copies upstream
