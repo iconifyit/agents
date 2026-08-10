@@ -1,5 +1,5 @@
-import { readdirSync, statSync, existsSync } from 'node:fs';
-import { join, basename, relative, resolve } from 'node:path';
+import { readdirSync, existsSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { ENTRY_KIND } from './lock-file.js';
 
 function listDirs(parent) {

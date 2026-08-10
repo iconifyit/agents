@@ -1,10 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, existsSync, readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { tmpdir } from 'node:os';
 import {
   buildBlock,
   hasBlock,
   upsertBlock,
   removeBlock,
+  writeClaudeMd,
   BLOCK_START,
   BLOCK_END,
 } from '../src/managed-block.js';
@@ -76,4 +80,29 @@ test('upsertBlock then removeBlock round-trips to similar content', () => {
   assert.ok(back.includes('# Heading'));
   assert.ok(back.includes('Body text.'));
   assert.ok(!back.includes(BLOCK_START));
+});
+
+// Regression: a plan whose only step is UPDATE_BLOCK runs no symlink steps, so
+// nothing else creates the scope directory. That happens on a fresh machine
+// under `--scope user`, or when the agents repo has rules but no skills or
+// workflows. writeClaudeMd previously threw ENOENT on that otherwise-valid plan.
+test('writeClaudeMd creates the parent directory when it does not exist', () => {
+  const base = mkdtempSync(join(tmpdir(), 'claudify-mb-'));
+  const target = join(base, 'fresh-scope', 'CLAUDE.md');
+
+  assert.equal(existsSync(dirname(target)), false, 'parent must not exist for this test to mean anything');
+
+  writeClaudeMd(target, '# hello\n');
+
+  assert.equal(readFileSync(target, 'utf8'), '# hello\n');
+});
+
+test('writeClaudeMd still overwrites when the parent already exists', () => {
+  const base = mkdtempSync(join(tmpdir(), 'claudify-mb-'));
+  const target = join(base, 'CLAUDE.md');
+
+  writeClaudeMd(target, 'first\n');
+  writeClaudeMd(target, 'second\n');
+
+  assert.equal(readFileSync(target, 'utf8'), 'second\n');
 });

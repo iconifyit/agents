@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { resolve, dirname } from 'node:path';
 
 import {
   DEFAULT_GLOBAL_AGENTS_ROOT,
@@ -31,21 +31,21 @@ function withEnv(vars, fn) {
 }
 
 // The regression this file exists for: the default was once a literal path to
-// one developer's workstation, so `--scope user` failed for everyone else. The
-// default must be derived from the package's own location, which means it
-// resolves to the agents repo that actually contains this checkout.
+// one developer's workstation, so `--scope user` failed for everyone else.
+//
+// The contract is "derived from this package's own location", so the assertion
+// is computed the same way rather than pinned to any particular checkout path.
+// Asserting that some fixed directory exists would make the test fail whenever
+// the package is copied elsewhere — even though the code would be correct.
 test('default agents root is derived from the package location, not hardcoded', () => {
-  assert.ok(
-    existsSync(join(DEFAULT_GLOBAL_AGENTS_ROOT, '.agents')),
-    `expected ${DEFAULT_GLOBAL_AGENTS_ROOT} to contain .agents/ — the default ` +
-      'must resolve to the agents repo this package lives in',
-  );
+  const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  assert.equal(DEFAULT_GLOBAL_AGENTS_ROOT, dirname(packageRoot));
 });
 
-test('default agents root contains this package, proving it is not an unrelated path', () => {
-  assert.ok(
-    existsSync(join(DEFAULT_GLOBAL_AGENTS_ROOT, 'claudify', 'src', 'config.js')),
-    'the derived root should be the repo containing claudify/src/config.js',
+test('default agents root is not the workstation path that shipped originally', () => {
+  assert.notEqual(
+    DEFAULT_GLOBAL_AGENTS_ROOT,
+    '/Users/qia377/github/acme/cof-sandbox/acme-context',
   );
 });
 

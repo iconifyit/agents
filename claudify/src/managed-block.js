@@ -1,4 +1,5 @@
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 
 export const BLOCK_ID = 'agentify:rules';
 export const BLOCK_START = `<!-- ${BLOCK_ID}:start -->`;
@@ -49,6 +50,19 @@ export function readClaudeMd(claudeMdPath) {
   return readFileSync(claudeMdPath, 'utf8');
 }
 
+/**
+ * Write CLAUDE.md, creating its parent directory if needed.
+ *
+ * The mkdir is not incidental. A plan whose only step is UPDATE_BLOCK runs no
+ * symlink steps, so nothing else creates the scope directory — which happens
+ * on a fresh machine under `--scope user`, or when the agents repo has rules
+ * but no skills or workflows. Without this, writeFileSync throws ENOENT and
+ * reconcile fails on an otherwise valid plan.
+ *
+ * @param {string} claudeMdPath Absolute path to the CLAUDE.md to write.
+ * @param {string} content Full file content.
+ */
 export function writeClaudeMd(claudeMdPath, content) {
+  mkdirSync(dirname(claudeMdPath), { recursive: true });
   writeFileSync(claudeMdPath, content, 'utf8');
 }
