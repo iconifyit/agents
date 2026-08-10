@@ -17,7 +17,8 @@
 #   READONLY_ARGS        array of args that mean "read-only" — skip   (optional)
 #                        the confirmation + backup (e.g. synth diff plan)
 #   BACKUP_BUCKET        S3 bucket to snapshot pre-action             (optional)
-#   BACKUP_PREFIX        S3 key prefix under that bucket              (optional)
+#   BACKUP_PREFIX        S3 key prefix under that bucket
+#                        (required and non-empty when BACKUP_BUCKET is set)
 #   run_action()         REQUIRED function — the command to wrap. Receives "$@".
 #   build_artifacts()    optional — build steps (zip, layer install, …)
 #   pre_deploy()         optional — runs after confirm, before run_action
@@ -156,6 +157,12 @@ _restore_on_failure() {
 }
 backup_state() {
     [ -n "${BACKUP_BUCKET:-}" ] || return 0
+    # BACKUP_PREFIX must be non-empty once BACKUP_BUCKET is set. Unset trips
+    # `set -u` and aborts mid-deploy; empty is worse and silent — the URIs
+    # collapse to "s3://bucket//", the sync pulls the whole bucket, and
+    # _restore_on_failure derives keys relative to $_backup_dir with no prefix,
+    # so a failed deploy would write every object back to the bucket root.
+    [ -n "${BACKUP_PREFIX:-}" ] || error "BACKUP_BUCKET is set but BACKUP_PREFIX is empty or unset. Set a non-empty BACKUP_PREFIX, or unset BACKUP_BUCKET to skip backups."
     _backup_dir=$(mktemp -d "${TMPDIR:-/tmp}/deploy-backup-XXXXXX")
     info "Backing up s3://${BACKUP_BUCKET}/${BACKUP_PREFIX}/ ..."
     local n=0

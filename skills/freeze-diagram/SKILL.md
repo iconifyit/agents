@@ -44,12 +44,12 @@ For an ADR (`docs/adr/ADR-NNN-title/ADR-NNN-title-X.Y.Z.md`) the folder is
 
 Each Mermaid block is named by a marker comment on the line immediately above its fence:
 
-```
+````
 <!-- diagram: upload-poller-flow | UploadPoller State Machine -->
-```​`mermaid
+```mermaid
 ...
-```​
 ```
+````
 
 - `upload-poller-flow` → `<name>` for the `.mmd`/`.png` files.
 - `UploadPoller State Machine` → caption / image alt text (optional; after the `|`).
