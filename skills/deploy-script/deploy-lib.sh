@@ -111,7 +111,7 @@ verify_account() {
     echo ""
     hr
     echo ""
-    read -rp "Is this the correct AWS account? (y/n) " -r REPLY
+    read -rp "Is this the correct AWS account? (y/n) " REPLY
     [[ $REPLY =~ ^[Yy]$ ]] || error "Deployment cancelled. Please set the correct AWS profile."
     info "AWS account confirmed."
 }
@@ -133,7 +133,7 @@ confirm_action() {
     echo ""
     hr
     echo ""
-    read -rp "Proceed with deployment? (y/n) " -r REPLY
+    read -rp "Proceed with deployment? (y/n) " REPLY
     [[ $REPLY =~ ^[Yy]$ ]] || { info "Deployment cancelled."; exit 0; }
 }
 
@@ -155,16 +155,21 @@ backup_state() {
     [ -n "${BACKUP_BUCKET:-}" ] || return 0
     _backup_dir=$(mktemp -d "${TMPDIR:-/tmp}/deploy-backup-XXXXXX")
     info "Backing up s3://${BACKUP_BUCKET}/${BACKUP_PREFIX}/ ..."
-    local keys k dest n=0
-    keys=$(aws s3api list-objects-v2 --bucket "$BACKUP_BUCKET" --prefix "${BACKUP_PREFIX}/" \
-        --profile "$AWS_PROFILE" --region "${AWS_REGION:-us-east-1}" \
-        --query 'Contents[].Key' --output text 2>/dev/null || echo "")
-    for k in $keys; do
-        [ "$k" = "None" ] && continue
-        dest="$_backup_dir/$k"; mkdir -p "$(dirname "$dest")"
-        aws s3 cp "s3://$BACKUP_BUCKET/$k" "$dest" \
-            --profile "$AWS_PROFILE" --region "${AWS_REGION:-us-east-1}" --quiet && n=$((n + 1))
-    done
+    local n=0
+    # Sync rather than list-then-copy. `--output text` returns the keys
+    # tab-separated on one line, and an unquoted `for k in $keys` word-splits
+    # on IFS — so a single key containing a space or tab silently became two
+    # bogus keys, both copies failed, and the backup completed "successfully"
+    # while missing objects. A partial backup is worse than none here, because
+    # _restore_on_failure would then restore incomplete state over the real
+    # bucket. `s3 sync` never parses keys.
+    #
+    # The prefix directory is preserved locally ("$_backup_dir/$BACKUP_PREFIX/")
+    # because _restore_on_failure derives the destination key from the path
+    # relative to $_backup_dir — mirroring the prefix keeps that mapping exact.
+    aws s3 sync "s3://${BACKUP_BUCKET}/${BACKUP_PREFIX}/" "$_backup_dir/${BACKUP_PREFIX}/" \
+        --profile "$AWS_PROFILE" --region "${AWS_REGION:-us-east-1}" --only-show-errors || true
+    n=$(find "$_backup_dir" -type f | wc -l | tr -d '[:space:]')
     if [ "$n" -gt 0 ]; then
         info "  backed up $n object(s)"
         trap _restore_on_failure EXIT
