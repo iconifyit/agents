@@ -63,7 +63,14 @@ Higher-precedence principles always override lower-precedence principles.
 
 Complex operational tasks should use a wrapper command that performs comprehensive preflight validation rather than invoking raw commands directly.
 
-Wrappers should: - Verify environment variables and configuration. - Verify target environment. - Verify credentials, profiles, accounts, and regions. - Validate operation-specific prerequisites. - Fail fast with clear errors. - Abort if prerequisites cannot be verified.
+Wrappers should:
+
+-   Verify environment variables and configuration.
+-   Verify target environment.
+-   Verify credentials, profiles, accounts, and regions.
+-   Validate operation-specific prerequisites.
+-   Fail fast with clear errors.
+-   Abort if prerequisites cannot be verified.
 
 The wrapper becomes the canonical execution path.
 
