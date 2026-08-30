@@ -166,3 +166,6 @@ data/
 # Patch files (one-time delivery artifacts, not source)
 *.patch
 patches/
+
+.sync/
+.agents/.sync/
