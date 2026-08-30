@@ -26,8 +26,53 @@ Higher-precedence principles always override lower-precedence principles.
 -   Work from first principles.
 -   Build for intent, not merely the letter of the specification.
 -   Discuss tradeoffs whenever intent and specification conflict.
+  
+## 4. Drive Toward Implementation
 
-## 4. Engineering Standards
+Engineering design exists to enable implementation, validation, and delivery.
+
+Analysis and architecture should reduce uncertainty, identify responsibility boundaries, expose risk, and establish the constraints required to implement safely. They should not become ends in themselves.
+
+Every design discussion should move the work closer to implementation.
+
+Classify unresolved design topics into one of three categories:
+
+1. Defect — fix now.
+    The design is incorrect, unsafe, internally inconsistent, ambiguous in a way that could produce materially different implementations, creates competing authorities, permits stranded or unrecoverable work, blurs ownership, or otherwise makes implementation unsafe. Resolve the defect before implementation.
+2. Blocking design decision — resolve now.
+    Multiple materially different solutions exist and the choice affects architecture, product direction, cost, security, operational behavior, or long-term maintenance. Evaluate the tradeoffs, make the decision, record it when appropriate, and continue. Do not defer an architectural choice that implementers would otherwise have to guess.
+3. Implementation detail — defer to implementation.
+    The decision does not materially affect the architectural contract or system design. Record any necessary constraint or intent, then stop debating it at the architecture level. Resolve it during implementation using the established engineering principles, repository conventions, tests, and surrounding code.
+
+The purpose of architecture is not to eliminate every implementation decision in advance. Design should proceed only to the level necessary to make implementation safe, coherent, and intentional.
+
+Once the architecture is sufficiently defined:
+
+Implement → Verify → Validate → Refine
+
+Prefer working software and empirical validation over prolonged speculative design. Implementation produces information that design alone cannot provide. Use that information to refine the system iteratively.
+
+Do not knowingly build from a defective architecture, but do not delay implementation to resolve questions that can be answered more reliably and economically through implementation and validation.
+
+The goal is not theoretical completeness.
+
+The goal is to ship a well-designed system, validate it against reality, and refine it as evidence demands.
+
+## 5. Visualize Architecture Before Implementation
+
+* For significant systems or architectural changes, represent the proposed architecture visually before implementation begins.
+* Diagrams are design-validation artifacts, not documentation added after the design is complete.
+* Model the architecture at the appropriate levels of decomposition:
+    * Subsystem Decomposition — major responsibility and capability boundaries.
+    * Component Decomposition — architectural components, ownership, and contracts.
+    * Implementation Structure — implementation artifacts such as classes, services, policies, adapters, repositories, handlers, and infrastructure mapped to their owning components.
+    * Runtime / Data Flow — where useful, show how responsibilities collaborate during execution.
+* Each level must be consistent with the levels above and below it: Subsystem → Component → Implementation Artifact.
+* Use diagrams to expose missing ownership, incorrect boundaries, hidden coupling, duplicated responsibility, invalid dependencies, and gaps between architecture and implementation.
+* Resolve material inconsistencies revealed by the diagrams before implementation.
+* Do not require diagrams where they add no meaningful design or validation value.
+
+## 6. Engineering Standards
 
 -   Follow Uncle Bob's SOLID and Clean Code principles.
 -   Produce production-quality, idiomatic code that is clear, maintainable, and consistent.
@@ -36,19 +81,19 @@ Higher-precedence principles always override lower-precedence principles.
 -   Favor composition over inheritance, explicitness over magic, clarity over cleverness, and cohesive functions with minimal side effects.
 -   Code quality should improve within the scope of the task, never by expanding the scope of the task.
 
-## 5. Verification
+## 7. Verification
 
 -   Verify before declaring success.
 -   Validate with tests, linting, builds, type checking, and runtime verification as appropriate.
 -   Investigate unexpected failures instead of ignoring or working around them.
 
-## 6. Transparency
+## 8. Transparency
 
 -   Surface mistakes, assumptions, uncertainty, and tradeoffs.
 -   Never conceal errors.
 -   Explain principle conflicts and apply the higher-precedence principle.
 
-## 7. Operational Wrappers
+## 9. Operational Wrappers
 
 Complex operational tasks should use a wrapper command that performs comprehensive preflight validation rather than invoking raw commands directly.
 
@@ -63,7 +108,7 @@ Wrappers should:
 
 The wrapper becomes the canonical execution path.
 
-## Autonomous Task Execution
+## 10. Autonomous Task Execution
 
 When I assign a task, I am assigning an objective, not a sequence of individual commands.
 
@@ -158,3 +203,167 @@ Unless a repository specifies otherwise:
 ## Repository-specific Rules
 
 Repository CLAUDE.md files define framework, deployment, branching, environment, database, and project-specific conventions.
+
+------------------------------------------------------------------------
+# Scott's Engineering Methodology Core Thesis
+------------------------------------------------------------------------
+
+**Architectural decomposition identifies responsibility boundaries, not implementation artifacts.**
+
+This principle should guide every stage of system decomposition. Components are not created because a subsystem contains multiple responsibilities; they are created only when a cohesive collection of collaborating implementation artifacts is required to own a distinct architectural responsibility behind a clear public contract.
+
+------------------------------------------------------------------------
+
+# Architectural Thesis: Components Are Architectural Responsibility Boundaries
+
+## Principle
+
+A **component** is a cohesive collection of collaborating implementation artifacts that together own a single architectural responsibility behind a well-defined public contract.
+
+A component is **not**:
+
+- a class
+- a service
+- a module
+- a Lambda function
+- a file
+
+Those are implementation artifacts that collectively implement the component.
+
+---
+
+## Rationale
+
+Architectural decomposition should identify **responsibility boundaries**, not implementation artifacts.
+
+Components exist to separate concerns within a subsystem into cohesive units that can evolve independently while collaborating through explicit contracts.
+
+The purpose of component decomposition is **not** to maximize the number of components.
+
+It is to identify the smallest number of cohesive responsibility boundaries that produce a clear and maintainable architecture.
+
+---
+
+## Implications
+
+A component may contain:
+
+- one or more services
+- domain objects
+- policies
+- adapters
+- repositories
+- helper classes
+- utility functions
+
+These implementation artifacts collaborate internally to fulfill the component's responsibility.
+
+Consumers interact with the component through its public contract rather than its internal implementation.
+
+---
+
+## Responsibilities Are Not Components
+
+Subsystem responsibilities should **not** be translated directly into components.
+
+Instead, related responsibilities should first be grouped into cohesive architectural responsibilities.
+
+Example:
+
+### Asset Processing Responsibilities
+
+- Route by format
+- Prepare PDFs
+- Coordinate Dropbox conversion
+- Consolidate candidates
+
+Incorrect decomposition:
+
+```text
+Format Router
+PDF Trimmer
+Dropbox Converter
+Candidate Consolidator
+```
+
+Correct decomposition:
+
+```text
+PDF Processor
+    owns
+        • trimming
+        • Dropbox conversion
+        • conversion monitoring
+
+Candidate Assembler
+    owns
+        • consolidation
+        • normalization
+```
+
+The objective is cohesive ownership, not one component per responsibility.
+
+---
+
+## Components Collaborate Through Contracts
+
+Components should interact only through explicit public contracts.
+
+Internal implementation details remain private.
+
+```text
+Component A
+        │
+        │ Public Contract
+        ▼
+Component B
+```
+
+Implementation artifacts collaborate **within** a component.
+
+Components collaborate **between** components.
+
+---
+
+## Relationship to Architectural Decomposition
+
+```text
+System
+    owns capabilities
+
+Capability
+    defines business outcomes
+
+Subsystem
+    owns one business capability
+
+Component
+    owns one architectural responsibility
+
+Service
+    implements behavior within a component
+
+Class
+    implements a focused responsibility
+
+Function
+    performs a single executable behavior
+```
+
+Each level represents a progressively finer application of the Single Responsibility Principle.
+
+The definition of "single responsibility" becomes narrower as the level of abstraction decreases.
+
+---
+
+## Design Heuristic
+
+A responsibility should become its own component only when it has a distinct:
+
+- architectural contract
+- lifecycle
+- ownership boundary
+- external dependency boundary
+- reason to change independently
+
+Otherwise, it should remain behavior within an existing component.

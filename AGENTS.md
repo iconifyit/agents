@@ -37,8 +37,53 @@ Higher-precedence principles always override lower-precedence principles.
 -   Work from first principles.
 -   Build for intent, not merely the letter of the specification.
 -   Discuss tradeoffs whenever intent and specification conflict.
+  
+## 4. Drive Toward Implementation
 
-## 4. Engineering Standards
+Engineering design exists to enable implementation, validation, and delivery.
+
+Analysis and architecture should reduce uncertainty, identify responsibility boundaries, expose risk, and establish the constraints required to implement safely. They should not become ends in themselves.
+
+Every design discussion should move the work closer to implementation.
+
+Classify unresolved design topics into one of three categories:
+
+1. Defect — fix now.
+    The design is incorrect, unsafe, internally inconsistent, ambiguous in a way that could produce materially different implementations, creates competing authorities, permits stranded or unrecoverable work, blurs ownership, or otherwise makes implementation unsafe. Resolve the defect before implementation.
+2. Blocking design decision — resolve now.
+    Multiple materially different solutions exist and the choice affects architecture, product direction, cost, security, operational behavior, or long-term maintenance. Evaluate the tradeoffs, make the decision, record it when appropriate, and continue. Do not defer an architectural choice that implementers would otherwise have to guess.
+3. Implementation detail — defer to implementation.
+    The decision does not materially affect the architectural contract or system design. Record any necessary constraint or intent, then stop debating it at the architecture level. Resolve it during implementation using the established engineering principles, repository conventions, tests, and surrounding code.
+
+The purpose of architecture is not to eliminate every implementation decision in advance. Design should proceed only to the level necessary to make implementation safe, coherent, and intentional.
+
+Once the architecture is sufficiently defined:
+
+Implement → Verify → Validate → Refine
+
+Prefer working software and empirical validation over prolonged speculative design. Implementation produces information that design alone cannot provide. Use that information to refine the system iteratively.
+
+Do not knowingly build from a defective architecture, but do not delay implementation to resolve questions that can be answered more reliably and economically through implementation and validation.
+
+The goal is not theoretical completeness.
+
+The goal is to ship a well-designed system, validate it against reality, and refine it as evidence demands.
+
+## 5. Visualize Architecture Before Implementation
+
+* For significant systems or architectural changes, represent the proposed architecture visually before implementation begins.
+* Diagrams are design-validation artifacts, not documentation added after the design is complete.
+* Model the architecture at the appropriate levels of decomposition:
+    * Subsystem Decomposition — major responsibility and capability boundaries.
+    * Component Decomposition — architectural components, ownership, and contracts.
+    * Implementation Structure — implementation artifacts such as classes, services, policies, adapters, repositories, handlers, and infrastructure mapped to their owning components.
+    * Runtime / Data Flow — where useful, show how responsibilities collaborate during execution.
+* Each level must be consistent with the levels above and below it: Subsystem → Component → Implementation Artifact.
+* Use diagrams to expose missing ownership, incorrect boundaries, hidden coupling, duplicated responsibility, invalid dependencies, and gaps between architecture and implementation.
+* Resolve material inconsistencies revealed by the diagrams before implementation.
+* Do not require diagrams where they add no meaningful design or validation value.
+
+## 6. Engineering Standards
 
 -   Follow Uncle Bob's SOLID and Clean Code principles.
 -   Produce production-quality, idiomatic code that is clear, maintainable, and consistent.
@@ -47,19 +92,19 @@ Higher-precedence principles always override lower-precedence principles.
 -   Favor composition over inheritance, explicitness over magic, clarity over cleverness, and cohesive functions with minimal side effects.
 -   Code quality should improve within the scope of the task, never by expanding the scope of the task.
 
-## 5. Verification
+## 7. Verification
 
 -   Verify before declaring success.
 -   Validate with tests, linting, builds, type checking, and runtime verification as appropriate.
 -   Investigate unexpected failures instead of ignoring or working around them.
 
-## 6. Transparency
+## 8. Transparency
 
 -   Surface mistakes, assumptions, uncertainty, and tradeoffs.
 -   Never conceal errors.
 -   Explain principle conflicts and apply the higher-precedence principle.
 
-## 7. Operational Wrappers
+## 9. Operational Wrappers
 
 Complex operational tasks should use a wrapper command that performs comprehensive preflight validation rather than invoking raw commands directly.
 
@@ -74,7 +119,7 @@ Wrappers should:
 
 The wrapper becomes the canonical execution path.
 
-## Autonomous Task Execution
+## 10. Autonomous Task Execution
 
 When I assign a task, I am assigning an objective, not a sequence of individual commands.
 
@@ -170,6 +215,170 @@ Unless a repository specifies otherwise:
 
 Repository CLAUDE.md files define framework, deployment, branching, environment, database, and project-specific conventions.
 
+------------------------------------------------------------------------
+# Scott's Engineering Methodology Core Thesis
+------------------------------------------------------------------------
+
+**Architectural decomposition identifies responsibility boundaries, not implementation artifacts.**
+
+This principle should guide every stage of system decomposition. Components are not created because a subsystem contains multiple responsibilities; they are created only when a cohesive collection of collaborating implementation artifacts is required to own a distinct architectural responsibility behind a clear public contract.
+
+------------------------------------------------------------------------
+
+# Architectural Thesis: Components Are Architectural Responsibility Boundaries
+
+## Principle
+
+A **component** is a cohesive collection of collaborating implementation artifacts that together own a single architectural responsibility behind a well-defined public contract.
+
+A component is **not**:
+
+- a class
+- a service
+- a module
+- a Lambda function
+- a file
+
+Those are implementation artifacts that collectively implement the component.
+
+---
+
+## Rationale
+
+Architectural decomposition should identify **responsibility boundaries**, not implementation artifacts.
+
+Components exist to separate concerns within a subsystem into cohesive units that can evolve independently while collaborating through explicit contracts.
+
+The purpose of component decomposition is **not** to maximize the number of components.
+
+It is to identify the smallest number of cohesive responsibility boundaries that produce a clear and maintainable architecture.
+
+---
+
+## Implications
+
+A component may contain:
+
+- one or more services
+- domain objects
+- policies
+- adapters
+- repositories
+- helper classes
+- utility functions
+
+These implementation artifacts collaborate internally to fulfill the component's responsibility.
+
+Consumers interact with the component through its public contract rather than its internal implementation.
+
+---
+
+## Responsibilities Are Not Components
+
+Subsystem responsibilities should **not** be translated directly into components.
+
+Instead, related responsibilities should first be grouped into cohesive architectural responsibilities.
+
+Example:
+
+### Asset Processing Responsibilities
+
+- Route by format
+- Prepare PDFs
+- Coordinate Dropbox conversion
+- Consolidate candidates
+
+Incorrect decomposition:
+
+```text
+Format Router
+PDF Trimmer
+Dropbox Converter
+Candidate Consolidator
+```
+
+Correct decomposition:
+
+```text
+PDF Processor
+    owns
+        • trimming
+        • Dropbox conversion
+        • conversion monitoring
+
+Candidate Assembler
+    owns
+        • consolidation
+        • normalization
+```
+
+The objective is cohesive ownership, not one component per responsibility.
+
+---
+
+## Components Collaborate Through Contracts
+
+Components should interact only through explicit public contracts.
+
+Internal implementation details remain private.
+
+```text
+Component A
+        │
+        │ Public Contract
+        ▼
+Component B
+```
+
+Implementation artifacts collaborate **within** a component.
+
+Components collaborate **between** components.
+
+---
+
+## Relationship to Architectural Decomposition
+
+```text
+System
+    owns capabilities
+
+Capability
+    defines business outcomes
+
+Subsystem
+    owns one business capability
+
+Component
+    owns one architectural responsibility
+
+Service
+    implements behavior within a component
+
+Class
+    implements a focused responsibility
+
+Function
+    performs a single executable behavior
+```
+
+Each level represents a progressively finer application of the Single Responsibility Principle.
+
+The definition of "single responsibility" becomes narrower as the level of abstraction decreases.
+
+---
+
+## Design Heuristic
+
+A responsibility should become its own component only when it has a distinct:
+
+- architectural contract
+- lifecycle
+- ownership boundary
+- external dependency boundary
+- reason to change independently
+
+Otherwise, it should remain behavior within an existing component.
+
 ## Rules
 
 - [adr-required](.agents/rules/adr-required.md)
@@ -187,6 +396,7 @@ Repository CLAUDE.md files define framework, deployment, branching, environment,
 - [how-to-use-adrs](.agents/rules/how-to-use-adrs.md)
 - [idiomatic-beats-clever](.agents/rules/idiomatic-beats-clever.md)
 - [memory-updates](.agents/rules/memory-updates.md)
+- [mundane-tasks](.agents/rules/mundane-tasks.md)
 - [no-hard-wrap](.agents/rules/no-hard-wrap.md)
 - [no-jumping-to-conclusions](.agents/rules/no-jumping-to-conclusions.md)
 - [one-claude-branch](.agents/rules/one-claude-branch.md)
@@ -204,13 +414,13 @@ Repository CLAUDE.md files define framework, deployment, branching, environment,
 
 ## Skills
 
-- [add-rule](.agents/skills/add-rule/SKILL.md)
+- [add-rule](.agents/skills/add-rule/SKILL.md) — Add a new global agent rule through the sync-agents workflow — scaffold with `sync-agents add rule`, write the rule body, fan it out to…
 - [adr-authoring](.agents/skills/adr-authoring/SKILL.md)
 - [analyze](.agents/skills/analyze/SKILL.md)
 - [api-endpoint-testing](.agents/skills/api-endpoint-testing/SKILL.md)
 - [architectural-decomposition](.agents/skills/architectural-decomposition/SKILL.md)
 - [base-architecture](.agents/skills/base-architecture/SKILL.md)
-- [capture-idea](.agents/skills/capture-idea/SKILL.md)
+- [capture-idea](.agents/skills/capture-idea/SKILL.md) — Capture any idea Scott has — product, platform, marketing, automation, business — to the central ideas inbox at v1/docs/ideas/inbox.md,…
 - [copilot-reviews](.agents/skills/copilot-reviews/SKILL.md)
 - [cover-letter-writing](.agents/skills/cover-letter-writing/SKILL.md)
 - [create-diagram](.agents/skills/create-diagram/SKILL.md)
@@ -219,7 +429,7 @@ Repository CLAUDE.md files define framework, deployment, branching, environment,
 - [destructive-operations](.agents/skills/destructive-operations/SKILL.md)
 - [document](.agents/skills/document/SKILL.md)
 - [filesystem-soa-module](.agents/skills/filesystem-soa-module/SKILL.md)
-- [find-skills](.agents/skills/find-skills/SKILL.md)
+- [find-skills](.agents/skills/find-skills/SKILL.md) — Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that…
 - [freeze-diagram](.agents/skills/freeze-diagram/SKILL.md)
 - [gh-new-branch](.agents/skills/gh-new-branch/SKILL.md)
 - [implement](.agents/skills/implement/SKILL.md)
@@ -228,7 +438,7 @@ Repository CLAUDE.md files define framework, deployment, branching, environment,
 - [plan](.agents/skills/plan/SKILL.md)
 - [plan-doc-checklist](.agents/skills/plan-doc-checklist/SKILL.md)
 - [problem-solving](.agents/skills/problem-solving/SKILL.md)
-- [repo-version](.agents/skills/repo-version/SKILL.md)
+- [repo-version](.agents/skills/repo-version/SKILL.md) — Maintain and verify repository versions using Semantic Versioning. Use when preparing, updating, reviewing, or completing a release PR;…
 - [session-state-handoff](.agents/skills/session-state-handoff/SKILL.md)
 - [soa-module](.agents/skills/soa-module/SKILL.md)
 - [stripe-best-practices](.agents/skills/stripe-best-practices/SKILL.md)
@@ -251,3 +461,36 @@ Repository CLAUDE.md files define framework, deployment, branching, environment,
 
 _No state snapshots yet. Agents will create STATE_*context*_*timestamp*.md files as they work._
 
+<!-- sync-agents:claude-imports:start -->
+<!-- managed by sync-agents; do not edit between the markers -->
+@.claude/rules/adr-required.md
+@.claude/rules/agent-responses.md
+@.claude/rules/ask-first.md
+@.claude/rules/autonomy.md
+@.claude/rules/coding-options.md
+@.claude/rules/coding-style.md
+@.claude/rules/commit-before-session-end.md
+@.claude/rules/concise-answers.md
+@.claude/rules/database.md
+@.claude/rules/destructive-actions.md
+@.claude/rules/documentation.md
+@.claude/rules/git-workflow.md
+@.claude/rules/how-to-use-adrs.md
+@.claude/rules/idiomatic-beats-clever.md
+@.claude/rules/memory-updates.md
+@.claude/rules/mundane-tasks.md
+@.claude/rules/no-hard-wrap.md
+@.claude/rules/no-jumping-to-conclusions.md
+@.claude/rules/one-claude-branch.md
+@.claude/rules/persona.md
+@.claude/rules/pre-existing-issues.md
+@.claude/rules/remove-the-obsolete.md
+@.claude/rules/repo-versioning.md
+@.claude/rules/solve-for-intent.md
+@.claude/rules/state.md
+@.claude/rules/test-design.md
+@.claude/rules/testing.md
+@.claude/rules/verification.md
+@.claude/rules/when-you-make-a-mistake-stop.md
+@.claude/rules/workflow.md
+<!-- sync-agents:claude-imports:end -->
