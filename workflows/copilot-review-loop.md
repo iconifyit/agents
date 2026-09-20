@@ -14,6 +14,8 @@ The repeatable, low-friction loop for handling Copilot's review feedback on an a
 
 The loop converges in **3-7 rounds** when run cleanly. Each round is 10-20 minutes from "review event lands" → "reply posted + re-request fired". The cadence is what makes it feel smooth — small scope, fast iteration, no batched cleanup.
 
+This workflow covers the Copilot loop only. It does **not** cover the adversarial reviews: the always-on [adversarial-review-agent](../rules/adversarial-review-agent.md) rule requires an `adversarial-pr-reviewer` and an `adversarial-architecture-reviewer` review on every PR regardless of how this loop goes. Running Copilot to sign-off does not satisfy that rule, and neither reviewer is a fallback for the other.
+
 ## Trigger
 
 Activate this workflow when:

@@ -6,7 +6,7 @@ trigger: always_on
 
 Language-agnostic coding conventions. These apply to **every** language.
 
-Language-specific rules live alongside this file — `javascript-coding-style`, `python-coding-style`, `go-coding-style`. When a language rule conflicts with this file, **the language rule wins**: idiomatic code in the target language always beats cross-language consistency. If a language is not covered by its own rule file, follow this file plus that language's dominant community style guide.
+Language-specific rules live alongside this file — `javascript-coding-style`, `python-coding-style`, `go-coding-style`. When a language rule conflicts with **any** general rule — this file, `persona`, `test-design`, or any other rule that is not language-specific — **the language rule wins** for code in that language: idiomatic code in the target language always beats cross-language consistency. If a language is not covered by its own rule file, follow this file plus that language's dominant community style guide.
 
 ## Author Credits
 

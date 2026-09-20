@@ -28,30 +28,21 @@ Assume that defects may exist and actively try to demonstrate where the change f
 
 For each relevant behavior or contract changed by the pull request:
 
-1. identify the claim the implementation is making (for example: this operation is
-idempotent, this state transition is recoverable, this component owns this responsibility, this migration is reversible, or these tests prove the intended behavior);
-2. attempt to break or falsify that claim using concrete execution paths, failure
-modes, boundary conditions, concurrency, retries, partial execution, downstream consumers, or repository architecture as applicable;
-3. if the claim can be falsified, report the defect with concrete evidence and a
-plausible triggering condition;
-4. if the claim cannot be falsified after reasonable investigation, do not invent a
-finding merely to maintain an adversarial posture.
+1. identify the claim the implementation is making (for example: this operation is idempotent, this state transition is recoverable, this component owns this responsibility, this migration is reversible, or these tests prove the intended behavior);
+2. attempt to break or falsify that claim using concrete execution paths, failure modes, boundary conditions, concurrency, retries, partial execution, downstream consumers, or repository architecture as applicable;
+3. if the claim can be falsified, report the defect with concrete evidence and a plausible triggering condition;
+4. if the claim cannot be falsified after reasonable investigation, do not invent a finding merely to maintain an adversarial posture.
 
 Prefer questions such as:
 
-- What input, state, timing, retry, or dependency failure makes this behave
-incorrectly?
+- What input, state, timing, retry, or dependency failure makes this behave incorrectly?
 - What happens if execution stops between two state transitions or side effects?
 - What happens when an operation or message is repeated?
-- Can partial failure strand work, corrupt state, lose data, or make recovery
-impossible?
+- Can partial failure strand work, corrupt state, lose data, or make recovery impossible?
 - Can downstream consumers correctly interpret every new or changed state/schema?
-- Does this create competing authorities, duplicated responsibility, or a bypass of
-an established public contract?
-- Can authoritative/original data be modified when only staged or derived data
-should be touched?
-- Would the verification still pass if the important implementation were removed or
-materially broken?
+- Does this create competing authorities, duplicated responsibility, or a bypass of an established public contract?
+- Can authoritative/original data be modified when only staged or derived data should be touched?
+- Would the verification still pass if the important implementation were removed or materially broken?
 
 Do not confuse adversarial review with contrarian review. The objective is to find real defects, not to argue against implementation choices. A finding is valid only when it satisfies the evidence and reporting requirements in this document.
 
@@ -68,20 +59,13 @@ Report only findings that are specific, reproducible, and actionable. Do not rep
 
 Review in this order and allocate attention accordingly. The examples are representative, not exhaustive; report other findings that satisfy the category definitions.
 
-1. **Security** — exploitable vulnerabilities or sensitive-data exposure,
-including but not limited to injection flaws, embedded secrets or credentials, unsafe handling of untrusted input, trust-boundary violations, and sensitive data exposed through logs, errors, diagnostics, or output.
-2. **Correctness** — behavior that produces an incorrect result or state,
-including but not limited to logic errors, broken primary flows, incorrect data mutations, invalid forward or rollback behavior, race conditions, unhandled asynchronous failures, resource leaks, competing authorities, or workflows that can leave work stranded or unrecoverable.
-3. **Architecture / responsibility boundaries** — changes that violate an
-established subsystem/component contract, blur ownership, create invalid dependencies, duplicate architectural responsibility, or collapse distinct responsibilities into one implementation artifact in a way that creates a concrete maintenance or correctness risk.
-4. **Edge cases** — incorrect behavior under bounded or unusual conditions,
-including but not limited to empty, null, zero, maximum, or malformed inputs; off-by-one errors; timezone and encoding issues; pagination boundaries; retries; and concurrent access.
-5. **Tests / verification** — inadequate verification of changed behavior,
-including but not limited to missing coverage, tests that would pass if the implementation were broken, assertions that do not verify the intended outcome, important failure paths that are not exercised, or changed behavior whose verification contradicts the repository's testing strategy.
-6. **Maintainability / design quality** — code qualities that create a concrete
-risk of future defects, including but not limited to dead code, unnecessary duplication, misleading names, incorrect documentation, avoidable complexity, multi-purpose services/classes, procedural orchestration that contains domain policy, infrastructure adapters that own business policy, or new abstractions whose only purpose is symmetry.
-7. **Style** — review last and only when the code violates this repository's
-documented conventions. Do not report personal preferences or formatting that an automated formatter should handle.
+1. **Security** — exploitable vulnerabilities or sensitive-data exposure, including but not limited to injection flaws, embedded secrets or credentials, unsafe handling of untrusted input, trust-boundary violations, and sensitive data exposed through logs, errors, diagnostics, or output.
+2. **Correctness** — behavior that produces an incorrect result or state, including but not limited to logic errors, broken primary flows, incorrect data mutations, invalid forward or rollback behavior, race conditions, unhandled asynchronous failures, resource leaks, competing authorities, or workflows that can leave work stranded or unrecoverable.
+3. **Architecture / responsibility boundaries** — changes that violate an established subsystem/component contract, blur ownership, create invalid dependencies, duplicate architectural responsibility, or collapse distinct responsibilities into one implementation artifact in a way that creates a concrete maintenance or correctness risk.
+4. **Edge cases** — incorrect behavior under bounded or unusual conditions, including but not limited to empty, null, zero, maximum, or malformed inputs; off-by-one errors; timezone and encoding issues; pagination boundaries; retries; and concurrent access.
+5. **Tests / verification** — inadequate verification of changed behavior, including but not limited to missing coverage, tests that would pass if the implementation were broken, assertions that do not verify the intended outcome, important failure paths that are not exercised, or changed behavior whose verification contradicts the repository's testing strategy.
+6. **Maintainability / design quality** — code qualities that create a concrete risk of future defects, including but not limited to dead code, unnecessary duplication, misleading names, incorrect documentation, avoidable complexity, multi-purpose services/classes, procedural orchestration that contains domain policy, infrastructure adapters that own business policy, or new abstractions whose only purpose is symmetry.
+7. **Style** — review last and only when the code violates this repository's documented conventions. Do not report personal preferences or formatting that an automated formatter should handle.
 
 ### Finding severity
 

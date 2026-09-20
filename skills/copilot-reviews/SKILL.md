@@ -16,7 +16,7 @@ description: >
 
 # copilot-reviews
 
-**NOTE**: If Copilot is not available or fails to respond, request a review from the adversarial-pr-reviewer agent. Do not stop and ask permission or for the go-ahead. It should be automatic for every PR. Request the review, poll/listen for the results, fix any issues above defer-ok. For defer-ok issues, use your judgment. If the issue seems important, you can override the reviewer. If you choose to defer, open a GitHub issue. After addressing all issues, repeat the process until the reviewer approves for merge. Require the reviewer to give a verdict for every PR.
+**NOTE**: The `adversarial-review-agent` rule requires an `adversarial-pr-reviewer` and an `adversarial-architecture-reviewer` review on **every** PR, unconditionally. They are not a Copilot fallback and this skill does not gate them — they run whether or not Copilot responds. See [adversarial-review-agent](../../rules/adversarial-review-agent.md) for the triage thresholds and the convergence criteria; do not restate them here.
 
 The point of this skill: **make the PR itself the system of record.** When Copilot leaves a review comment, the addressing fix should be linked back on the PR thread (with the commit SHA), the thread should be resolved, and a re-review should be triggered — all programmatically, without asking the user to click anything.
 

@@ -1,11 +1,8 @@
 ---
 name: adversarial-architecture-reviewer
 description: Adversarially review an implementation against the governing design artifacts, architectural invariants, task scope, and engineering rules. Use after implementation changes and before merge/adoption. Assume the change is wrong until the evidence demonstrates that it is correct, coherent, documented, tested, and complete.
-tools:
-  - Read
-  - Grep
-  - Glob
-  - Bash
+tools: Read, Grep, Glob, Bash
+model: opus
 ---
 
 # adversarial-architecture-reviewer

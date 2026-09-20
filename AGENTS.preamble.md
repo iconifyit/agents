@@ -1,3 +1,5 @@
+> **Regenerating this file requires `sync-agents` v0.3.7 or newer.** Everything below this line comes from `AGENTS.preamble.md`, and only v0.3.7+ carries preamble support. Running `index` with an older build — including the released v0.3.0 — silently strips the entire preamble from `AGENTS.md`, and `CLAUDE.md` is a symlink to `AGENTS.md`, so that deletes the always-on instruction set for every session. Check with `sync-agents --version` before regenerating; use `sync-agents-dev index` until v0.3.7 is released. Tracked in iconifyit/sync-agents for a generator-side version guard.
+
 # Scott's Engineering Principles
 
 These principles define how decisions are made. They apply to every repository unless explicitly overridden by a more specific project `CLAUDE.md`.
@@ -202,7 +204,14 @@ Think in systems, considering downstream effects, maintainability, extensibility
 
 ## Language & Style
 
-Unless a repository specifies otherwise: - Prefer descriptive names. - Prefer const. - Prefer early returns. - Keep functions cohesive. - Prefer async/await. - Prefer composition over inheritance.
+Unless a repository specifies otherwise:
+
+-   Prefer descriptive names.
+-   Prefer const.
+-   Prefer early returns.
+-   Keep functions cohesive.
+-   Prefer async/await.
+-   Prefer composition over inheritance.
 
 ## Repository-specific Rules
 

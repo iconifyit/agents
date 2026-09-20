@@ -14,8 +14,9 @@ The source folders are visible at the repo root; a hidden `.agents/` overlay of 
 rules/        # shared rules (edit here)
 skills/       # shared skills (<name>/SKILL.md)
 workflows/    # shared workflows
-AGENTS.md     # generated index — run `sync-agents index` after edits
-.agents/      # overlay: rules -> ../rules, skills -> ../skills, workflows -> ../workflows
+agents/       # shared agent definitions (<name>.md)
+AGENTS.md     # generated index — run `sync-agents-dev index` after edits (v0.3.7+ required)
+.agents/      # overlay: rules -> ../rules, skills -> ../skills, workflows -> ../workflows, agents -> ../agents
 bin/          # scripts (see docs/claudify.md)
 proposed/     # staged changes under review, not yet promoted
 docs/adr/     # architecture decision records
@@ -23,12 +24,14 @@ docs/adr/     # architecture decision records
 
 > **Browsing on GitHub:** the `.agents/` entries are directory symlinks (mode 120000), so GitHub won't render `.agents/.../<file>` paths. `AGENTS.md` is primarily for local tooling — on GitHub, browse the visible `rules/`, `skills/`, and `workflows/` folders directly.
 
+> **⚠️ Regenerating `AGENTS.md` requires `sync-agents` v0.3.7 or newer.** `AGENTS.md` is `AGENTS.preamble.md` plus the generated index, and only v0.3.7+ carries preamble support. Running `index` with an older build — including the currently released v0.3.0 — silently strips the entire ~280-line preamble. `CLAUDE.md` symlinks to `AGENTS.md` and `~/.agents` symlinks to this repo, so that deletes the always-on instruction set for every Claude session on this machine. Check `sync-agents --version` first; use the `sync-agents-dev` build until v0.3.7 is released.
+
 ## Usage
 
 1. Clone this repo to a global location, outside any project repo.
 2. From a project repo, run `agentify` to link the shared resources into the project's `.agents/` and sync them to the configured agent tools.
 3. Edit resources directly in `rules/` / `skills/` / `workflows/`, or scaffold new ones with `sync-agents add <type> <name>` from any agentified project — either way changes land here and propagate to every linked project via the symlinks.
-4. Run `sync-agents index` after edits to regenerate `AGENTS.md`.
+4. Run `sync-agents-dev index` after edits to regenerate `AGENTS.md`. **This requires `sync-agents` v0.3.7 or newer** — see the warning above.
 
 ## Syncing globally with `claudify`
 

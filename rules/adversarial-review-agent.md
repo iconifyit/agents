@@ -4,6 +4,32 @@ trigger: always_on
 
 # adversarial-review-agent
 
-Request a review by the adversarial-pr-reviewer on every PR. Do not stop and ask permission or for the go-ahead. It should be automatic for every PR. Request the review, poll/listen for the results, fix any issues above defer-ok. For defer-ok issues, use your judgment. If the issue seems important, you can override the reviewer's decision and fix the issue. If you choose to defer, open a GitHub issue. After addressing all issues, repeat the process until the reviewer approves for merge. Require the reviewer to give a verdict for every PR.
+Every PR gets a review from **both** the `adversarial-pr-reviewer` and the `adversarial-architecture-reviewer`. Request both automatically, without stopping to ask permission or for a go-ahead.
 
-Additionally, to ensure the code adheres to the architecture and design principles, request a review by the  adversarial-architecture-reviewer agent as well. The  adversarial-architecture-reviewer should verify that all changes are consistent with the repository's architectural rules, design documents, and established patterns.
+This is unconditional. It does not depend on whether Copilot reviewed the PR, and the adversarial reviewers are not a Copilot fallback — they run alongside it. The `copilot-reviews` skill and the `copilot-review-loop` workflow govern the Copilot loop only; neither relaxes this rule.
+
+The two reviewers answer different questions. The `adversarial-pr-reviewer` attempts to falsify the correctness, security, and testing of the changed code. The `adversarial-architecture-reviewer` verifies the change against the repository's architectural rules, design documents, ADRs, and established patterns. Neither substitutes for the other.
+
+## Acting on the results
+
+Request the reviews, poll or listen for the results, then act on every finding. The two agents emit different vocabularies, so the threshold is stated separately for each. For any possible output there is exactly one next action:
+
+| Reviewer | Finding | Action |
+| --- | --- | --- |
+| `adversarial-pr-reviewer` | `[SEV: security]` or `[SEV: core]` | Fix now. Never deferrable. |
+| `adversarial-pr-reviewer` | any finding marked `[fix-now]` | Fix now. |
+| `adversarial-pr-reviewer` | `[defer-ok]` | Your judgment — fix it, or defer and open a GitHub issue. |
+| `adversarial-architecture-reviewer` | `BLOCKER` | Fix now. Never deferrable. |
+| `adversarial-architecture-reviewer` | `MAJOR` | Fix now. |
+| `adversarial-architecture-reviewer` | `MINOR` | Your judgment — fix it, or defer and open a GitHub issue. |
+
+When you defer, open the GitHub issue before moving on. A deferral that leaves no tracked artifact is just an unrecorded decision. When you judge a `defer-ok` or `MINOR` finding important enough to fix, override the reviewer and fix it — the reviewer's triage is advice, not a ceiling.
+
+## Convergence
+
+After addressing the findings, request both reviews again. Repeat until each reviewer signs off:
+
+- `adversarial-pr-reviewer` — a verdict of **approve**.
+- `adversarial-architecture-reviewer` — a disposition of **PASS** or **PASS WITH NON-BLOCKING FINDINGS**, with every remaining finding either fixed or tracked in an issue.
+
+Require a verdict from both on every PR. A review that produces no verdict has not finished, and the loop does not terminate on it.

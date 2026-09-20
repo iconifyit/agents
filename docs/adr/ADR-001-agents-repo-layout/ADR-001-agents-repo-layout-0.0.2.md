@@ -1,8 +1,6 @@
-# [DEPRECATED]
-
-> Superseded by [ADR-001-agents-repo-layout-0.0.2.md](./ADR-001-agents-repo-layout-0.0.2.md), which adds `agents/` as a fourth artifact class. Retained for design history; do not implement from this version.
-
 # ADR-001: Global Agents Repository Layout — Visible Source with a `.agents/` Overlay
+
+**Version 0.0.2** — supersedes 0.0.1. Adds `agents/` as a fourth artifact class. The overlay mechanism itself is unchanged; 0.0.1 enumerated exactly three real directories and that enumeration is now incomplete.
 
 - **Status:** Accepted (2026-05-28)
 - **Version:** 0.0.1
@@ -12,7 +10,7 @@
 ## Context
 
 This repository (`iconifyit/agents`) is the single source of truth for all
-shared agentic resources — rules, skills, and workflows — consumed across many
+shared agentic resources — rules, skills, workflows, and agent definitions — consumed across many
 project repositories. Each project links the shared resources into its own
 `.agents/` directory and layers local additions (`STATE.md`, `config`) on top.
 
@@ -28,7 +26,7 @@ Two forces shape the layout:
    CLI manages the structure. Reading its source confirmed the source directory
    name is hardcoded — `AGENTS_DIR=".agents"` (`sync-agents.sh:14`) — and `index`
    emits `.agents/...` paths into the generated `AGENTS.md`. It cannot be pointed
-   at visible top-level `rules/` / `skills/` / `workflows/` folders. Every
+   at visible top-level `rules/` / `skills/` / `workflows/` / `agents/` folders. Every
    `sync-agents` subcommand operates on a single project root (`--dir`), walking
    up to find a `.agents/` or `.git`.
 
@@ -50,15 +48,18 @@ agents/                       # cloned to a global location (AGENTS_HOME)
 │   └── <name>/SKILL.md
 ├── workflows/                # REAL source — visible
 │   └── *.md
+├── agents/                   # REAL source — visible
+│   └── *.md
 ├── docs/adr/ ...
 └── .agents/                  # hidden OVERLAY (relative symlinks)
     ├── rules     -> ../rules
     ├── skills    -> ../skills
-    └── workflows -> ../workflows
+    ├── workflows -> ../workflows
+    └── agents    -> ../agents
 ```
 
-- The visible `rules/`, `skills/`, `workflows/` folders are the canonical files
-  you edit.
+- The visible `rules/`, `skills/`, `workflows/`, `agents/` folders are the canonical
+  files you edit.
 - The `.agents/` overlay contains only **relative** symlinks (`../rules`, …) so
   the repository is portable to any clone path / machine.
 - The overlay makes the repo a valid `sync-agents` workspace, so commands like
@@ -79,7 +80,8 @@ project/
 │   ├── STATE.md              # local — per-project state
 │   ├── rules     -> <AGENTS_HOME>/rules
 │   ├── skills    -> <AGENTS_HOME>/skills
-│   └── workflows -> <AGENTS_HOME>/workflows
+│   ├── workflows -> <AGENTS_HOME>/workflows
+│   └── agents    -> <AGENTS_HOME>/agents
 └── .claude/ , .cursor/ , …   # tool dirs produced by `sync-agents sync`
 ```
 
@@ -145,9 +147,26 @@ to `~/github/@agents`. The agreed direction:
 The packaging mechanics are implementation detail and may warrant their own ADR
 if they grow.
 
+## The fourth artifact class: `agents/`
+
+Claude Code loads subagent definitions from `~/.claude/agents/*.md`. The `adversarial-review-agent` rule makes two of them — `adversarial-pr-reviewer` and `adversarial-architecture-reviewer` — mandatory on every PR, so they have to reach every provisioned machine by the same path as every other shared resource. That makes them a shared agentic resource, not a local convenience, and the layout has to carry them.
+
+`agents/` therefore joins `rules/`, `skills/`, and `workflows/` as a real, visible source directory at the repo root, with a matching relative symlink `.agents/agents -> ../agents` in the overlay. Nothing about the mechanism is new; only the enumeration changed.
+
+`sync-agents` already supported the bucket before this ADR — `internal/agent/bucket.go` registers `{Dir: "agents", Artifact: ArtifactAgent, LocalTools: ["claude"]}`. The gap was purely in this repository: the symlink did not exist, so `index` emitted no `## Agents` section and `sync --targets claude` never created `.claude/agents`. Adding the symlink is the whole fix.
+
+Two properties distinguish this bucket from the other three, and both are deliberate:
+
+- **It is Claude-only.** `LocalTools` names `claude` alone, so the bucket fans out to `.claude/agents` and to no other tool directory. The other three buckets fan out to every configured target.
+- **Each agent is a single flat file**, `agents/<name>.md`, like `rules/`. It does not use the `<name>/SKILL.md` directory shape that `skills/` uses.
+
+### Invariant
+
+Every artifact class present as a real directory at the repo root **must** have a corresponding relative symlink in `.agents/`, and vice versa. A root directory with no overlay entry is invisible to `sync-agents` and silently fails to distribute — which is exactly how the `agents/` bucket went missing. An overlay entry with no root directory is a broken link. Adding a fifth artifact class means adding both halves and revising this ADR again.
+
 ## Code being removed
 
-None — this ADR is additive. It establishes the initial repository layout and removes no existing code or modules.
+None. Version 0.0.2 is additive: it registers a fourth artifact class and removes nothing. Version 0.0.1 is superseded as a document but no code, directory, or symlink it described is retired — `rules/`, `skills/`, and `workflows/` keep the exact shape 0.0.1 gave them.
 
 ## Consequences
 

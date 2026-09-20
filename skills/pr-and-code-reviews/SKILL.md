@@ -167,6 +167,40 @@ the existing mechanism blocks the required outcome.
 
 Do not report adjacent cleanup merely because it could be improved. The issue must be introduced or materially worsened by the pull request.
 
+#### 2.1. Superseded, duplicate, and unused artifacts
+
+When a pull request replaces, rewrites, supersedes, or substantially refactors existing behavior, actively inspect whether the previous implementation and its associated artifacts are still reachable, referenced, deployed, scheduled, configured, or otherwise active.
+
+Call out artifacts that appear to have become unused, obsolete, duplicated, or unintentionally left active as a result of the change. This applies to implementation and operational artifacts, not only source code. Examples include:
+
+- superseded functions, classes, modules, services, commands, handlers, adapters, tests, configuration, or documentation;
+- duplicate implementations of the same responsibility when the new implementation should have replaced or refactored the existing one;
+- obsolete deployment, runtime, scheduling, automation, integration, storage, messaging, monitoring, or other operational resources;
+- old entry points or triggers that can still invoke superseded behavior;
+- unreachable code or resources with no remaining consumer;
+- compatibility paths retained without a documented compatibility requirement;
+- tests that exclusively exercise behavior that has been retired.
+
+Distinguish **inactive clutter** from **active duplication**:
+
+- Unused or unreachable artifacts that merely create maintenance burden should normally be reported as `[SEV: edge] [defer-ok]`. They do not automatically block the pull request.
+- Superseded artifacts that remain active, reachable, deployable, scheduled, triggered, or capable of competing with the replacement can create duplicate processing, conflicting state changes, competing authorities, unexpected cost, or other runtime effects. Classify these according to their actual impact; if they materially compromise the primary workflow or architectural ownership, report them as `[SEV: core] [fix-now]`.
+- Do not classify an artifact as dead merely because the pull request does not reference it directly. Verify reachability using the repository's composition roots, registrations, configuration, deployment definitions, runtime wiring, public contracts, and other relevant references.
+
+Prefer **refactoring or replacing an existing artifact** when it already owns the responsibility and can satisfy the new contract. Creating a parallel artifact is justified only when there is a concrete architectural, compatibility, migration, isolation, or lifecycle reason for both to exist.
+
+When a new artifact supersedes an old one, review the **cutover**, not just the new implementation. Ask:
+
+- What did this replace?
+- Is the previous implementation still referenced or reachable?
+- Can both old and new implementations run?
+- Can both consume, mutate, publish, schedule, or otherwise act on the same logical work?
+- Are obsolete triggers, registrations, routes, resources, configuration, tests, or documentation still present?
+- Is coexistence intentional and documented, or accidental?
+- If temporary coexistence is required, is there a clear boundary preventing the two implementations from competing for the same responsibility or work?
+
+Do not demand deletion when an artifact is intentionally retained for compatibility, rollback, migration, historical evidence, or another documented purpose. In those cases, verify that the retained artifact cannot unintentionally participate in the new runtime path.
+
 #### 3. Intent and architectural correctness
 
 Review for the intended system behavior, not merely whether the code compiles or matches a superficial specification.
