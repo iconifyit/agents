@@ -465,6 +465,11 @@ Otherwise, it should remain behavior within an existing component.
 - [prune-obsolete](workflows/prune-obsolete.md)
 - [refactor](workflows/refactor.md)
 
+## Agents
+
+- [adversarial-architecture-reviewer](agents/adversarial-architecture-reviewer.md) — Adversarially review an implementation against the governing design artifacts, architectural invariants, task scope, and engineering rules.…
+- [adversarial-pr-reviewer](agents/adversarial-pr-reviewer.md) — Adversarial pull request reviewer that attempts to falsify correctness and evaluates changed code for security, behavioral correctness,…
+
 ## State
 
 _No state snapshots yet. Agents will create STATE_*context*_*timestamp*.md files as they work._
