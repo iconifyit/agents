@@ -217,6 +217,8 @@ Think in systems, considering downstream effects, maintainability, extensibility
 
 ## Language & Style
 
+These are cross-language defaults, and they are the one part of this preamble that does **not** outrank `rules/`: a language-specific rule (`python-coding-style`, `go-coding-style`, `javascript-coding-style`) governs code in its own language, even where it contradicts the list below. Several items here are JavaScript-flavored and do not transfer.
+
 Unless a repository specifies otherwise:
 
 -   Prefer descriptive names.

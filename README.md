@@ -17,6 +17,7 @@ workflows/    # shared workflows
 agents/       # shared agent definitions (<name>.md)
 AGENTS.md     # generated index — run `sync-agents-dev index` after edits (v0.3.7+ required)
 .agents/      # overlay: rules -> ../rules, skills -> ../skills, workflows -> ../workflows, agents -> ../agents
+cli/          # wrapper scripts (the canonical execution path)
 proposed/     # staged changes under review, not yet promoted
 docs/adr/     # architecture decision records
 ```

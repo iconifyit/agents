@@ -46,7 +46,7 @@ ADR-001's overlay was described purely as directory symlinks, one per artifact c
 
 ## Decision
 
-**`AGENTS.md` is a composed artifact: a hand-authored preamble prepended to a generated index. The preamble carries principles; `rules/` carries rules; where they overlap, the rule wins.**
+**`AGENTS.md` is a composed artifact: a hand-authored preamble prepended to a generated index. The preamble carries principles; `rules/` elaborates them into enforceable specifics; where they conflict, the preamble wins.**
 
 ### Composition order is fixed and generator-owned
 
@@ -57,6 +57,8 @@ The order above is not configurable from this repository. The header is emitted 
 **Where `AGENTS.preamble.md` and a `rules/` file conflict, the preamble governs.** It is the authored statement of how Scott wants decisions made; the rules elaborate it. A rule that contradicts the preamble is wrong and gets corrected, not accommodated.
 
 This is the opposite direction from `rules/coding-style.md`'s language-over-general precedence, and deliberately so. That clause resolves specificity *within* the rules layer — a Python rule beating a cross-language rule. This clause resolves authority *between* layers, and the preamble is the higher layer.
+
+**One carve-out:** `AGENTS.preamble.md` §Language & Style does not outrank the language rules. That section is a list of cross-language defaults and several items are JavaScript-flavored ("Prefer const"), so under between-layers precedence it would otherwise govern Python and Go code against `rules/python-coding-style.md` and `rules/go-coding-style.md`, which explicitly disclaim JS conventions. The section states its own exception inline. This is the only part of the preamble that yields to a rule, and it yields only to a language-specific one, for code in that language.
 
 **Where a rule is a true duplicate of preamble content — same scope, nothing added — the rule is deleted and the preamble kept.** Two copies of one instruction in one composed file is a drift hazard with no upside.
 
