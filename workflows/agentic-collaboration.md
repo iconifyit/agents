@@ -223,7 +223,7 @@ The team that derived this pattern (an Eagle plugin project) uses these artifact
 ## Out of scope of this document
 
 - **Coordination-mechanism design for multi-agent.** The framing is in the `multi-agent-orchestration` skill; the deeper protocol design (shared state schema, message format, role taxonomy, conflict resolution) is a deferred topic. Pick a small experiment when the need arises.
-- **Tooling automation around the pattern.** No template generator or project-init script beyond what `sync-agents` and `claudify` already provide. The pattern is described; teams adopt it through the skills it drives.
+- **Tooling automation around the pattern.** No template generator or project-init script beyond what `sync-agents` already provides. The pattern is described; teams adopt it through the skills it drives.
 - **Prescriptive templates.** This doc describes the shape of plan docs and ADRs in prose; the `plan-doc-checklist` and `adr-authoring` skills carry the actual structure. Each project's templates should reflect the project's own conventions.
 - **Tool-specific instructions.** Agentic tooling evolves rapidly; pinning commands or flags here would date the doc within months. Adapt the pattern to whatever tool the team is using.
 
