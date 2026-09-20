@@ -1,4 +1,37 @@
-## Code review instructions
+---
+name: pr-and-code-reviews
+description: Perform adversarial pull request and code reviews that actively attempt to falsify correctness, security, architectural integrity, and verification claims, then report only concrete, reproducible, actionable findings with severity and disposition. Use when reviewing pull requests, diffs, patches, commits, implementation changes, or when asked to review code for defects, architecture violations, unsafe behavior, or inadequate tests.
+---
+
+# pr-and-code-reviews
+
+## Usage
+
+Use this skill whenever conducting a pull request or code review. Treat the proposed implementation as an unproven claim: actively attempt to falsify its correctness rather than confirming that it looks reasonable. Review the changed behavior against repository-specific architecture, contracts, engineering rules, tests, and the criteria below.
+
+The reviewer must try to identify concrete failure modes, but must never manufacture findings merely to satisfy the adversarial posture. A finding is valid only when it is specific, reproducible or grounded in a plausible execution path, and actionable. If attempts to falsify the implementation fail, approval is the correct outcome.
+
+When repository-specific instructions, ADRs, architecture documents, implementation plans, or component contracts exist, inspect the relevant sources before reaching a verdict. Repository-specific rules take precedence over generic guidance in this skill.
+
+## Examples
+
+```text
+Review PR #90 using the pr-and-code-reviews skill.
+
+Review this diff adversarially for correctness, architecture, security, recovery, idempotency, and verification defects.
+
+Re-review the PR after the latest fixes and report only findings that still apply.
+```
+
+## Notes
+
+- The objective is falsification, not fault-finding for its own sake.
+- Do not invent findings to populate a review.
+- Focus on behavior introduced or materially affected by the change; do not turn unrelated pre-existing issues into PR findings.
+- Project-specific rules and architecture are authoritative when they conflict with generic examples here.
+- Every reported finding must use the mandatory severity/disposition prefix defined below.
+
+## Review instructions
 
 > ### ⛔ MANDATORY OUTPUT FORMAT — READ THIS FIRST ⛔
 >
@@ -69,9 +102,9 @@ Report only findings that are specific, reproducible, and actionable. Do not rep
 Review in this order and allocate attention accordingly. The examples are representative, not exhaustive; report other findings that satisfy the category definitions.
 
 1. **Security** — exploitable vulnerabilities or sensitive-data exposure,
-including but not limited to injection flaws, embedded secrets or credentials, unsafe handling of untrusted input, trust-boundary violations, and sensitive data exposed through logs, errors, diagnostics, or output.
+including but not limited to SQL injection, embedded secrets (passwords, keys, tokens, or a hash of a secret committed in source), unsafe deserialization, and sensitive data exposed through logs, errors, or query output.
 2. **Correctness** — behavior that produces an incorrect result or state,
-including but not limited to logic errors, broken primary flows, incorrect data mutations, invalid forward or rollback behavior, race conditions, unhandled asynchronous failures, resource leaks, competing authorities, or workflows that can leave work stranded or unrecoverable.
+including but not limited to logic errors, broken primary flows, incorrect data mutations, wrong migration up/down behavior, race conditions, unhandled asynchronous failures, resource/connection leaks, competing authorities, or workflows that can leave work stranded or unrecoverable.
 3. **Architecture / responsibility boundaries** — changes that violate an
 established subsystem/component contract, blur ownership, create invalid dependencies, duplicate architectural responsibility, or collapse distinct responsibilities into one implementation artifact in a way that creates a concrete maintenance or correctness risk.
 4. **Edge cases** — incorrect behavior under bounded or unusual conditions,
@@ -134,41 +167,6 @@ the existing mechanism blocks the required outcome.
 
 Do not report adjacent cleanup merely because it could be improved. The issue must be introduced or materially worsened by the pull request.
 
-
-#### 2.1. Superseded, duplicate, and unused artifacts
-
-When a pull request replaces, rewrites, supersedes, or substantially refactors existing behavior, actively inspect whether the previous implementation and its associated artifacts are still reachable, referenced, deployed, scheduled, configured, or otherwise active.
-
-Call out artifacts that appear to have become unused, obsolete, duplicated, or unintentionally left active as a result of the change. This applies to all implementation and operational artifacts, not only source code. Examples include:
-
-- superseded functions, classes, modules, services, commands, handlers, adapters, tests, configuration, or documentation;
-- duplicate implementations of the same responsibility when the new implementation should have replaced or refactored the existing one;
-- obsolete deployment, runtime, scheduling, automation, integration, storage, messaging, monitoring, or other operational resources;
-- old entry points or triggers that can still invoke superseded behavior;
-- unreachable code or resources with no remaining consumer;
-- compatibility paths retained without a documented compatibility requirement;
-- tests that exclusively exercise behavior that has been retired.
-
-Distinguish **inactive clutter** from **active duplication**:
-
-- Unused or unreachable artifacts that merely create maintenance burden should normally be reported as `[SEV: edge] [defer-ok]`. They do not automatically block the pull request.
-- Superseded artifacts that remain active, reachable, deployable, scheduled, triggered, or capable of competing with the replacement can create duplicate processing, conflicting state changes, competing authorities, unexpected cost, or other runtime effects. Classify these according to their actual impact; if they materially compromise the primary workflow or architectural ownership, report them as `[SEV: core] [fix-now]`.
-- Do not classify code as dead merely because the pull request does not reference it directly. Verify reachability using the repository's composition roots, registrations, configuration, deployment definitions, runtime wiring, public contracts, and other relevant references.
-
-Prefer **refactoring or replacing an existing artifact** when it already owns the responsibility and can satisfy the new contract. Creating a parallel artifact is justified only when there is a concrete architectural, compatibility, migration, isolation, or lifecycle reason for both to exist.
-
-When a new artifact supersedes an old one, review the **cutover**, not just the new implementation. Ask:
-
-- What did this replace?
-- Is the previous implementation still referenced or reachable?
-- Can both old and new implementations run?
-- Can both consume, mutate, publish, schedule, or otherwise act on the same logical work?
-- Are obsolete triggers, registrations, routes, resources, configuration, tests, or documentation still present?
-- Is coexistence intentional and documented, or accidental?
-- If temporary coexistence is required, is there a clear boundary preventing the two implementations from competing for the same responsibility or work?
-
-Do not demand deletion when an artifact is intentionally retained for compatibility, rollback, migration, historical evidence, or another documented purpose. In those cases, verify that the retained artifact cannot unintentionally participate in the new runtime path.
-
 #### 3. Intent and architectural correctness
 
 Review for the intended system behavior, not merely whether the code compiles or matches a superficial specification.
@@ -193,7 +191,7 @@ Apply the following thesis:
 
 A component is a cohesive collection of collaborating implementation artifacts that owns one architectural responsibility behind a public contract.
 
-A component is **not inherently** a class, service, module, deployable unit, or file.
+A component is **not inherently** a class, service, module, Lambda function, or file.
 
 Review implications:
 
@@ -357,10 +355,10 @@ improvement. Review the scope of the pull request.
 
 Example of a correctly formatted finding (note the bare prefix, with no surrounding backticks):
 
-> [SEV: core] [fix-now] The step moves the artifact at its original source path, so authoritative data is relocated instead of a staged working copy.
+> [SEV: core] [fix-now] The stage moves the file at its original client path, so a client's source artwork is relocated instead of a staged copy.
 >
-> The completion step moves the artifact identified by the record's path field into the finished location. When that field holds the original source path rather than a staging copy, the move relocates authoritative data out of its source location.
-> This pull request changes the record to carry original source paths.
+> `upload-to-flickr` moves `file.pathDisplay` into the done folder. When the manifest record points at the original Dropbox path rather than a CANDIDATES staging copy, that move relocates the client's original file out of its source folder.
+> This pull request changes the manifest to carry original paths.
 >
 > Suggested fix: stage a working copy and point the record at it, so the move never touches the original.
 
@@ -390,30 +388,29 @@ Do not invent findings merely to populate the review.
 
 Treat repository-specific rules and architecture as authoritative. Do not flag code that follows them. When a finding depends on a project rule, cite the relevant rule or file in the comment.
 
-Inspect the repository-specific rule sources relevant to the changed code. Depending on the repository, these may include:
+At minimum, inspect the repository-specific rule sources relevant to the changed code, such as:
 
-- repository or project engineering instructions;
-- project overview and usage documentation;
+- `CLAUDE.md` / project engineering instructions;
+- `README.md`;
 - architecture documents and diagrams;
-- implementation plans and inventories;
-- decision records;
-- change history and migration documentation;
-- component or subsystem specifications;
-- public-contract, schema, protocol, or compatibility documentation;
-- security and operational policies;
-- test strategy and coding conventions.
+- implementation-plan/inventory documents;
+- `CHANGELOG.md`;
+- relevant `docs/adr/` decision records;
+- component/subsystem specifications.
 
-Repository-specific rules supply the concrete technologies, implementation details, naming conventions, deployment environment, compatibility rules, and operational constraints. This global policy must not invent them.
+Repository-specific rules override generic examples in this document.
 
-When repository-specific rules conflict with a generic example in this document, the repository-specific rule governs unless it conflicts with a higher-order safety or security requirement.
+The following rules from the existing review configuration remain authoritative when they apply to this repository:
 
-### Global constraints retained across repositories
-
-The following concerns are globally applicable, but their concrete implementation is determined by each repository:
-
-- **Destructive operations:** protect authoritative or original data. Distinguish source data from staged, derived, temporary, or disposable working data. Flag changes that can unintentionally modify, overwrite, relocate, or delete authoritative data when the intended operation should affect a non-authoritative working representation. For multi-item work, evaluate whether failure isolation matches the documented component contract rather than prescribing fail-fast or continue-on-error globally.
-- **Secrets and sensitive information:** never embed credentials, secrets, private keys, tokens, or equivalent sensitive authentication material in inappropriate durable artifacts, and never expose them through logs, errors, diagnostics, telemetry, or output. Respect the repository's established configuration, secret-management, authentication, authorization, encryption, and trust boundaries without prescribing a vendor or mechanism.
-- **Public contracts and evolution:** treat externally consumed interfaces, representations, behaviors, and protocols as contracts. Flag incompatible changes that bypass the repository's documented compatibility, migration, deprecation, or versioning policy. Do not assume a particular packaging or versioning scheme.
-- **Coding conventions:** apply the repository's documented language, naming, formatting, documentation, and structural conventions. Do not import conventions from unrelated projects, languages, frameworks, or environments.
-- **Testing conventions:** require meaningful verification that would detect materially broken behavior. Apply the repository's documented test strategy, data-realism requirements, determinism rules, test organization, and integration boundaries without prescribing a framework or directory structure.
-- **Generated or externally maintained artifacts:** do not perform source-level review of generated, vendored, machine-maintained, or externally owned artifacts unless the repository explicitly treats them as reviewable source or the pull request changes how they are generated or consumed.
+- **Destructive Dropbox operations:** consumers rely on this library to perform
+Dropbox file and folder operations, including moves and deletes. Any change that could move, delete, or overwrite a client's original source file (rather than a staged working copy) is `[SEV: core] [fix-now]`. When the library processes a batch, a single-item failure must be skipped and logged, never fail the whole batch, unless the caller's contract explicitly says otherwise.
+- **Secrets and tokens:** configuration comes from the consumer's environment
+(read via `process.env`) and, increasingly, AWS Secrets Manager; never hardcode a password, key, token, or a hash of a secret in source — any such literal is `[SEV: security] [fix-now]`. `DropboxAuthService` handles OAuth refresh and access tokens; a change that logs, prints, or otherwise exposes a token or refresh token is `[SEV: security] [fix-now]`.
+- **Public API and versioning:** because this is a shared package, its exports are
+a contract. Flag any change that removes, renames, or alters the signature of an exported symbol (in `index.js` or a `src/**/index.js`) that is not accompanied by a corresponding SemVer version bump in `package.json` and a `CHANGELOG.md` entry — a breaking public-API change without a major bump is `[SEV: core] [fix-now]`.
+- **Coding conventions:** `camelCase` for variables/functions; `PascalCase` for
+classes, enums, and static objects; `UPPER_SNAKE_CASE` for global constants (prefix env-derived constants with `k`); `lower_snake_case` only for database column names. Align object properties on the colon. Put `else`/`else if` on its own line; prefer an early `return`/`throw` over a redundant `else`. Use ternaries only to choose between two values, never actions, and no more than two per expression. Document functions with JSDoc.
+- **Testing conventions:** Jest. Tests live under `src/test/`. Every test opens
+with a comment stating its scenario. Seed realistic domain data — no `foo`/`bar`/arbitrary IDs. Freeze time to a fixed ISO timestamp; no future dates. A test must fail if the implementation it covers is removed.
+- **Generated or vendored code:** Do not give source-level review to lockfiles
+(`package-lock.json`) or Jest `__snapshots__`.
