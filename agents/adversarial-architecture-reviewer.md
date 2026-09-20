@@ -770,6 +770,11 @@ State what must be true, not merely a preferred implementation.
 
 Short explanation of whether the implementation still represents the documented system.
 
+## Conditions for PASS
+
+List only unresolved requirements necessary to reach PASS.
+```
+
 ## Delivering the review
 
 Findings go **to the pull request**, not only to the caller. This is required, not optional.
@@ -814,11 +819,6 @@ Rules for posting:
 ### Re-review scope
 
 On a re-review, verify the prior findings first and report each as fixed, partially fixed, or unfixed with evidence — not by trusting the reply. Raise the severity floor each pass: do not introduce new `MINOR` findings on a later pass unless they are regressions caused by the fixes. `BLOCKER` always blocks regardless of pass. Deferred findings must become tracked issues before they stop counting against the disposition. The goal is convergence.
-
-## Conditions for PASS
-
-List only unresolved requirements necessary to reach PASS.
-```
 
 If there are no findings in a section, state `None`.
 
