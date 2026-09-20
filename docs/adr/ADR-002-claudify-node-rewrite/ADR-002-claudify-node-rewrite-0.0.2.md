@@ -19,7 +19,13 @@ The premise was that the Node package brought capability the project did not oth
 | `workflows/*.md` | symlink into `.claude/commands/<name>.md` |
 | `rules/*.md` | `@`-import block in `CLAUDE.md` |
 
-`sync-agents` produces all three, with **byte-identical link targets**. Verified rather than assumed — `sync-agents global sync --targets claude --dry-run` emits `would link /Users/scott/.claude/commands/bugfix.md -> /Users/scott/.agents/workflows/bugfix.md` for all 11 workflows, matching exactly the links claudify had created in June. The routing is not incidental: `ArtifactWorkflow` defaults to `Invocable` (`internal/agent/semantic.go:72`), and invocable single-file artifacts land in Claude's `commands/` surface (`internal/agent/destination.go:190`).
+`sync-agents` produces all three, with **byte-identical link targets**. Verified empirically, not by reading the routing table, and on a disposable global root so the real `~/.claude` was never a test target:
+
+1. **Dry run.** `sync-agents global sync --targets claude --dry-run` emits `would link /Users/scott/.claude/commands/bugfix.md -> /Users/scott/.agents/workflows/bugfix.md` for all 11 workflows — exactly the links claudify had created in June.
+2. **Clean root.** A disposable root containing only a symlink to this repo's `.agents/`, then one `global sync`: all 11 `commands/` entries created, plus 35 rules, 29 skills, 2 agents, and the `CLAUDE.md` managed block with 35 `@`-imports.
+3. **Reconciliation.** Deleted one entry from that root and re-synced; it came back. So the behavior is not a one-time artifact of an empty directory — the tool reconciles to the desired state.
+
+The routing is not incidental: `ArtifactWorkflow` defaults to `Invocable` (`internal/agent/semantic.go:72`), and invocable single-file artifacts land in Claude's `commands/` surface (`internal/agent/destination.go:190`). Step 3 is the one that matters most for anyone revisiting this decision — a clean-root success alone would not have ruled out claudify's links merely being left in place and never re-asserted.
 
 The three capabilities 0.0.1 credited to the Node implementation:
 
