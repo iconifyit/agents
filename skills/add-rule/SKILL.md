@@ -15,13 +15,23 @@ When Scott asks to "make a rule", "add a rule", "formalize this as a rule", or o
 
 1. **Go to the agents repo.** `cd /Users/scott/github/@agents` — all `sync-agents` commands run from here.
 
-2. **Scaffold the rule.** `sync-agents add rule <rule-name>` — creates `.agents/rules/<rule-name>.md` with `trigger: always_on` frontmatter. Use a short kebab-case name (e.g. `no-hard-wrap`). If it already exists, add `--force` or just edit the file in place.
+2. **Scaffold the rule.** `sync-agents add rule <rule-name>` — creates `.agents/rules/<rule-name>.md` with `trigger: always_on` frontmatter. Use a short kebab-case name (e.g. `no-hard-wrap`). If it already exists, **edit the file in place** — do not pass `--force`. See the warning below.
 
 3. **Write the rule body.** Edit `.agents/rules/<rule-name>.md`: keep the `trigger: always_on` frontmatter, set the heading to `# <rule-name>`, and write the rule. Write prose as one line per paragraph — do not hard-wrap (see the `no-hard-wrap` rule). State the rule, then a short "why" so future sessions know its intent.
 
 4. **Fan it out to the tools.** `sync-agents-dev global sync --targets claude` — routes `.agents/` into the per-tool global dirs (`~/.claude/rules/` and the concatenated global `CLAUDE.md`). This is what makes the rule apply to every session. Add more targets comma-separated if other tools are in use.
 
-5. **Regenerate the index.** `sync-agents index` — rewrites `AGENTS.md` so the new rule is listed.
+5. **Regenerate the index.** `sync-agents-dev index` — rewrites `AGENTS.md` so the new rule is listed. **Use the `-dev` build, and check `sync-agents --version` first: regenerating requires v0.3.7 or newer.** An older build (including the released v0.3.0) silently strips the ~280-line `AGENTS.preamble.md` body from `AGENTS.md`, and `CLAUDE.md` symlinks to `AGENTS.md`, so that deletes the always-on instruction set for every session. Tracked in iconifyit/agents#11.
+
+## ⛔ Never pass `--force`
+
+`--force` is prohibited in this repo, without exception.
+
+`.agents/{rules,skills,workflows,agents}` are whole-directory symlinks into the visible source folders (ADR-001). `--force` writes *through* those links into the repo itself: it renames real source files aside as `<name>.replaced-by-sync-agents` and leaves self-referential broken symlinks in their place. It applies repo-wide, not to the one path you were thinking about.
+
+This has already happened once — a single `global sync --force` converted five real `skills/*/SKILL.md` files into broken symlinks, recovered only because they were committed.
+
+If a command refuses because a destination already exists, that refusal is correct. Read the conflict, resolve it deliberately, and never reach for the flag that silences it.
 
 ## Verify
 
