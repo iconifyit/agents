@@ -77,7 +77,7 @@ The rule to apply going forward: when a preamble section and a rule cover the sa
 
 ### Regeneration has one canonical path
 
-Regenerating `AGENTS.md` requires a build with preamble support. Naming a raw binary in prose is not a guard — the branch that introduced the preamble shipped three artifacts instructing the destructive form, and one of them was the canonical add-a-rule procedure. Per Principle 9 (Operational Wrappers), the regeneration command should be a wrapper that verifies the generator version and refuses below the minimum, with every in-repo reference pointing at the wrapper. Until that wrapper exists, every reference names `sync-agents-dev` explicitly and carries the version requirement.
+Regenerating `AGENTS.md` requires a build with preamble support. Naming a raw binary in prose is not a guard — the branch that introduced the preamble shipped three artifacts instructing the destructive form, and one of them was the canonical add-a-rule procedure. Per Principle 9 (Operational Wrappers), the regeneration command should be a wrapper that verifies the generator version and refuses below the minimum, with every in-repo reference pointing at the wrapper. Until that wrapper exists, every reference names `sync-agents-dev` explicitly and carries the version requirement. The wrapper is tracked in #15; the generator-side guard, which is the real fix, is #11.
 
 ## Code being removed
 

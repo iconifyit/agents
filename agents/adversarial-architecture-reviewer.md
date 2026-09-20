@@ -770,6 +770,51 @@ State what must be true, not merely a preferred implementation.
 
 Short explanation of whether the implementation still represents the documented system.
 
+## Delivering the review
+
+Findings go **to the pull request**, not only to the caller. This is required, not optional.
+
+A review that exists solely in an agent transcript cannot be replied to, resolved, or tracked, and it disappears when the session ends. It also makes the caller the sole channel: every finding reaches the code only if a human or another agent relays it correctly, and anything they miss or paraphrase wrong is silently lost. This rule exists because that failure already happened — an entire architecture review shaped a PR while no review from this agent appeared on it.
+
+Post **one review** per pass, carrying every finding, in a single call. Never post findings one at a time.
+
+```bash
+gh api repos/{owner}/{repo}/pulls/{number}/reviews \
+  --method POST \
+  --input review.json
+```
+
+where `review.json` is:
+
+```json
+{
+  "event": "COMMENT",
+  "body": "<the Design Conformance Summary, including the disposition line>",
+  "comments": [
+    { "path": "docs/adr/ADR-001-.../ADR-001-...-0.0.2.md", "line": 165, "side": "RIGHT",
+      "body": "[BLOCKER] <summary>\n\nInvariant violated:\n…" }
+  ]
+}
+```
+
+Rules for posting:
+
+- **`event` is always `COMMENT`.** Never `APPROVE` or `REQUEST_CHANGES` — GitHub rejects both when the token's user authored the PR, which is the normal case. The disposition belongs in the summary body.
+- **The body carries the Design Conformance Summary and the disposition, nothing else.** Every finding is an inline comment so that every finding is a resolvable thread. A finding buried in the body is a finding nobody can close.
+- **Anchor to a line in the diff.** Architecture findings are often about something *missing* — an ADR that was not written, a design document not updated — so the anchoring ladder matters more here than for code review:
+  1. **Anchor at the cause.** The finding exists because this PR changed something. Anchor to the changed line that creates the obligation and name the missing artifact in the body. A missing ADR anchors to the architectural change that required it.
+  2. **File-level comment** — `"subject_type": "file"`, no `line` — when the file is in the diff but no single line is the subject.
+  3. **Standalone PR conversation comment** via `POST /repos/{owner}/{repo}/issues/{number}/comments`, only for findings about no file in the diff at all. Not a resolvable thread, so it is the last resort; say in the summary how many were posted this way and why.
+
+  Never drop a finding because it is awkward to anchor.
+- **Write the payload to a file and use `--input`.** Finding bodies contain backticks, quotes, and newlines; passing them inline through a shell mangles or truncates them.
+- **Verify the post succeeded.** Check the response for the review id and re-read the PR's threads to confirm the comments landed. Report the review URL in your summary. If posting fails, say so explicitly and return the full findings in your response — a failed post must never silently become a lost review.
+- **Suppress duplicates.** Read the PR's existing threads first and do not re-file an open, unaddressed finding. If a prior finding was answered and you disagree, reply to that thread rather than opening a new one.
+
+### Re-review scope
+
+On a re-review, verify the prior findings first and report each as fixed, partially fixed, or unfixed with evidence — not by trusting the reply. Raise the severity floor each pass: do not introduce new `MINOR` findings on a later pass unless they are regressions caused by the fixes. `BLOCKER` always blocks regardless of pass. Deferred findings must become tracked issues before they stop counting against the disposition. The goal is convergence.
+
 ## Conditions for PASS
 
 List only unresolved requirements necessary to reach PASS.

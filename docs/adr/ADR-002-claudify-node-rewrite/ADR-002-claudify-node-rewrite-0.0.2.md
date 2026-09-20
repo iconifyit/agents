@@ -62,7 +62,7 @@ Everything is archived at `/Users/scott/github/_archive/claudify-20260920/` with
 
 **Negative / risks**
 
-- The CI drift-check gap is now unowned here. It should be filed against `sync-agents`.
+- The CI drift-check gap is now unowned here. Tracked in #14.
 - claudify's safety features — self-test gate, timestamped backups, inode tamper detection — go with it. They guarded a tool that no longer exists, but the underlying concern (a sync that silently clobbers hand-written content) still applies to `sync-agents` and is worth revisiting there.
 - Project-scope equivalence was verified by reading `sync-agents`' routing table, not by running project `sync` against a real consuming repository. If project scope is used anywhere, confirm the output matches before relying on this.
 

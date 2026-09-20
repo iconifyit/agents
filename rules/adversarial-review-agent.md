@@ -29,7 +29,7 @@ When you defer, open the GitHub issue before moving on. A deferral that leaves n
 
 After addressing the findings, request both reviews again. Repeat until each reviewer signs off:
 
-- `adversarial-pr-reviewer` — a verdict of **approve**.
+- `adversarial-pr-reviewer` — a `RECOMMENDATION` of **Approve** or **Approve with suggestions**, with every remaining finding either fixed or tracked in an issue. Both are sign-off: deferring a `defer-ok` finding is authorized above, and a deferred finding is exactly what produces "Approve with suggestions", so treating only "Approve" as sign-off would make the loop non-terminating in its own designed common case.
 - `adversarial-architecture-reviewer` — a disposition of **PASS** or **PASS WITH NON-BLOCKING FINDINGS**, with every remaining finding either fixed or tracked in an issue.
 
 Require a verdict from both on every PR. A review that produces no verdict has not finished, and the loop does not terminate on it.
