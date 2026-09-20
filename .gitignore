@@ -154,9 +154,8 @@ CLAUDE.md
 **/_archive
 **/_bak
 **/STATE.md
-# claudify — ephemeral self-test sandbox
+# scratch + local data (formerly the claudify sandbox and backup store)
 tmp/
-# claudify — persistent backup store (7-day retention)
 data/
 # Python bytecode (from running skills/copilot-reviews/resolve-threads.py locally)
 **/__pycache__/

@@ -1,5 +1,7 @@
 # Troubleshooting: Global Claude Inheritance Setup
 
+> **Note (2026-09-20):** `bin/claudify` no longer exists. It was removed along with `bin/agentify` and the `claudify/` Node package — see [ADR-002 v0.0.2](../adr/ADR-002-claudify-node-rewrite/ADR-002-claudify-node-rewrite-0.0.2.md). This document is kept as the record of the incident; the tool names below are historical.
+
 How the `@agents` repo's rules, skills, and workflows reach Claude globally
 (in every repo, every session), the problems hit while wiring it up, and the
 resolutions. Written after a debugging session on 2026-06-20.

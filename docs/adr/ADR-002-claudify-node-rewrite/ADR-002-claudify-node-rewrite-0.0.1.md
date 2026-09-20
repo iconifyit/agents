@@ -1,3 +1,7 @@
+# [DEPRECATED]
+
+> Superseded by [ADR-002-claudify-node-rewrite-0.0.2.md](./ADR-002-claudify-node-rewrite-0.0.2.md), which abandons the rewrite: `sync-agents` already provides the capability, verified by dry-run producing byte-identical link targets. This version was never promoted past Proposed and its three-PR sequence was cancelled. Retained for design history; do not implement from it.
+
 # ADR-002: Claudify Rewrite — Node-Based Implementation with Lock-File State Model
 
 - **Status:** Proposed (2026-06-18)

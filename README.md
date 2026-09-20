@@ -17,7 +17,6 @@ workflows/    # shared workflows
 agents/       # shared agent definitions (<name>.md)
 AGENTS.md     # generated index — run `sync-agents-dev index` after edits (v0.3.7+ required)
 .agents/      # overlay: rules -> ../rules, skills -> ../skills, workflows -> ../workflows, agents -> ../agents
-bin/          # scripts (see docs/claudify.md)
 proposed/     # staged changes under review, not yet promoted
 docs/adr/     # architecture decision records
 ```
@@ -29,19 +28,15 @@ docs/adr/     # architecture decision records
 ## Usage
 
 1. Clone this repo to a global location, outside any project repo.
-2. From a project repo, run `agentify` to link the shared resources into the project's `.agents/` and sync them to the configured agent tools.
+2. From a project repo, run `sync-agents init` then `sync-agents sync` to link the shared resources into the project's `.agents/` and fan them out to the configured agent tools.
 3. Edit resources directly in `rules/` / `skills/` / `workflows/`, or scaffold new ones with `sync-agents add <type> <name>` from any agentified project — either way changes land here and propagate to every linked project via the symlinks.
 4. Run `sync-agents-dev index` after edits to regenerate `AGENTS.md`. **This requires `sync-agents` v0.3.7 or newer** — see the warning above.
 
-## Syncing globally with `claudify`
+## Syncing globally to `~/.claude` with `sync-agents`
 
-To make this repo's rules, skills, and workflows available to **every** Claude Code session globally (not just per-project), use the `bin/claudify` script. It syncs into `~/.claude/` via `@`-imports + symlinks, with a self-test gate, backups, and pre-flight safety checks.
+This is how this repo reaches **every** Claude Code session. One-time bridge, then one command per change.
 
-See [`docs/claudify.md`](docs/claudify.md) for full details, output locations, the safety stack, and recovery procedures.
-
-## Syncing globally to `~/.claude` with `sync-agents` (current method)
-
-This is the way we sync this repo into **every** Claude Code session now — it supersedes `claudify` above. One-time bridge, then one command per change.
+> A bash `claudify` and a Node `agentify` previously did this. Both duplicated `sync-agents` and were removed on 2026-09-20 — see [ADR-002 v0.0.2](docs/adr/ADR-002-claudify-node-rewrite/ADR-002-claudify-node-rewrite-0.0.2.md).
 
 **1. One-time bridge.** Symlink the tool's expected global root to this repo's `.agents/` subtree:
 
