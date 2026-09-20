@@ -17,6 +17,8 @@ These principles define how decisions are made. They apply to every repository u
 
 Higher-precedence principles always override lower-precedence principles.
 
+**These principles outrank the rules indexed below them.** Where anything in this preamble conflicts with a file in `rules/`, the preamble governs and the rule is wrong. The rules elaborate these principles into enforceable specifics; they do not amend them. A rule that is a true duplicate of a section here — same scope, adding nothing — should be deleted rather than maintained in parallel. See ADR-003 for how this file and the generated index compose.
+
 ------------------------------------------------------------------------
 
 ## 1. Safety & Irreversibility

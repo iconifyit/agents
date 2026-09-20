@@ -2,10 +2,10 @@
 
 **Version 0.0.2** — supersedes 0.0.1. Adds `agents/` as a fourth artifact class. The overlay mechanism itself is unchanged; 0.0.1 enumerated exactly three real directories and that enumeration is now incomplete.
 
-- **Status:** Accepted (2026-05-28)
-- **Version:** 0.0.1
+- **Status:** Accepted (2026-09-19)
+- **Version:** 0.0.2
 - **Author:** Scott Lewis (with Claude as collaborator)
-- **Supersedes:** None (initial ADR for this repository)
+- **Supersedes:** 0.0.1 (2026-05-28)
 
 ## Context
 
@@ -118,7 +118,7 @@ These were verified with throwaway tests (`/tmp`) before deciding, not assumed:
 
 - **Clone** the global agents repo to a location outside any project repo
   (its path is `AGENTS_HOME`).
-- **`agentify`** a project: create its `.agents/`, symlink the three subfolders
+- **`agentify`** a project: create its `.agents/`, symlink the artifact subfolders
   to `AGENTS_HOME`'s visible source, ensure local `STATE.md`, register
   inheritance of the global `AGENTS.md`, regenerate the project `AGENTS.md`, and
   `sync` to the configured tool targets.
@@ -162,7 +162,17 @@ Two properties distinguish this bucket from the other three, and both are delibe
 
 ### Invariant
 
-Every artifact class present as a real directory at the repo root **must** have a corresponding relative symlink in `.agents/`, and vice versa. A root directory with no overlay entry is invisible to `sync-agents` and silently fails to distribute — which is exactly how the `agents/` bucket went missing. An overlay entry with no root directory is a broken link. Adding a fifth artifact class means adding both halves and revising this ADR again.
+Every **tracked** entry in the `.agents/` overlay falls into exactly one of three categories. Ignored runtime and OS artifacts — `.sync/`, `.DS_Store` — are out of scope; they are real files on disk but carry no design meaning.
+
+**Artifact classes — symlinks to directories.** Every artifact class present as a real directory at the repo root must have a corresponding relative symlink in `.agents/`, and every directory symlink in `.agents/` must point at a real sibling directory at the repo root. Both directions hold. A root directory with no overlay entry is invisible to `sync-agents` and silently fails to distribute — which is exactly how the `agents/` bucket went missing. An overlay entry with no root directory is a broken link.
+
+**Generator inputs — symlinks to files.** A file the generator consumes as an *input* to the index, rather than distributing as an artifact, is exposed as a relative file symlink pointing at the real file at the repo root. `.agents/AGENTS.preamble.md -> ../AGENTS.preamble.md` is the only such entry today; see ADR-003 for what it does and why.
+
+**Local state — real files.** `.agents/config` is a real file, not a symlink, and is correct as such: it is per-workspace local state (sync targets), not shared content, so it has nothing at the repo root to point at. `.agents/STATE.md` is the same category and is allowed here, though it does not currently exist in this repository — ADR-001 documents it for *consumer* projects. These are the only entries exempt from the symlink requirement, and adding another means revising this ADR.
+
+Every symlink in `.agents/` must be **relative**. An absolute symlink breaks portability across clone paths and machines. This is currently true of all five — verified with `git ls-tree -r <ref> .agents/`, which shows mode `120000` for `rules`, `skills`, `workflows`, `agents`, and `AGENTS.preamble.md`, and mode `100644` for `config` — but it was stated nowhere until now, so nothing stopped a future entry from being absolute or a real directory.
+
+Adding an artifact class or a generator input means adding both halves and revising this ADR.
 
 ## Code being removed
 
@@ -182,7 +192,7 @@ None. Version 0.0.2 is additive: it registers a fourth artifact class and remove
 
 **Negative / risks**
 
-- The `.agents/` overlay is a small redundancy (three symlinks) that must exist
+- The `.agents/` overlay is a small redundancy (five symlinks) that must exist
   for the global repo to be a valid `sync-agents` workspace. Relative symlinks
   keep it portable; if it were ever deleted, `git checkout` restores it and only
   global-repo `sync-agents` commands are affected — consumers are not.
@@ -199,4 +209,3 @@ None. Version 0.0.2 is additive: it registers a fourth artifact class and remove
   Zero friction for `sync-agents`, but it inverts the intuitive source-of-truth
   (the "real" files stay hidden; the visible folders are the aliases). Rejected
   in favor of visible-is-real, which matches how the library is actually edited.
-```
