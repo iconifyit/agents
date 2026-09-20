@@ -37,7 +37,7 @@ Higher-precedence principles always override lower-precedence principles.
 -   Work from first principles.
 -   Build for intent, not merely the letter of the specification.
 -   Discuss tradeoffs whenever intent and specification conflict.
-  
+
 ## 4. Drive Toward Implementation
 
 Engineering design exists to enable implementation, validation, and delivery.
@@ -48,12 +48,9 @@ Every design discussion should move the work closer to implementation.
 
 Classify unresolved design topics into one of three categories:
 
-1. Defect — fix now.
-    The design is incorrect, unsafe, internally inconsistent, ambiguous in a way that could produce materially different implementations, creates competing authorities, permits stranded or unrecoverable work, blurs ownership, or otherwise makes implementation unsafe. Resolve the defect before implementation.
-2. Blocking design decision — resolve now.
-    Multiple materially different solutions exist and the choice affects architecture, product direction, cost, security, operational behavior, or long-term maintenance. Evaluate the tradeoffs, make the decision, record it when appropriate, and continue. Do not defer an architectural choice that implementers would otherwise have to guess.
-3. Implementation detail — defer to implementation.
-    The decision does not materially affect the architectural contract or system design. Record any necessary constraint or intent, then stop debating it at the architecture level. Resolve it during implementation using the established engineering principles, repository conventions, tests, and surrounding code.
+1.  Defect --- fix now. The design is incorrect, unsafe, internally inconsistent, ambiguous in a way that could produce materially different implementations, creates competing authorities, permits stranded or unrecoverable work, blurs ownership, or otherwise makes implementation unsafe. Resolve the defect before implementation.
+2.  Blocking design decision --- resolve now. Multiple materially different solutions exist and the choice affects architecture, product direction, cost, security, operational behavior, or long-term maintenance. Evaluate the tradeoffs, make the decision, record it when appropriate, and continue. Do not defer an architectural choice that implementers would otherwise have to guess.
+3.  Implementation detail --- defer to implementation. The decision does not materially affect the architectural contract or system design. Record any necessary constraint or intent, then stop debating it at the architecture level. Resolve it during implementation using the established engineering principles, repository conventions, tests, and surrounding code.
 
 The purpose of architecture is not to eliminate every implementation decision in advance. Design should proceed only to the level necessary to make implementation safe, coherent, and intentional.
 
@@ -71,17 +68,17 @@ The goal is to ship a well-designed system, validate it against reality, and ref
 
 ## 5. Visualize Architecture Before Implementation
 
-* For significant systems or architectural changes, represent the proposed architecture visually before implementation begins.
-* Diagrams are design-validation artifacts, not documentation added after the design is complete.
-* Model the architecture at the appropriate levels of decomposition:
-    * Subsystem Decomposition — major responsibility and capability boundaries.
-    * Component Decomposition — architectural components, ownership, and contracts.
-    * Implementation Structure — implementation artifacts such as classes, services, policies, adapters, repositories, handlers, and infrastructure mapped to their owning components.
-    * Runtime / Data Flow — where useful, show how responsibilities collaborate during execution.
-* Each level must be consistent with the levels above and below it: Subsystem → Component → Implementation Artifact.
-* Use diagrams to expose missing ownership, incorrect boundaries, hidden coupling, duplicated responsibility, invalid dependencies, and gaps between architecture and implementation.
-* Resolve material inconsistencies revealed by the diagrams before implementation.
-* Do not require diagrams where they add no meaningful design or validation value.
+-   For significant systems or architectural changes, represent the proposed architecture visually before implementation begins.
+-   Diagrams are design-validation artifacts, not documentation added after the design is complete.
+-   Model the architecture at the appropriate levels of decomposition:
+    -   Subsystem Decomposition --- major responsibility and capability boundaries.
+    -   Component Decomposition --- architectural components, ownership, and contracts.
+    -   Implementation Structure --- implementation artifacts such as classes, services, policies, adapters, repositories, handlers, and infrastructure mapped to their owning components.
+    -   Runtime / Data Flow --- where useful, show how responsibilities collaborate during execution.
+-   Each level must be consistent with the levels above and below it: Subsystem → Component → Implementation Artifact.
+-   Use diagrams to expose missing ownership, incorrect boundaries, hidden coupling, duplicated responsibility, invalid dependencies, and gaps between architecture and implementation.
+-   Resolve material inconsistencies revealed by the diagrams before implementation.
+-   Do not require diagrams where they add no meaningful design or validation value.
 
 ## 6. Engineering Standards
 
@@ -127,46 +124,46 @@ Take ownership of the task from start to finish. Determine the intermediate step
 
 Continue executing until one of the following conditions is met:
 
-1. The requested objective has been fully completed.
-2. A higher-precedence principle (for example, Safety & Irreversibility) requires explicit permission.
-3. A material ambiguity exists that prevents determining the correct course of action.
-4. An external dependency or blocker prevents further progress.
+1.  The requested objective has been fully completed.
+2.  A higher-precedence principle (for example, Safety & Irreversibility) requires explicit permission.
+3.  A material ambiguity exists that prevents determining the correct course of action.
+4.  An external dependency or blocker prevents further progress.
 
 Do not pause simply because an intermediate step has completed. Completing one step is not completing the task.
 
 Routine workflow decisions are considered part of the original request and do **not** require additional confirmation. These include, but are not limited to:
 
-- analyzing the existing codebase
-- determining implementation details
-- creating, modifying, renaming, or reorganizing files within the approved scope
-- writing or updating tests
-- fixing issues discovered during testing or validation
-- updating documentation
-- creating commits
-- pushing the current working branch
-- creating or updating pull requests
-- addressing review comments
-- rerunning tests, CI, or validation after fixes
-- creating GitHub issues for unrelated bugs discovered during execution
-- performing any other routine workflow step necessary to fully complete the requested objective
+-   analyzing the existing codebase
+-   determining implementation details
+-   creating, modifying, renaming, or reorganizing files within the approved scope
+-   writing or updating tests
+-   fixing issues discovered during testing or validation
+-   updating documentation
+-   creating commits
+-   pushing the current working branch
+-   creating or updating pull requests
+-   addressing review comments
+-   rerunning tests, CI, or validation after fixes
+-   creating GitHub issues for unrelated bugs discovered during execution
+-   performing any other routine workflow step necessary to fully complete the requested objective
 
 Do **not** interrupt execution to ask questions such as:
 
-- "Would you like me to commit?"
-- "Should I push?"
-- "Would you like me to update the PR?"
-- "Should I run the tests?"
-- "Would you like me to fix the lint errors?"
+-   "Would you like me to commit?"
+-   "Should I push?"
+-   "Would you like me to update the PR?"
+-   "Should I run the tests?"
+-   "Would you like me to fix the lint errors?"
 
 when those actions are ordinary and necessary parts of completing the requested task.
 
 Only interrupt execution when:
 
-- a destructive or irreversible action requires explicit authorization;
-- the requested scope must materially expand to achieve the objective;
-- multiple materially different solutions exist and the choice affects architecture, product direction, cost, security, or long-term maintenance;
-- required information is unavailable; or
-- continuing would violate a higher-precedence engineering principle.
+-   a destructive or irreversible action requires explicit authorization;
+-   the requested scope must materially expand to achieve the objective;
+-   multiple materially different solutions exist and the choice affects architecture, product direction, cost, security, or long-term maintenance;
+-   required information is unavailable; or
+-   continuing would violate a higher-precedence engineering principle.
 
 Think like a senior engineer who has been assigned ownership of a task. Your responsibility is to deliver the requested outcome completely, not to request permission for each intermediate step.
 
@@ -196,28 +193,33 @@ Think in systems, considering downstream effects, maintainability, extensibility
 
 ## Testing
 
+**Maxim: Tests preserve discovered knowledge as executable system constraints. Test what must remain true, especially when things go wrong.**
+
+-   Treat tests as executable specifications of required behavior, not merely confirmation of the happy path.
+-   Drive testing by behavior and risk. Consider success, rejection, boundaries, dependency failure, concurrency, retries, partial completion, recovery, and other material failure modes.
+-   Failure behavior is first-class behavior. Critical failure and recovery paths require the same or greater verification rigor as successful execution.
+-   When practical, develop new behavior test-first using Red → Green → Refactor. A new test must first be observed failing for the expected reason before implementation makes it pass.
+-   Every confirmed defect or unexpected failure reveals new knowledge about the system. Reproduce that failure with an automated regression test before or as part of the correction whenever practical, then retain the test as a permanent constraint against recurrence.
+-   Characterize existing working behavior before significant refactoring or replacement so unintended behavioral changes are detectable.
+-   Verify component boundaries with contract and integration tests appropriate to the boundary.
+-   Express important system invariants directly and test them as properties where practical.
+-   Test observable behavior rather than implementation details. Avoid coupling tests to internal call sequences or structure unless that structure is itself part of the contract.
+-   Test behavior at the lowest level that can prove it, then add broader integration and end-to-end tests to prove that the pieces actually work together.
 -   Use realistic data.
 -   Freeze time when appropriate.
 -   Tests must fail when logic is broken.
 -   Assert meaningful behavior.
+-   Test failures should be actionable: failures should make clear what behavior was violated and provide enough evidence to diagnose the problem.
 
 ## Language & Style
 
-Unless a repository specifies otherwise: 
-- Prefer descriptive names. 
-- Prefer const. 
-- Prefer early returns. 
-- Keep functions cohesive. 
-- Prefer async/await. 
-- Prefer composition over inheritance.
+Unless a repository specifies otherwise: - Prefer descriptive names. - Prefer const. - Prefer early returns. - Keep functions cohesive. - Prefer async/await. - Prefer composition over inheritance.
 
 ## Repository-specific Rules
 
 Repository CLAUDE.md files define framework, deployment, branching, environment, database, and project-specific conventions.
 
-------------------------------------------------------------------------
 # Scott's Engineering Methodology Core Thesis
-------------------------------------------------------------------------
 
 **Architectural decomposition identifies responsibility boundaries, not implementation artifacts.**
 
@@ -233,15 +235,15 @@ A **component** is a cohesive collection of collaborating implementation artifac
 
 A component is **not**:
 
-- a class
-- a service
-- a module
-- a Lambda function
-- a file
+-   a class
+-   a service
+-   a module
+-   a Lambda function
+-   a file
 
 Those are implementation artifacts that collectively implement the component.
 
----
+------------------------------------------------------------------------
 
 ## Rationale
 
@@ -253,25 +255,25 @@ The purpose of component decomposition is **not** to maximize the number of comp
 
 It is to identify the smallest number of cohesive responsibility boundaries that produce a clear and maintainable architecture.
 
----
+------------------------------------------------------------------------
 
 ## Implications
 
 A component may contain:
 
-- one or more services
-- domain objects
-- policies
-- adapters
-- repositories
-- helper classes
-- utility functions
+-   one or more services
+-   domain objects
+-   policies
+-   adapters
+-   repositories
+-   helper classes
+-   utility functions
 
 These implementation artifacts collaborate internally to fulfill the component's responsibility.
 
 Consumers interact with the component through its public contract rather than its internal implementation.
 
----
+------------------------------------------------------------------------
 
 ## Responsibilities Are Not Components
 
@@ -283,14 +285,14 @@ Example:
 
 ### Asset Processing Responsibilities
 
-- Route by format
-- Prepare PDFs
-- Coordinate Dropbox conversion
-- Consolidate candidates
+-   Route by format
+-   Prepare PDFs
+-   Coordinate Dropbox conversion
+-   Consolidate candidates
 
 Incorrect decomposition:
 
-```text
+``` text
 Format Router
 PDF Trimmer
 Dropbox Converter
@@ -299,7 +301,7 @@ Candidate Consolidator
 
 Correct decomposition:
 
-```text
+``` text
 PDF Processor
     owns
         • trimming
@@ -314,7 +316,7 @@ Candidate Assembler
 
 The objective is cohesive ownership, not one component per responsibility.
 
----
+------------------------------------------------------------------------
 
 ## Components Collaborate Through Contracts
 
@@ -322,7 +324,7 @@ Components should interact only through explicit public contracts.
 
 Internal implementation details remain private.
 
-```text
+``` text
 Component A
         │
         │ Public Contract
@@ -334,11 +336,11 @@ Implementation artifacts collaborate **within** a component.
 
 Components collaborate **between** components.
 
----
+------------------------------------------------------------------------
 
 ## Relationship to Architectural Decomposition
 
-```text
+``` text
 System
     owns capabilities
 
@@ -365,97 +367,103 @@ Each level represents a progressively finer application of the Single Responsibi
 
 The definition of "single responsibility" becomes narrower as the level of abstraction decreases.
 
----
+------------------------------------------------------------------------
 
 ## Design Heuristic
 
 A responsibility should become its own component only when it has a distinct:
 
-- architectural contract
-- lifecycle
-- ownership boundary
-- external dependency boundary
-- reason to change independently
+-   architectural contract
+-   lifecycle
+-   ownership boundary
+-   external dependency boundary
+-   reason to change independently
 
 Otherwise, it should remain behavior within an existing component.
 
 ## Rules
 
-- [adr-required](.agents/rules/adr-required.md)
-- [agent-responses](.agents/rules/agent-responses.md)
-- [ask-first](.agents/rules/ask-first.md)
-- [autonomy](.agents/rules/autonomy.md)
-- [coding-options](.agents/rules/coding-options.md)
-- [coding-style](.agents/rules/coding-style.md)
-- [commit-before-session-end](.agents/rules/commit-before-session-end.md)
-- [concise-answers](.agents/rules/concise-answers.md)
-- [database](.agents/rules/database.md)
-- [destructive-actions](.agents/rules/destructive-actions.md)
-- [documentation](.agents/rules/documentation.md)
-- [git-workflow](.agents/rules/git-workflow.md)
-- [how-to-use-adrs](.agents/rules/how-to-use-adrs.md)
-- [idiomatic-beats-clever](.agents/rules/idiomatic-beats-clever.md)
-- [memory-updates](.agents/rules/memory-updates.md)
-- [mundane-tasks](.agents/rules/mundane-tasks.md)
-- [no-hard-wrap](.agents/rules/no-hard-wrap.md)
-- [no-jumping-to-conclusions](.agents/rules/no-jumping-to-conclusions.md)
-- [one-claude-branch](.agents/rules/one-claude-branch.md)
-- [persona](.agents/rules/persona.md)
-- [pre-existing-issues](.agents/rules/pre-existing-issues.md)
-- [remove-the-obsolete](.agents/rules/remove-the-obsolete.md)
-- [repo-versioning](.agents/rules/repo-versioning.md)
-- [solve-for-intent](.agents/rules/solve-for-intent.md)
-- [state](.agents/rules/state.md)
-- [test-design](.agents/rules/test-design.md)
-- [testing](.agents/rules/testing.md)
-- [verification](.agents/rules/verification.md)
-- [when-you-make-a-mistake-stop](.agents/rules/when-you-make-a-mistake-stop.md)
-- [workflow](.agents/rules/workflow.md)
+- [adr-required](rules/adr-required.md)
+- [adversarial-review-agent](rules/adversarial-review-agent.md)
+- [agent-responses](rules/agent-responses.md)
+- [ask-first](rules/ask-first.md)
+- [asking-permission](rules/asking-permission.md)
+- [autonomy](rules/autonomy.md)
+- [coding-options](rules/coding-options.md)
+- [coding-style](rules/coding-style.md)
+- [commit-before-session-end](rules/commit-before-session-end.md)
+- [concise-answers](rules/concise-answers.md)
+- [database](rules/database.md)
+- [destructive-actions](rules/destructive-actions.md)
+- [documentation](rules/documentation.md)
+- [garbage-collection](rules/garbage-collection.md)
+- [git-workflow](rules/git-workflow.md)
+- [go-coding-style](rules/go-coding-style.md)
+- [how-to-use-adrs](rules/how-to-use-adrs.md)
+- [idiomatic-beats-clever](rules/idiomatic-beats-clever.md)
+- [javascript-coding-style](rules/javascript-coding-style.md)
+- [memory-updates](rules/memory-updates.md)
+- [no-hard-wrap](rules/no-hard-wrap.md)
+- [no-jumping-to-conclusions](rules/no-jumping-to-conclusions.md)
+- [one-claude-branch](rules/one-claude-branch.md)
+- [persona](rules/persona.md)
+- [pre-existing-issues](rules/pre-existing-issues.md)
+- [python-coding-style](rules/python-coding-style.md)
+- [remove-the-obsolete](rules/remove-the-obsolete.md)
+- [repo-versioning](rules/repo-versioning.md)
+- [solve-for-intent](rules/solve-for-intent.md)
+- [state](rules/state.md)
+- [test-design](rules/test-design.md)
+- [testing](rules/testing.md)
+- [verification](rules/verification.md)
+- [when-you-make-a-mistake-stop](rules/when-you-make-a-mistake-stop.md)
+- [workflow](rules/workflow.md)
 
 ## Skills
 
-- [add-rule](.agents/skills/add-rule/SKILL.md) — Add a new global agent rule through the sync-agents workflow — scaffold with `sync-agents add rule`, write the rule body, fan it out to…
-- [adr-authoring](.agents/skills/adr-authoring/SKILL.md)
-- [analyze](.agents/skills/analyze/SKILL.md)
-- [api-endpoint-testing](.agents/skills/api-endpoint-testing/SKILL.md)
-- [architectural-decomposition](.agents/skills/architectural-decomposition/SKILL.md)
-- [base-architecture](.agents/skills/base-architecture/SKILL.md)
-- [capture-idea](.agents/skills/capture-idea/SKILL.md) — Capture any idea Scott has — product, platform, marketing, automation, business — to the central ideas inbox at v1/docs/ideas/inbox.md,…
-- [copilot-reviews](.agents/skills/copilot-reviews/SKILL.md)
-- [cover-letter-writing](.agents/skills/cover-letter-writing/SKILL.md)
-- [create-diagram](.agents/skills/create-diagram/SKILL.md)
-- [db-migration](.agents/skills/db-migration/SKILL.md)
-- [deploy-script](.agents/skills/deploy-script/SKILL.md)
-- [destructive-operations](.agents/skills/destructive-operations/SKILL.md)
-- [document](.agents/skills/document/SKILL.md)
-- [filesystem-soa-module](.agents/skills/filesystem-soa-module/SKILL.md)
-- [find-skills](.agents/skills/find-skills/SKILL.md) — Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that…
-- [freeze-diagram](.agents/skills/freeze-diagram/SKILL.md)
-- [gh-new-branch](.agents/skills/gh-new-branch/SKILL.md)
-- [implement](.agents/skills/implement/SKILL.md)
-- [module-pr](.agents/skills/module-pr/SKILL.md)
-- [multi-agent-orchestration](.agents/skills/multi-agent-orchestration/SKILL.md)
-- [plan](.agents/skills/plan/SKILL.md)
-- [plan-doc-checklist](.agents/skills/plan-doc-checklist/SKILL.md)
-- [problem-solving](.agents/skills/problem-solving/SKILL.md)
-- [repo-version](.agents/skills/repo-version/SKILL.md) — Maintain and verify repository versions using Semantic Versioning. Use when preparing, updating, reviewing, or completing a release PR;…
-- [session-state-handoff](.agents/skills/session-state-handoff/SKILL.md)
-- [soa-module](.agents/skills/soa-module/SKILL.md)
-- [stripe-best-practices](.agents/skills/stripe-best-practices/SKILL.md)
+- [add-rule](skills/add-rule/SKILL.md) — Add a new global agent rule through the sync-agents workflow — scaffold with `sync-agents add rule`, write the rule body, fan it out to…
+- [adr-authoring](skills/adr-authoring/SKILL.md)
+- [analyze](skills/analyze/SKILL.md)
+- [api-endpoint-testing](skills/api-endpoint-testing/SKILL.md)
+- [architectural-decomposition](skills/architectural-decomposition/SKILL.md)
+- [base-architecture](skills/base-architecture/SKILL.md)
+- [capture-idea](skills/capture-idea/SKILL.md) — Capture any idea Scott has — product, platform, marketing, automation, business — to the central ideas inbox at v1/docs/ideas/inbox.md,…
+- [copilot-reviews](skills/copilot-reviews/SKILL.md)
+- [cover-letter-writing](skills/cover-letter-writing/SKILL.md)
+- [create-diagram](skills/create-diagram/SKILL.md)
+- [db-migration](skills/db-migration/SKILL.md)
+- [deploy-script](skills/deploy-script/SKILL.md)
+- [destructive-operations](skills/destructive-operations/SKILL.md)
+- [document](skills/document/SKILL.md)
+- [filesystem-soa-module](skills/filesystem-soa-module/SKILL.md)
+- [find-skills](skills/find-skills/SKILL.md) — Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that…
+- [freeze-diagram](skills/freeze-diagram/SKILL.md)
+- [gh-new-branch](skills/gh-new-branch/SKILL.md)
+- [implement](skills/implement/SKILL.md)
+- [module-pr](skills/module-pr/SKILL.md)
+- [multi-agent-orchestration](skills/multi-agent-orchestration/SKILL.md)
+- [plan](skills/plan/SKILL.md)
+- [plan-doc-checklist](skills/plan-doc-checklist/SKILL.md)
+- [pr-and-code-reviews](skills/pr-and-code-reviews/SKILL.md) — Perform adversarial pull request and code reviews that actively attempt to falsify correctness, security, architectural integrity, and…
+- [problem-solving](skills/problem-solving/SKILL.md)
+- [repo-version](skills/repo-version/SKILL.md) — Maintain and verify repository versions using Semantic Versioning. Use when preparing, updating, reviewing, or completing a release PR;…
+- [session-state-handoff](skills/session-state-handoff/SKILL.md)
+- [soa-module](skills/soa-module/SKILL.md)
+- [stripe-best-practices](skills/stripe-best-practices/SKILL.md)
 
 ## Workflows
 
-- [agentic-collaboration](.agents/workflows/agentic-collaboration.md)
-- [architecture-change](.agents/workflows/architecture-change.md)
-- [bugfix](.agents/workflows/bugfix.md)
-- [copilot-review-loop](.agents/workflows/copilot-review-loop.md)
-- [deploy-script](.agents/workflows/deploy-script.md)
-- [destructive-operation](.agents/workflows/destructive-operation.md)
-- [feature-development](.agents/workflows/feature-development.md)
-- [module-pr](.agents/workflows/module-pr.md)
-- [new-claude-branch](.agents/workflows/new-claude-branch.md)
-- [prune-obsolete](.agents/workflows/prune-obsolete.md)
-- [refactor](.agents/workflows/refactor.md)
+- [agentic-collaboration](workflows/agentic-collaboration.md)
+- [architecture-change](workflows/architecture-change.md)
+- [bugfix](workflows/bugfix.md)
+- [copilot-review-loop](workflows/copilot-review-loop.md)
+- [deploy-script](workflows/deploy-script.md)
+- [destructive-operation](workflows/destructive-operation.md)
+- [feature-development](workflows/feature-development.md)
+- [module-pr](workflows/module-pr.md)
+- [new-claude-branch](workflows/new-claude-branch.md)
+- [prune-obsolete](workflows/prune-obsolete.md)
+- [refactor](workflows/refactor.md)
 
 ## State
 
@@ -464,8 +472,10 @@ _No state snapshots yet. Agents will create STATE_*context*_*timestamp*.md files
 <!-- sync-agents:claude-imports:start -->
 <!-- managed by sync-agents; do not edit between the markers -->
 @.claude/rules/adr-required.md
+@.claude/rules/adversarial-review-agent.md
 @.claude/rules/agent-responses.md
 @.claude/rules/ask-first.md
+@.claude/rules/asking-permission.md
 @.claude/rules/autonomy.md
 @.claude/rules/coding-options.md
 @.claude/rules/coding-style.md
@@ -474,16 +484,19 @@ _No state snapshots yet. Agents will create STATE_*context*_*timestamp*.md files
 @.claude/rules/database.md
 @.claude/rules/destructive-actions.md
 @.claude/rules/documentation.md
+@.claude/rules/garbage-collection.md
 @.claude/rules/git-workflow.md
+@.claude/rules/go-coding-style.md
 @.claude/rules/how-to-use-adrs.md
 @.claude/rules/idiomatic-beats-clever.md
+@.claude/rules/javascript-coding-style.md
 @.claude/rules/memory-updates.md
-@.claude/rules/mundane-tasks.md
 @.claude/rules/no-hard-wrap.md
 @.claude/rules/no-jumping-to-conclusions.md
 @.claude/rules/one-claude-branch.md
 @.claude/rules/persona.md
 @.claude/rules/pre-existing-issues.md
+@.claude/rules/python-coding-style.md
 @.claude/rules/remove-the-obsolete.md
 @.claude/rules/repo-versioning.md
 @.claude/rules/solve-for-intent.md
