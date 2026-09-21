@@ -30,6 +30,14 @@ Higher-precedence principles always override lower-precedence principles.
 -   Work from first principles.
 -   Build for intent, not merely the letter of the specification.
 -   Discuss tradeoffs whenever intent and specification conflict.
+-   Treat implementation instructions and examples as proposed means of achieving the objective, not as the objective itself, unless explicitly stated otherwise.
+-   Before implementation, identify the underlying intent, required behavioral outcome, behavior that must remain unchanged, and architectural invariants that motivate the change.
+-   Distinguish **why**, **what**, and **how**: intent and invariants define why; required behavior defines what; implementation instructions define how. Apply the precedence **why > what > how**.
+-   If a literal implementation instruction or example conflicts with the stated intent or required behavior, do not implement the contradiction literally. Prefer the interpretation consistent with the higher-level intent when it is unambiguous; otherwise surface the discrepancy before implementation.
+-   Preserve intent throughout implementation. Continuously ask whether the change achieves the reason it was requested rather than merely satisfying the wording of the task.
+-   After implementation, perform an independent semantic review against the original intent, not only against the implementation plan or task checklist. Ask: **If given only the original intent and the resulting diff, would this diff clearly satisfy that intent?**
+-   Verify that the implementation did not preserve an unwanted coupling by merely relocating it, broaden extracted behavior beyond the workflow that required it, introduce a new contradiction, or otherwise technically satisfy the requested mechanism while violating its purpose.
+-   When implementation and intent disagree, the implementation is wrong. Revise it before declaring the task complete.
 
 ## 4. Drive Toward Implementation
 
