@@ -154,7 +154,7 @@ Claude Code loads subagent definitions from `~/.claude/agents/*.md`. The class e
 Two cases have come up, and the class covers both:
 
 - **Compulsion.** The `adversarial-review-agent` rule makes `adversarial-pr-reviewer` and `adversarial-architecture-reviewer` mandatory on every PR. A rule that cannot be satisfied on a correctly provisioned machine is not a rule, so they have to reach every machine by the same path as every other shared resource.
-- **Independence.** `post-mortem` is required by no rule and invoked on demand. It is an agent because an agent investigating its own work carries an account of what it intended, and that account contaminates the investigation. Running it in a separate context is what makes the finding trustworthy — the separation *is* the feature.
+- **Independence.** `post-mortem` and `remediation-planner` are required by no rule and invoked on demand. They are agents because an agent working on its own output carries an account of what it intended, and that account contaminates the work: the investigator reads intended behaviour as actual, and the author planning their own remediation reaches for the fix that leaves their design intact. Running each in a separate context is what makes its output trustworthy — the separation *is* the feature.
 
 v0.0.2 recorded only the first case, because it was the only one that existed. Membership is **not** limited to rule-mandated reviewers, and an agent may write a durable artifact rather than only reporting back. What the class requires is that the artifact genuinely needs its own context; a procedure the calling agent should follow in-context is a skill, and a user-initiated sequence is a workflow. See #23 for where that test should ultimately live.
 
@@ -209,7 +209,7 @@ Adding an artifact class or a generator input means adding both halves and revis
 
 ## Code being removed
 
-None. Version 0.0.3 changes only what is recorded — no code, directory, symlink, or artifact is retired, and no existing agent changes behaviour. The superseded text is v0.0.2's class rationale, which is replaced rather than deleted: it remains readable in the deprecated 0.0.2 file, which is the point of versioning ADRs rather than editing them.
+None. Version 0.0.4 records a new member of the `agents/` class and retires nothing — no code, directory, symlink, or artifact, and no existing agent changes behaviour. The text it supersedes is 0.0.3's §Tool grants and §Precedence, and both are *extended* rather than corrected: each was accurate for the membership it described and became incomplete when `remediation-planner` was added. Both remain readable in the deprecated 0.0.3 file, which is the point of versioning ADRs rather than editing them.
 
 ## Consequences
 
