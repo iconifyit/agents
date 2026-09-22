@@ -12,7 +12,8 @@ folder and update this pointer.
 
 - **0.0.3** (2026-09-22) — Accepted. Restates the `agents/` class rationale to
   cover non-reviewer, artifact-producing agents; adds a tool-grant policy
-  (least privilege, stated per agent, and the allowlist is not a sandbox); and
+  (the narrowest grant that makes the agent's job legible, stated per agent, and the
+  allowlist is not a sandbox); and
   adds a precedence entry: an agent definition may narrow the preamble and
   `rules/` for its own run, never widen them. Layout and overlay invariant
   unchanged.

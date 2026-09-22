@@ -10,7 +10,7 @@ Do not over-write existing docs except when the changes are cosmetic, syntactica
 
 We will use semantic versioning for documentation. We will not over-write or discard old documentation, but will instead create new versions and link to them. Deprecated documents will have an h1 title of `[DEPRECATED]` at the very top of the first page.
 
-## Where documents live
+## Versioned document locations
 
 | Location | Holds | Naming |
 | --- | --- | --- |
@@ -21,7 +21,7 @@ We will use semantic versioning for documentation. We will not over-write or dis
 
 The point is that versioning is determined by a rule rather than by the author's judgment about whether a given document "feels like" the kind that gets revised. An incident record is revised more often than people expect — a cause is misattributed, a timeline is corrected once a log is recovered, a second failure surfaces a week later — and each of those is a substantive change to a document others may already have read and acted on. Superseding it visibly is what lets a reader tell which account they have.
 
-Adding another documentation tree under `docs/` means recording it in this table first, and it uses this same scheme unless there is a stated reason it cannot.
+This table is not an inventory of everything under `docs/` — implementation plans, troubleshooting notes and other documents live there too, governed where they are defined. It settles the two locations that carry versioned, supersedable records. A new location of *that* kind uses this same scheme unless there is a stated reason it cannot.
 
 ## ADR Structure
 
