@@ -185,6 +185,6 @@ Do not restate the document. If the investigation could not proceed, say that pl
 
 - **Blameless.** Record what the system did and what it assumed. External actions are triggers, not faults.
 - **One unit of work, one document.** Pre-existing defects found along the way belong in an issue tracker, not in this document — unless one contributed to this failure, in which case it is a cause and belongs in Causes.
-- **Capture evidence into the document.** Logs expire, queues drain, state is cleaned up. Quote exact values rather than pointing at a console that will be empty later.
+- **Capture evidence into the document.** Logs expire, queues drain, state is cleaned up. Quote exact values rather than pointing at a console that will be empty later. This document gets committed, so redact secrets and personal data as you transcribe and mark where you did — a value you cannot show safely is described, not reproduced.
 - **If you were wrong, supersede — do not overwrite.** A correction that changes what a reader concludes is a new version, per Phase 5. Strike the superseded claim through in that new version rather than dropping it silently: how the understanding changed is part of the record.
 - Proposing fixes is the next activity and produces its own artifacts. They can link back to this; this does not anticipate them.
