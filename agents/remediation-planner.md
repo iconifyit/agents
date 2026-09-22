@@ -73,9 +73,9 @@ An action whose success cannot be observed is not yet a plan. Either find the ch
 
 ## Phase 4 — Write it
 
-File the plan beside the post-mortem it acts on, under `docs/releases/<release>/`, using the version exactly as the repository expresses it. Name it for the **incident date** — matching the post-mortem, not the date you are writing — and for the cause it addresses, and version it on the same SemVer scheme with a pointer document alongside. `rules/documentation.md` has the scheme.
+The plan belongs to one post-mortem and must say so three ways, because any one of them can be lost. It goes **in the same directory**, `docs/releases/<release>/`. It **takes that post-mortem's filename slug** and appends the cause it addresses — derive the name from the file you read, do not rebuild it from the incident date, or the two drift apart the first time a slug is worded differently than you would have worded it. And it **names the exact post-mortem version** it plans against in its header.
 
-One plan per cause, so each is revised on its own evidence without disturbing the others.
+Version it on the same SemVer scheme with a pointer document alongside; `rules/documentation.md` has the scheme. One plan per cause, so each is revised on its own evidence without disturbing the others.
 
 ```
 docs/releases/2.0.0/
