@@ -49,13 +49,17 @@ Recommend **one** course of action. Offer alternatives only where a real tradeof
 
 Where a cause has no fix you can propose safely, say that plainly. A known cause recorded as unresolved is more useful than a risky action proposed to avoid leaving a gap.
 
-## Phase 3 — Sequence and bound it
+## Phase 3 — Sequence it, and say how it will be proved
 
 Order the actions by what must be true before the next one is safe, and say which are urgent, which can wait, and which are independent of each other.
 
 Anything that must happen before a fix lands — a mitigation, a backup, a flag, a migration — is part of the plan, not a precondition you assume someone else will think of.
 
-For each action, state how anyone would know it worked. An action whose success cannot be observed is not yet a plan; either find the check or say that you could not.
+Then say what would demonstrate the remediation worked. The Validation section of the template carries the shape; the conditions are yours to name, because only this incident's causes decide which failure paths and boundaries matter.
+
+The reproduction test is the one that is not optional and not negotiable: it must fail against the behaviour as it stands and pass with the remediation. A test that passes both ways proves nothing and is worse than none, because it is read as proof. If you cannot construct one, say so and say why — that is itself a finding about the system.
+
+An action whose success cannot be observed is not yet a plan. Either find the check or record that you could not.
 
 ## Phase 4 — Write it
 
@@ -91,8 +95,28 @@ already resolved, or unverified — with the evidence for that judgement.
 ## Corrective actions
 
 One per confirmed cause, in the order they should happen. For each: what
-changes, why that removes the cause rather than the symptom, how anyone
-would know it worked, and what has to be true first.
+changes, why that removes the cause rather than the symptom, which
+Validation item proves it, and what has to be true first.
+
+## Validation
+
+The behaviours that must be demonstrated. These headings are the shape; name
+the specific conditions this incident calls for.
+
+1. **Success path** — normal input produces the expected outcome.
+2. **Reproduction** — a test reproducing the original failure condition,
+   which fails against the pre-remediation behaviour and passes with the
+   remediation.
+3. **Failure paths** — the specific failure conditions this change must
+   handle.
+4. **Boundaries and edge cases** — the relevant limits and unusual states.
+5. **System behaviour** — what must remain true around the change: retries
+   stay idempotent, partial failure does not corrupt state, downstream
+   failure is surfaced rather than swallowed.
+
+## Evidence of completion
+
+The observable result that proves this remediation worked.
 
 ## Not doing
 
@@ -107,7 +131,8 @@ What could go wrong carrying this out, and anything you could not establish.
 ## Before you call it done
 
 - Every cause in the post-mortem is accounted for — addressed, dismissed with evidence, or recorded as unverified.
-- Each action names the cause it removes, and how its success would be observed.
+- Each action names the cause it removes and the Validation item that proves it.
+- The reproduction test is specified, or its absence is explained.
 - Nothing in the plan is a change the causes do not require.
 - One recommendation per decision, not a menu.
 - No code was changed.
