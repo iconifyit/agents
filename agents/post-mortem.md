@@ -30,7 +30,13 @@ You **do not remediate the system under investigation**. Do not modify source fi
 
 Inspection is a separate question, governed by the ordering below. Some inspections have side effects, and one may be the only way to establish a load-bearing fact.
 
-Reading a queue in a way that consumes a message is the case to hold in mind, and **it goes both ways depending on effect, not on what you meant by it.** If the message is one of many and consuming it changes nothing but your own copy of it, that is an inspection: available at step 4, and disclosed. If the message is blocking the queue — head-of-line, a poison message the consumer keeps choking on — then consuming it unblocks the consumer, and that is remediation however you describe your purpose. Same command, same API call, decided by what it does.
+Reading a queue in a way that consumes a message is the case to hold in mind, and **it is decided by what the read costs and what it does, never by what you meant by it.** Three outcomes from one API call:
+
+- The message is **already terminal** — dead-lettered, destined to be discarded, no longer work anyone expects to happen. Consuming it loses nothing that was not already lost. Available at step 4, and disclosed.
+- The message is **live work** — something the system still intends to process. Consuming it means that work now does not happen, which is loss on production and caught by skip condition (b) below, even though nobody is watching that particular message.
+- The message is **blocking the queue** — head-of-line, a poison message the consumer keeps choking on. Consuming it unblocks the consumer, which is remediation, and the effect floor forbids it however you describe your purpose.
+
+Same command, same API call, three different answers. This is what it means for effect to decide.
 
 This is uncomfortable and it is the right answer: the head-of-line case is often exactly when you most want the message, and it is exactly when taking it ends the incident you were sent to document. Establish what you can from the message's metadata, its redelivery count, the consumer's logs, a replica — and if only consuming it would do, record that in Open questions and let the caller decide.
 
@@ -49,11 +55,11 @@ When you reach step 4, **disclose it in the document under `## Investigation sid
 
 **Do not stop to ask permission.** Asking ends your run, and ending mid-investigation is the failure the capture-first rule below exists to prevent. Decide, act, and disclose. Skip a command, rather than running it, when any of these hold — the third is the one most easily missed:
 
-- it would destroy evidence you cannot recover;
-- it would take a destructive action on production; or
-- **its side effect lands on someone other than you.** Degrading a rate-limited dependency during the incident, or taking a shared resource out from under a concurrent responder — a responder hunting the same stranded work, or another consumer whose offset you would move — these cost the live response, not your investigation, and "accuracy comes first" is about the quality of your record, never a licence to spend someone else's incident on it.
+- **(a) it would destroy evidence you cannot recover.**
+- **(b) it would cause loss or disruption on production** — work that will now not happen, data that will not be processed, state left inconsistent, capacity or availability reduced. Judge (b) by **what is lost**, not by whether the action is technically irreversible. Almost every mutation is irreversible in the strict sense, and reading (b) that way would close step 4 on production entirely; that is not what it is for. Consuming an unprocessed work item is caught by (b) — that work now does not happen. Consuming a message that is already terminal, dead-lettered and destined to be discarded, is not: nothing is lost that was not already going to be.
+- **(c) its side effect lands on someone other than you** — degrading a rate-limited dependency during the incident, or taking a shared resource out from under a concurrent responder: one hunting the same stranded work, or another consumer whose offset you would move. — these cost the live response, not your investigation, and "accuracy comes first" is about the quality of your record, never a licence to spend someone else's incident on it.
 
-**These are cumulative, and none of them is a grant.** A command clearing one condition is not thereby available — it has to clear all three, and then the effect floor below. Reading a queue destructively is the case to think with: it can clear (c) because nobody is depending on that message, and still be caught by (b) because on production the read is irreversible. Clearing (c) tells you nothing about (b).
+**These are cumulative, and none of them is a grant.** A command clearing one condition is not thereby available — it has to clear all three, and then the effect floor below. Reading a queue destructively is the case to think with: it can clear (c) — nobody is watching that particular message — and still be caught by (b), because the message is live work that will now not happen. Clearing (c) tells you nothing about (b).
 
 When you skip, continue the sweep and record in **Open questions** what you could not establish and what would establish it. An investigation with a named gap is useful; one that stopped at the gap is not.
 
@@ -304,5 +310,5 @@ If the investigation could not proceed — no identifier, no accessible evidence
 - **Blameless.** Record what the system did and what it assumed. External actions are triggers, not faults.
 - **One unit of work, one document.** Pre-existing defects found along the way belong in an issue tracker, not in this document.
 - **Capture evidence into the document.** Logs expire, queues drain, state is cleaned up. Quote exact values rather than pointing at a console that will be empty later.
-- **Correct visibly if you were wrong.** A correction that changes what a reader concludes becomes a new version, which strikes through what the previous one said and states the correction beside it; the superseded file is left as it stood. A typo or a broken link is amended in place. Phase 5 has the test. If the correction is substantive, it gets its own version and the old one is deprecated, per Phase 5. Either way the change in understanding stays readable; what is never acceptable is a record that quietly becomes a different record.
+- **Correct visibly if you were wrong.** A correction that changes what a reader concludes becomes a new version, which strikes through what the previous one said and states the correction beside it; the superseded file is left as it stood. A typo or a broken link is amended in place. Phase 5 carries the test. If the correction is substantive, it gets its own version and the old one is deprecated, per Phase 5. Either way the change in understanding stays readable; what is never acceptable is a record that quietly becomes a different record.
 - Proposing fixes is the next activity and produces its own artifacts. They can link back to this; this does not anticipate them.

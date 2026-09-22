@@ -201,10 +201,12 @@ Those two are the same decision and it is deliberate: **establishing what happen
 Note what this argument does **not** rest on. An earlier version of it said the documents are git-tracked and therefore recoverable. That is false for the document the current run is writing — the agent is forbidden to commit, so its own output is uncommitted working-tree content, which is precisely what an overwrite loses and what git does not protect. The safety comes from the prohibition, not from version control. So the baseline permits both, and the definition's only contribution is "never overwrite an existing post-mortem", which forbids what the baseline would allow. Stricter.
 - **A disclosed mutating inspection is permitted, and that is not narrowing.** `agents/post-mortem.md` lets the agent run an inspection with a side effect, without stopping to ask, when nothing less invasive establishes a load-bearing fact — disclosing the command and its effect in the document. Against `rules/destructive-actions.md` and preamble §1, which reserve that judgment to the human, this is **widening on the permission axis**, and under the rule above a widening clause would be void. It stands as a recorded exception because Scott decided it: an investigator that cannot reach the evidence produces a worse post-mortem than one that reaches it and says what it cost, and a rule that is dogmatic about mechanism will be wrong about accuracy. What actually bounds it, stated as the definition states it rather than as it would be convenient to record — **four limits, not three**, and they are cumulative rather than alternatives:
 
-1. The agent may never **remediate**. Repair is forbidden outright and no urgency changes that.
-2. Skip if the command would **destroy evidence that cannot be recovered**.
-3. Skip if it would take a **destructive action on production**.
-4. Skip if its **side effect lands on someone other than the investigator**.
+- The agent may never **remediate**. Repair is forbidden outright and no urgency changes that.
+- Skip condition **(a)** — the command would destroy evidence that cannot be recovered.
+- Skip condition **(b)** — it would cause loss or disruption on production, judged by what is lost rather than by technical irreversibility.
+- Skip condition **(c)** — its side effect lands on someone other than the investigator.
+
+The letters are the definition's own labels and are used here deliberately: this paragraph and the definition previously numbered the same conditions differently, which is how a claim about (b) came to be recorded while (b) had been changed.
 
 And over all of them, the **effect floor**, which is the most consequential of the limits and the one an earlier version of this paragraph omitted: an action that would repair, restart, unstick, release, roll back or clear the system is remediation whatever the intent, and the floor engages on uncertainty — the agent must be able to establish the action will *not* repair, not merely believe it will not.
 
