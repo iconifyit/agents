@@ -407,6 +407,7 @@ Otherwise, it should remain behavior within an existing component.
 - [adr-required](rules/adr-required.md)
 - [adversarial-review-agent](rules/adversarial-review-agent.md)
 - [agent-responses](rules/agent-responses.md)
+- [agents-md-is-generated](rules/agents-md-is-generated.md)
 - [ask-first](rules/ask-first.md)
 - [asking-permission](rules/asking-permission.md)
 - [autonomy](rules/autonomy.md)
@@ -491,6 +492,7 @@ Otherwise, it should remain behavior within an existing component.
 - [adversarial-architecture-reviewer](agents/adversarial-architecture-reviewer.md) — Adversarially review an implementation against the governing design artifacts, architectural invariants, task scope, and engineering rules.…
 - [adversarial-pr-reviewer](agents/adversarial-pr-reviewer.md) — Adversarial pull request reviewer that attempts to falsify correctness and evaluates changed code for security, behavioral correctness,…
 - [post-mortem](agents/post-mortem.md) — Investigate one unit of work that went wrong — a run, request, job, build, batch, transaction — and record EVERY failure in it, with…
+- [remediation-planner](agents/remediation-planner.md) — Turn ONE established causal unit — a cause and every failure it produced — into a proposed plan of corrective action — what to…
 
 ## State
 
@@ -501,6 +503,7 @@ _No state snapshots yet. Agents will create STATE_*context*_*timestamp*.md files
 @.claude/rules/adr-required.md
 @.claude/rules/adversarial-review-agent.md
 @.claude/rules/agent-responses.md
+@.claude/rules/agents-md-is-generated.md
 @.claude/rules/ask-first.md
 @.claude/rules/asking-permission.md
 @.claude/rules/autonomy.md

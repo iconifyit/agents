@@ -1,15 +1,11 @@
-# [DEPRECATED]
-
-> Superseded by [ADR-001-agents-repo-layout-0.0.4.md](./ADR-001-agents-repo-layout-0.0.4.md).
-
 # ADR-001: Global Agents Repository Layout — Visible Source with a `.agents/` Overlay
 
-**Version 0.0.3** — supersedes 0.0.2. The `agents/` class is unchanged; what changes is the *reason recorded for it*. 0.0.2 justified the class by the two rule-mandated reviewers that were its only members. The class now also holds an optional, non-reviewer agent that writes a durable artifact, so that justification no longer describes its own membership. Also records two things 0.0.2 left unstated: how tool grants are decided, and where an agent definition sits in the precedence chain.
+**Version 0.0.4** — supersedes 0.0.3. `agents/` gains a second non-reviewer, artifact-producing member, `remediation-planner`. Every section that enumerates the class or its members is extended to include it; the layout, the overlay mechanism, and the tool-grant *policy* itself are untouched. The enumerations move together deliberately: 0.0.3's `:175` certified a table that no longer existed, and an enumeration that stops describing its own membership is the defect this version exists to avoid repeating — including the two places that previously listed which sections had changed, which is why this one does not.
 
 - **Status:** Accepted (2026-09-22)
-- **Version:** 0.0.3
+- **Version:** 0.0.4
 - **Author:** Scott Lewis (with Claude as collaborator)
-- **Supersedes:** 0.0.2 (2026-09-19)
+- **Supersedes:** 0.0.3 (2026-09-22)
 
 ## Context
 
@@ -158,7 +154,7 @@ Claude Code loads subagent definitions from `~/.claude/agents/*.md`. The class e
 Two cases have come up, and the class covers both:
 
 - **Compulsion.** The `adversarial-review-agent` rule makes `adversarial-pr-reviewer` and `adversarial-architecture-reviewer` mandatory on every PR. A rule that cannot be satisfied on a correctly provisioned machine is not a rule, so they have to reach every machine by the same path as every other shared resource.
-- **Independence.** `post-mortem` is required by no rule and invoked on demand. It is an agent because an agent investigating its own work carries an account of what it intended, and that account contaminates the investigation. Running it in a separate context is what makes the finding trustworthy — the separation *is* the feature.
+- **Independence.** `post-mortem` and `remediation-planner` are required by no rule and invoked on demand. They are agents because an agent working on its own output carries an account of what it intended, and that account contaminates the work: the investigator reads intended behaviour as actual, and the author planning their own remediation reaches for the fix that leaves their design intact. Running each in a separate context is what makes its output trustworthy — the separation *is* the feature.
 
 v0.0.2 recorded only the first case, because it was the only one that existed. Membership is **not** limited to rule-mandated reviewers, and an agent may write a durable artifact rather than only reporting back. What the class requires is that the artifact genuinely needs its own context; a procedure the calling agent should follow in-context is a skill, and a user-initiated sequence is a workflow. See #23 for where that test should ultimately live.
 
@@ -177,6 +173,7 @@ Every agent declares a `tools:` allowlist. `Bash` is in every current grant and 
 
 - `adversarial-pr-reviewer`, `adversarial-architecture-reviewer` — `Read, Grep, Glob, Bash`. They are contracted to produce no artifact in the source tree. That is intent, not capability: both write a payload file and POST it to GitHub through `Bash`, as their own definitions instruct.
 - `post-mortem` — the same plus `Write, Edit`. It produces versioned documents and needs both. The split is by whether the target file exists, not by whether it is the first: `Write` creates a file that does not yet exist — the first version, each superseding version, and the pointer on first creation — and `Edit` changes one that already does, including the pointer on every subsequent supersession. `Edit` does not make blanking impossible — the whole file as `old_string` and `""` as `new_string` would do it — but it makes blanking require deliberate construction rather than being the default failure mode of a careless `Write`. That is the whole of the argument for the grant, and it is enough.
+- `remediation-planner` — the same grant, for the same reason: it writes a versioned plan beside the post-mortem on the same scheme, so it needs the same create-versus-change split. It holds no capability `post-mortem` lacks. What separates them is not what they can do but what each is forbidden to do with it, which is a precedence question rather than a grant one.
 
 Two things follow, and the second matters more than it looks:
 
@@ -192,7 +189,7 @@ ADR-003 orders the preamble above `rules/`. An agent definition is neither, and 
 
 The comparison is made **per constraint, not per definition**. A definition that narrows on one axis and widens on another is not "net narrower" — the widening clause is void and the narrowing clauses stand. Do not evaluate a bundle: a relaxation packaged with an unrelated restriction and redescribed as a narrower composite is the exact move this rule exists to refuse.
 
-Narrowing is the safe direction, and the cases so far are all narrowing: `post-mortem` forbids fixing anything where preamble §10 pre-authorises it, and forbids proposing solutions where §4 pushes toward implementation. Both are the same decision — establishing what happened and deciding what to do about it are separate concerns, and an investigator who is also proposing the fix will select evidence that supports it. The narrowing is the artifact's reason for existing, not an exception carved out for convenience.
+Narrowing is the safe direction, and the cases so far are all narrowing: `post-mortem` forbids fixing anything where preamble §10 pre-authorises it, and forbids proposing solutions where §4 pushes toward implementation. Both are the same decision — establishing what happened and deciding what to do about it are separate concerns, and an investigator who is also proposing the fix will select evidence that supports it. `remediation-planner` narrows adjacently: it may not implement anything, where §10 pre-authorises carrying an assigned task through to completion. In both cases the narrowing is the artifact's reason for existing, not an exception carved out for convenience — investigating, planning, and implementing are split precisely so that no one agent's conclusions are inherited unexamined by the next.
 
 Before this, such a definition won only because its prose was emphatic. That is tone, not precedence, and it holds only until someone writes a less emphatic agent.
 
@@ -212,7 +209,7 @@ Adding an artifact class or a generator input means adding both halves and revis
 
 ## Code being removed
 
-None. Version 0.0.3 changes only what is recorded — no code, directory, symlink, or artifact is retired, and no existing agent changes behaviour. The superseded text is v0.0.2's class rationale, which is replaced rather than deleted: it remains readable in the deprecated 0.0.2 file, which is the point of versioning ADRs rather than editing them.
+None. Version 0.0.4 retires nothing — no code, directory, symlink, or artifact. `post-mortem` does change: it now groups its failures under the cause that must change for them to stop, which is the unit `remediation-planner` acts on. What this version supersedes is 0.0.3's enumerations of the class and its members, *extended* rather than corrected: each was accurate for the membership it described and became incomplete when `remediation-planner` was added. They remain readable in the deprecated 0.0.3 file, which is the point of versioning ADRs rather than editing them.
 
 ## Consequences
 
