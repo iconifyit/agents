@@ -57,9 +57,13 @@ Anything that must happen before a fix lands — a mitigation, a backup, a flag,
 
 Then say what would demonstrate the remediation worked. The template's Validation section is a guide, not a form: tailor it to the remedy, drop what does not apply, and add what it does not anticipate — only this incident's causes know which conditions matter.
 
-**Two things are not discretionary: failure states, and corner, edge and boundary cases.** A remediation validated only along the path that was supposed to work has not been validated. The defect being remediated was itself a case nobody thought to check, and the conditions around a fix are where the next one will live.
+Discretion over the shape is not discretion over the substance. Whatever form it takes, the validation has to reach:
 
-The reproduction test is not negotiable either: it must fail against the behaviour as it stands and pass with the remediation. A test that passes both ways proves nothing and is worse than none, because it is read as proof. If you cannot construct one, say so and say why — that is itself a finding about the system.
+- **Failure states, and corner, edge and boundary cases.** A remediation validated only along the path that was supposed to work has not been validated. The defect being remediated was itself a case nobody thought to check.
+- **Reproduction.** A test that fails against the behaviour as it stands and passes with the remediation. One that passes both ways proves nothing and is worse than none, because it gets read as proof. If you cannot construct one, say so and say why — that is itself a finding about the system.
+- **Regression.** What currently works that this change could break. Untouched code is not unaffected code: shared state, existing call sites, and assumptions the changed component was making on behalf of others are where a fix does its damage.
+
+**You are choosing what gets tested.** The implementer will test what the plan names and not much else, so name what would be expensive to get wrong rather than what is cheap to check. Naming the obvious is how the important goes untested — and describe the behaviour that must hold, not the file to open, or you will get a test of the file.
 
 An action whose success cannot be observed is not yet a plan. Either find the check or record that you could not.
 
@@ -115,6 +119,7 @@ Phase 3 for what is not optional.
 5. **System behaviour** — what must remain true around the change: retries
    stay idempotent, partial failure does not corrupt state, downstream
    failure is surfaced rather than swallowed.
+6. **Regression** — the existing behaviour this change could break.
 
 ## Evidence of completion
 
