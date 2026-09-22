@@ -184,6 +184,7 @@ confident guess that later proves wrong.
 - The terminal event is identified for each failure, not just a nearby error.
 - Each cause survived an attempt to falsify it.
 - Independent failures are separated from consequences.
+- Failures are grouped under the cause that must change for them to stop, and both are keyed.
 - No fixes, no recommendations, no "we should".
 - Anything undetermined is in Open questions, not smoothed over.
 

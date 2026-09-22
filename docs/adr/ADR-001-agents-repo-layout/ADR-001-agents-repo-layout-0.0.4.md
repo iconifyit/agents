@@ -209,7 +209,7 @@ Adding an artifact class or a generator input means adding both halves and revis
 
 ## Code being removed
 
-None. Version 0.0.4 retires nothing — no code, directory, symlink, or artifact — and no existing agent changes behaviour. What it supersedes is 0.0.3's enumerations of the class and its members, *extended* rather than corrected: each was accurate for the membership it described and became incomplete when `remediation-planner` was added. They remain readable in the deprecated 0.0.3 file, which is the point of versioning ADRs rather than editing them.
+None. Version 0.0.4 retires nothing — no code, directory, symlink, or artifact. `post-mortem` does change: it now groups its failures under the cause that must change for them to stop, which is the unit `remediation-planner` acts on. What this version supersedes is 0.0.3's enumerations of the class and its members, *extended* rather than corrected: each was accurate for the membership it described and became incomplete when `remediation-planner` was added. They remain readable in the deprecated 0.0.3 file, which is the point of versioning ADRs rather than editing them.
 
 ## Consequences
 

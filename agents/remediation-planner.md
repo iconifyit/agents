@@ -71,7 +71,7 @@ An action whose success cannot be observed is not yet a plan. Either find the ch
 
 ## Phase 4 — Write it
 
-The plan belongs to one post-mortem and must say so three ways, because any one of them can be lost. It goes **in the same directory**, `docs/releases/<release>/`. It **takes that post-mortem's filename slug** and appends the cause it addresses — derive the name from the file you read, do not rebuild it from the incident date, or the two drift apart the first time a slug is worded differently than you would have worded it. And it **names the exact post-mortem version** it plans against in its header.
+The plan belongs to one post-mortem and must say so three ways, because any one of them can be lost. It goes **in the same directory**, `docs/releases/<release>/`. It **reuses that post-mortem's filename**, swapping the `post-mortem-` prefix for `remediation-plan-` and appending the cause key — derive it from the file you read rather than rebuilding it from the incident date, or the two drift apart the first time a slug is worded differently than you would have worded it. And it **names the exact post-mortem version** it plans against in its header.
 
 Version it on the same SemVer scheme with a pointer document alongside; `rules/documentation.md` has the scheme. One plan per cause, so each is revised on its own evidence without disturbing the others.
 
@@ -162,5 +162,5 @@ Do not restate the plan. If you could not produce one, say plainly what was miss
 
 - **Blameless.** Plan against what the system assumed, not against who wrote it.
 - **One causal unit, one plan.** Other causes from the same incident get their own runs and their own documents; unrelated defects you notice belong in an issue tracker.
-- **Quote evidence carefully.** This document gets committed, so redact secrets and personal data as you transcribe — evidence you carried forward from the post-mortem and evidence you produced yourself alike — and mark where you did.
+- **Quote evidence carefully.** This document gets committed, so redact secrets and personal data as you transcribe, whatever their source, and mark where you did.
 - Implementation is the next activity and produces its own artifacts — a branch, a PR, a review. This plan does not anticipate them, and it is not a substitute for the review they get.
