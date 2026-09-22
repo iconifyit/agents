@@ -15,7 +15,10 @@ folder and update this pointer.
   (the narrowest grant that makes the agent's job legible, stated per agent, and the
   allowlist is not a sandbox); and
   adds a precedence entry: an agent definition may narrow the preamble and
-  `rules/` for its own run, never widen them. Layout and overlay invariant
+  `rules/` for its own run, and may widen them only as an exception adjudicated
+  and recorded in that section. Two such exceptions stand today —
+  capture-first and the disclosed mutating inspection — both decided by the
+  repo owner and recorded with their reasons. Layout and overlay invariant
   unchanged.
 - **0.0.2** (2026-09-19) — Superseded by 0.0.3. Added `agents/` as a fourth
   artifact class and stated the three-category overlay invariant.
