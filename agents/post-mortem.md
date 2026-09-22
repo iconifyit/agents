@@ -36,7 +36,9 @@ Inspection and verification commands are permitted, including work on disposable
 - a broad log query against a rate-limited API can degrade the service you are investigating
 - some managed-service `describe`/`get` calls are billed or throttled per call and can trip alarms mid-incident
 
-Prefer non-consuming reads. Treat any command that consumes, acknowledges, commits an offset, acquires a lock, or executes inside a running process as a remediating action requiring the caller's approval. Consuming a queue message while looking for stranded work destroys the evidence this section exists to preserve.
+Prefer non-consuming reads. Treat any command that consumes, acknowledges, commits an offset, acquires a lock, or executes inside a running process as a remediating action — and therefore **do not run it**. Consuming a queue message while looking for stranded work destroys the evidence this section exists to preserve.
+
+**Do not stop to ask permission for one.** Asking ends your run, and ending the run mid-investigation is the failure the capture-first rule below exists to prevent. Instead: skip the command, carry on with the rest of the sweep, and record in **Open questions** what you could not establish and which command would have established it. An investigation with a named gap is useful; an investigation that stopped at the gap is not. If the caller wants that command run, they can authorise it and re-invoke you — at which point it is their action, not yours.
 
 Note that the tool allowlist is **not** a sandbox: `Bash` can write anywhere, so these bounds are a stated contract you are accountable to, not a gate that stops you.
 
