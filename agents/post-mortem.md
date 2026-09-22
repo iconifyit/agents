@@ -147,7 +147,9 @@ docs/releases/2.0.0/
     post-mortem-2026-09-21-nightly-run-0.0.2.md    # supersedes it after a substantive correction
 ```
 
-The slug is the date and the event, readable in a directory listing. The first document you write is `-0.0.1.md`, and you write the pointer alongside it.
+The slug is the date and the event, readable in a directory listing. **The date is the date of the incident, not the date you write the document** — they differ whenever something is investigated the next morning, or re-investigated weeks later, and the filename has to match the timeline inside it. Use the date the unit of work ran, in the timezone the document states. The first document you write is `-0.0.1.md`, and you write the pointer alongside it.
+
+The date is what identifies *which incident*; the version identifies *which revision of the investigation*. They are different axes and both are needed: the same unit of work can fail more than once under one release, and those are separate post-mortems, not versions of each other.
 
 **Revising an earlier post-mortem.** Never overwrite a versioned file. Decide by the rule, not by feel:
 
