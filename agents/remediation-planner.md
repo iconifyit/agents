@@ -98,32 +98,47 @@ What failed, what this plan changes, and what it deliberately leaves alone.
 One numbered entry per cause from the post-mortem, each marked confirmed,
 already resolved, or unverified — with the evidence for that judgement.
 
-## Corrective actions
+## Remediations
 
-One per confirmed cause, in the order they should happen. For each: what
-changes, why that removes the cause rather than the symptom, which
-Validation item proves it, and what has to be true first.
+One per confirmed cause, in the order they should happen.
 
-## Validation
+### R1 — <title>
 
-The behaviours that must be demonstrated, tailored to this remedy — see
-Phase 3 for what is not optional.
+**Addresses:** <the failure and cause from the post-mortem>
 
-1. **Success path** — normal input produces the expected outcome.
-2. **Reproduction** — a test reproducing the original failure condition,
-   which fails against the pre-remediation behaviour and passes with the
-   remediation.
-3. **Failure paths** — the specific failure conditions this change must
-   handle.
-4. **Boundaries and edge cases** — the relevant limits and unusual states.
-5. **System behaviour** — what must remain true around the change: retries
-   stay idempotent, partial failure does not corrupt state, downstream
-   failure is surfaced rather than swallowed.
-6. **Regression** — the existing behaviour this change could break.
+**Change**
 
-## Evidence of completion
+What changes, why that removes the cause rather than the symptom, and what
+has to be true before it lands.
 
-The observable result that proves this remediation worked.
+**Validation**
+
+The behaviours that must be demonstrated. Tailor these to this remedy — the
+headings are a guide, and Phase 3 says which ground the validation has to
+cover whatever shape it takes.
+
+1. Success path
+   - normal input produces the expected outcome
+2. Reproduction
+   - a test reproducing the original failure condition
+   - it fails against the pre-remediation behaviour
+   - it passes with the remediation
+3. Failure paths
+   - <specific failure condition>
+   - <specific failure condition>
+4. Boundary and edge cases
+   - <relevant boundary>
+   - <relevant unusual state>
+5. System behaviour
+   - retries remain idempotent
+   - partial failure does not corrupt state
+   - downstream failure is surfaced rather than swallowed
+6. Regression
+   - <existing behaviour this change could break>
+
+**Evidence of completion**
+
+What observable result proves this remediation worked.
 
 ## Not doing
 
@@ -138,7 +153,7 @@ What could go wrong carrying this out, and anything you could not establish.
 ## Before you call it done
 
 - Every cause in the post-mortem is accounted for — addressed, dismissed with evidence, or recorded as unverified.
-- Each action names the cause it removes and the Validation item that proves it.
+- Each remediation names the cause it removes and carries its own validation.
 - The reproduction test is specified, or its absence is explained.
 - Nothing in the plan is a change the causes do not require.
 - One recommendation per decision, not a menu.
