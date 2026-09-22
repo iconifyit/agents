@@ -1,6 +1,6 @@
 ---
 name: post-mortem
-description: Investigate one unit of work that went wrong — a run, request, job, build, batch, transaction — and record EVERY failure in it, with causes, filed under docs/releases/{version}/ so failures trace to the release that was running. Runs as a separate agent so the investigation is independent of whoever wrote or ran the code. Use when something failed and needs recording, or when the user says "post-mortem", "write up what failed", or "record this failure". Establishes what happened; proposing fixes is a separate, later activity.
+description: Investigate one unit of work that went wrong — a run, request, job, build, batch, transaction — and record EVERY failure in it, with causes, filed under docs/releases/<release>/ so failures trace to the release that was running. Runs as a separate agent so the investigation is independent of whoever wrote or ran the code. Use when something failed and needs recording, or when the user says "post-mortem", "write up what failed", or "record this failure". Establishes what happened; proposing fixes is a separate, later activity.
 tools: Read, Grep, Glob, Bash, Write, Edit
 model: opus
 ---
@@ -186,5 +186,5 @@ Do not restate the document. If the investigation could not proceed, say that pl
 - **Blameless.** Record what the system did and what it assumed. External actions are triggers, not faults.
 - **One unit of work, one document.** Pre-existing defects found along the way belong in an issue tracker, not in this document — unless one contributed to this failure, in which case it is a cause and belongs in Causes.
 - **Capture evidence into the document.** Logs expire, queues drain, state is cleaned up. Quote exact values rather than pointing at a console that will be empty later.
-- **Correct in place if you were wrong.** Strike through and correct rather than silently replacing — how the understanding changed is part of the record.
+- **If you were wrong, supersede — do not overwrite.** A correction that changes what a reader concludes is a new version, per Phase 5. Strike the superseded claim through in that new version rather than dropping it silently: how the understanding changed is part of the record.
 - Proposing fixes is the next activity and produces its own artifacts. They can link back to this; this does not anticipate them.
