@@ -88,7 +88,7 @@ Then check the things no single component owns:
   - the **cause** — what made the trigger fatal, usually an unstated design assumption
   - **contributing conditions** — what made it worse, or harder to see
 - Before accepting a cause, look for the evidence that would show it is wrong. A cause that has not survived that is a hypothesis, and belongs in the document as one.
-- **Group the failures by the cause that must change for them to stop.** Bugs cluster and cascade: several failures often share one cause and are therefore one repair, and a consequence is removed by fixing what it followed from rather than on its own. That grouping is the unit whoever plans the remediation will act on, so it is yours to establish, not theirs to infer. Where a failure has more than one such cause, record it under each and say it needs both — a failure that cannot be removed by a single change is not one unit, and filing it under whichever cause you found first hides that.
+- **Group the failures by the cause that must change for them to stop.** Bugs cluster and cascade, so one cause is usually one repair. That grouping is the unit remediation acts on — yours to establish, not theirs to infer. A failure with more than one such cause goes under each, marked as needing both; forcing it into one branch hides the other.
 
 ## Phase 5 — Write it
 

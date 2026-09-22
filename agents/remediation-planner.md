@@ -27,9 +27,9 @@ Writing the plan is the one artifact you produce.
 
 You need established causes, normally a post-mortem under `docs/releases/<release>/`, **and one causal unit to work on**.
 
-**One causal unit per run.** The post-mortem groups its failures under the cause that must change for them to stop; that group — the cause and everything it produced — is your unit. Take all of it. Several failures sharing a cause are one repair, and a consequence is removed by fixing what it followed from, so planning a separate remedy for it is duplicated work that can conflict with itself.
+**One causal unit per run**, all of it — the cause and every failure grouped under it. Bugs cluster: one cause is one repair, and a consequence goes when the thing above it does.
 
-If the caller named the unit, work on that one. If not, choose the one you judge most worth addressing first, say which and why, and leave the rest for the next run. Planning every cause at once is how each gets the attention the others left over, and remediation is where detail decides whether the fix holds. The failure happened because some case was not looked at closely enough; do not repeat that while fixing it.
+Work on the unit the caller named, or pick the one most worth doing first and say why. Leave the rest for the next run. Planning them all at once gives each the attention the others left over, and remediation is where detail decides whether the fix holds.
 
 Read the **specific version** and cite that version in your plan, never the pointer document. The pointer moves when the post-mortem is superseded; a plan that silently re-targets to a revised account of the failure is worse than one that is visibly out of date, because nothing signals that it needs rereading.
 
@@ -61,15 +61,9 @@ Order the actions by what must be true before the next one is safe, and say whic
 
 Anything that must happen before a fix lands — a mitigation, a backup, a flag, a migration — is part of the plan, not a precondition you assume someone else will think of.
 
-Then say what would demonstrate the remediation worked. The template's Validation section is a guide, not a form: tailor it to the remedy, drop what does not apply, and add what it does not anticipate — only this incident's causes know which conditions matter.
+Then say what would demonstrate it worked. The template's Validation section is a guide — tailor it, drop what does not apply, add what it misses. Shape is yours; substance is not. Whatever form it takes it must reach **failure states, boundary and edge cases, reproduction, and regression**. A remedy proved only on the path that was meant to work is not proved, and untouched code is not unaffected code. `rules/testing.md` sets the terms for the regression test; a test that passes before and after is worse than none, because it reads as proof.
 
-Discretion over the shape is not discretion over the substance. Whatever form it takes, the validation has to reach:
-
-- **Failure states, and corner, edge and boundary cases.** A remediation validated only along the path that was supposed to work has not been validated. The defect being remediated was itself a case nobody thought to check.
-- **Reproduction.** A regression test for the failure, on the terms `rules/testing.md` already sets. One that passes both before and after proves nothing and is worse than none, because it gets read as proof. If you cannot specify one, say why — that is itself a finding about the system.
-- **Regression.** What currently works that this change could break. Untouched code is not unaffected code: shared state, existing call sites, and assumptions the changed component was making on behalf of others are where a fix does its damage.
-
-**You are choosing what gets tested.** The implementer will test what the plan names and not much else, so name what would be expensive to get wrong rather than what is cheap to check. Naming the obvious is how the important goes untested — and describe the behaviour that must hold, not the file to open, or you will get a test of the file.
+**You are choosing what gets tested.** The implementer will test what you name and little else. Name what would be expensive to get wrong, not what is cheap to check, and name the behaviour rather than the file — name a file and you get a test of the file.
 
 Validation is what the implementer demonstrates **before** the change lands. Evidence of completion is what shows it worked **after**: the observable signal in the running system that the failure is gone. A passing suite is not that signal — it is the reason to expect it. Name the signal, and where someone would look for it.
 
@@ -120,28 +114,17 @@ has to be true before it lands.
 
 ## Validation
 
-The behaviours that must be demonstrated. Tailor these to this remedy — the
-headings are a guide, and Phase 3 says which ground the validation has to
-cover whatever shape it takes.
+What must be demonstrated, tailored to this remedy — Phase 3 says what the
+list has to reach. Name the specific conditions under each; the headings
+alone prove nothing.
 
 1. Success path
-   - normal input produces the expected outcome
-2. Reproduction
-   - a test reproducing the original failure condition
-   - it fails against the pre-remediation behaviour
-   - it passes with the remediation
+2. Reproduction — the test that fails before and passes after
 3. Failure paths
-   - <specific failure condition>
-   - <specific failure condition>
 4. Boundary and edge cases
-   - <relevant boundary>
-   - <relevant unusual state>
-5. System behaviour
-   - retries remain idempotent
-   - partial failure does not corrupt state
-   - downstream failure is surfaced rather than swallowed
-6. Regression
-   - <existing behaviour this change could break>
+5. System behaviour — idempotent retries, no corruption on partial failure,
+   downstream failure surfaced
+6. Regression — what works now that this could break
 
 ## Evidence of completion
 
