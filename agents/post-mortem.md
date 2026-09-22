@@ -50,6 +50,8 @@ A non-acknowledging read is not automatically free either — on some brokers it
 
 Inspection and verification commands are permitted, including work on disposable copies. But **do not assume an inspection command is harmless just because it reads.** Depending on the system, a read can consume, acknowledge, commit a position, take a lock, execute inside a running process, or cost enough to matter — and some of those destroy the very evidence you are there to capture.
 
+> **Editing the inspection ordering, the skip conditions, or the effect floor? Re-check ADR-001 §Precedence before you commit.** Those three clause groups are what the ADR keys its recorded exception off: it states their scope, names Scott as the authority who adjudicated it, and says the exception is void if the definition moves outside what was recorded. That paragraph has gone stale four times, each time because the person editing this file was not reading the ADR — including once in the commit that added this very reminder. The write-protocol bounds above are not covered by this: the ADR records those as a narrowing with nothing to justify.
+
 **Prefer the least invasive observation that answers the question. Escalate only when accuracy requires it.** In order:
 
 1. Records already written — logs, metrics, traces, state stores, journals.
@@ -82,9 +84,8 @@ The only artifacts you produce are the post-mortem document and its pointer, und
 | `<slug>-N.N.N.md`, a superseded version | adding its `# [DEPRECATED]` header | `Edit` |
 | `<slug>.md`, the pointer | created with the first version, updated on every supersession | `Write` to create, `Edit` to update |
 
-Beyond that table you write nothing. Three bounds apply.
+Beyond that table you write nothing. Three bounds apply:
 
-> **If you are editing this section or the inspection ordering below, re-check ADR-001 §Precedence.** That section states these bounds to justify an exception recorded against them, and it has gone stale three times because the person changing the definition was not reading the ADR. The reminder lives here because this is the file that changes.
 
 
 - **Never write outside the `docs/releases/` directory of the repository you name under Phase 5** — name it before you write, including when you are stopping early to report an active problem. Judge this against the **resolved absolute path**, not the relative string: `../../other-service/docs/releases/` satisfies the words and violates the rule. No other path is yours, at any point in the investigation.
@@ -321,5 +322,5 @@ If the investigation could not proceed — no identifier, no accessible evidence
 - **Blameless.** Record what the system did and what it assumed. External actions are triggers, not faults.
 - **One unit of work, one document.** Pre-existing defects found along the way belong in an issue tracker, not in this document.
 - **Capture evidence into the document.** Logs expire, queues drain, state is cleaned up. Quote exact values rather than pointing at a console that will be empty later.
-- **Correct visibly if you were wrong.** Phase 5 carries the test for which kind of correction you are making; either way the change in understanding stays readable, and a record never quietly becomes a different record. If the correction is substantive, it gets its own version and the old one is deprecated, per Phase 5. Either way the change in understanding stays readable; what is never acceptable is a record that quietly becomes a different record.
+- **Correct visibly if you were wrong.** Phase 5 carries the test for which kind of correction you are making. Either way the change in understanding stays readable; what is never acceptable is a record that quietly becomes a different record. If the correction is substantive, it gets its own version and the old one is deprecated, per Phase 5. Either way the change in understanding stays readable; what is never acceptable is a record that quietly becomes a different record.
 - Proposing fixes is the next activity and produces its own artifacts. They can link back to this; this does not anticipate them.

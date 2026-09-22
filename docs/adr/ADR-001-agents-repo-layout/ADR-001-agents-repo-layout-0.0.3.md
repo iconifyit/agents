@@ -210,7 +210,7 @@ The letters are the definition's own labels and are used here deliberately: this
 
 And over all of them, the **effect floor** — not a fifth condition but a test that applies after the four are cleared, and the most consequential constraint of the set. An earlier version of this paragraph omitted it: an action that would repair, restart, unstick, release, roll back or clear the system is remediation whatever the intent, and the floor engages on uncertainty — the agent must be able to establish the action will *not* repair, not merely believe it will not.
 
-Clearing one limit is not permission; a command must clear all of them. No limit is an availability grant, and a previous draft of the definition turned condition (c) into one, which silently relaxed condition (b).
+Clearing one limit is not permission; a command must clear all of them. No limit is an availability grant, and a previous draft of the definition turned condition **(c)** into one, which silently relaxed condition **(b)**. Both labels resolve to the bullets above; an earlier version of this sentence cited a 1–4 numbering that no longer exists in either artifact.
 
 The ordering that precedes step 4 is **not** among the bounds: the definition calls it a preference and tells the agent to judge each case, so it constrains by default rather than by rule. **The exception rests on skip condition (b)**, which forbids an inspection that would cause loss or disruption on production. So what was accepted is narrower than "a mutating inspection on a live production system, disclosed" — it is "a mutating inspection that costs production nothing, disclosed."
 
