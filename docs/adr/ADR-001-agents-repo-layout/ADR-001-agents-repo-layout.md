@@ -12,8 +12,9 @@ folder and update this pointer.
 
 - **0.0.4** (2026-09-22) — Accepted. Records `remediation-planner` as a second
   non-reviewer, artifact-producing member of `agents/`: its tool grant (identical
-  to `post-mortem`'s) and its narrowing (it may not implement). Layout, overlay
-  invariant, class rationale and tool-grant policy unchanged.
+  to `post-mortem`'s) and its narrowing (it may not implement). Every section
+  enumerating the class or its members is extended to include it; the layout,
+  the overlay mechanism and the tool-grant policy itself are untouched.
 - **0.0.3** (2026-09-22) — Superseded by 0.0.4. Restates the `agents/` class rationale to
   cover non-reviewer, artifact-producing agents; adds a tool-grant policy
   (the narrowest grant that makes the agent's job legible, stated per agent, and the

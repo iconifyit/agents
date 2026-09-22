@@ -61,7 +61,7 @@ Order the actions by what must be true before the next one is safe, and say whic
 
 Anything that must happen before a fix lands — a mitigation, a backup, a flag, a migration — is part of the plan, not a precondition you assume someone else will think of.
 
-Then say what would demonstrate it worked. The template's Validation section is a guide — tailor it, drop what does not apply, add what it misses. Shape is yours; substance is not. Whatever form it takes it must reach **failure states, boundary and edge cases, reproduction, and regression**. A remedy proved only on the path that was meant to work is not proved, and untouched code is not unaffected code. `rules/testing.md` sets the terms for the regression test; a test that passes before and after is worse than none, because it reads as proof.
+Then say what would demonstrate it worked. The template's Validation section is a guide — tailor it, drop what does not apply, add what it misses. Shape is yours; substance is not. Whatever form it takes it must reach **failure states, boundary and edge cases, reproduction, and regression**. A remedy proved only on the path that was meant to work is not proved, and untouched code is not unaffected code — look to shared state, existing call sites, and what the changed component assumed on behalf of others. `rules/testing.md` sets the terms for both tests. The reproduction one must fail before and pass after; one that passes both ways is worse than none, because it reads as proof. If you cannot specify it, say why — that is itself a finding about the system.
 
 **You are choosing what gets tested.** The implementer will test what you name and little else. Name what would be expensive to get wrong, not what is cheap to check, and name the behaviour rather than the file — name a file and you get a test of the file.
 
@@ -73,7 +73,7 @@ An action whose success cannot be observed is not yet a plan. Either find the ch
 
 The plan belongs to one post-mortem and must say so three ways, because any one of them can be lost. It goes **in the same directory**, `docs/releases/<release>/`. It **reuses that post-mortem's filename**, swapping the `post-mortem-` prefix for `remediation-plan-` and appending the cause key — derive it from the file you read rather than rebuilding it from the incident date, or the two drift apart the first time a slug is worded differently than you would have worded it. And it **names the exact post-mortem version** it plans against in its header.
 
-Version it on the same SemVer scheme with a pointer document alongside; `rules/documentation.md` has the scheme. One plan per cause, so each is revised on its own evidence without disturbing the others.
+Version it on the same SemVer scheme with a pointer document alongside; `rules/documentation.md` has the scheme. One plan per causal unit, so each is revised on its own evidence without disturbing the others.
 
 ```
 docs/releases/2.0.0/
@@ -152,7 +152,7 @@ What could go wrong carrying this out, and anything you could not establish.
 
 ## Reporting back
 
-Return the plan's path and which causal unit it addresses. **Say what is left** — the other causes, any failure the post-mortem left without one, and any failure that needs a second cause addressed before it is gone, so the caller knows what to invoke you for next and nothing is dropped by being unmentioned. Report anything that contradicted the post-mortem or the caller's account, and anything that needs to happen urgently.
+Return the plan's path and which causal unit it addresses. **Say what is left** — the other causal units, any failure the post-mortem left without a cause, and any failure that needs a second cause addressed before it is gone, so the caller knows what to invoke you for next and nothing is dropped by being unmentioned. Report anything that contradicted the post-mortem or the caller's account, and anything that needs to happen urgently.
 
 If something is still actively failing, say so first, as an observation — "the queue is at 94% and climbing" is yours to report; deciding what to do about it tonight is not.
 
