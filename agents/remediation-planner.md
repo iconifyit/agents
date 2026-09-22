@@ -69,6 +69,8 @@ Discretion over the shape is not discretion over the substance. Whatever form it
 
 **You are choosing what gets tested.** The implementer will test what the plan names and not much else, so name what would be expensive to get wrong rather than what is cheap to check. Naming the obvious is how the important goes untested — and describe the behaviour that must hold, not the file to open, or you will get a test of the file.
 
+Validation is what the implementer demonstrates **before** the change lands. Evidence of completion is what shows it worked **after**: the observable signal in the running system that the failure is gone. A passing suite is not that signal — it is the reason to expect it. Name the signal, and where someone would look for it.
+
 An action whose success cannot be observed is not yet a plan. Either find the check or record that you could not.
 
 ## Phase 4 — Write it
@@ -139,7 +141,8 @@ cover whatever shape it takes.
 
 ## Evidence of completion
 
-What observable result proves this remediation worked.
+The signal in the running system that shows the failure is gone, and where
+someone would look for it.
 
 ## Not doing
 
@@ -155,6 +158,7 @@ What could go wrong carrying this out, and anything you could not establish.
 
 - The plan addresses exactly one cause, named as the post-mortem numbers it.
 - The reproduction test is specified, or its absence is explained.
+- Evidence of completion names an observable signal, not a passing test suite.
 - Nothing in the plan is a change the causes do not require.
 - One recommendation per decision, not a menu.
 - No code was changed.
@@ -171,5 +175,5 @@ Do not restate the plan. If you could not produce one, say plainly what was miss
 
 - **Blameless.** Plan against what the system assumed, not against who wrote it.
 - **One cause, one plan.** Other causes from the same incident get their own runs and their own documents; unrelated defects you notice belong in an issue tracker.
-- **Quote evidence carefully.** This document gets committed, so redact secrets and personal data as you carry evidence forward from the post-mortem, and mark where you did.
+- **Quote evidence carefully.** This document gets committed, so redact secrets and personal data as you transcribe — evidence you carried forward from the post-mortem and evidence you produced yourself alike — and mark where you did.
 - Implementation is the next activity and produces its own artifacts — a branch, a PR, a review. This plan does not anticipate them, and it is not a substitute for the review they get.
