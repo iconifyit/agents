@@ -1,6 +1,6 @@
 # ADR-001: Global Agents Repository Layout — Visible Source with a `.agents/` Overlay
 
-**Version 0.0.4** — supersedes 0.0.3. Layout, overlay invariant, class rationale and tool-grant policy are unchanged. What changes is membership: `agents/` now holds a second non-reviewer, artifact-producing agent, `remediation-planner`, and both §Tool grants and §Precedence enumerate their members. An enumeration that stops describing its own membership is how `:175` of 0.0.3 came to certify a table that no longer existed.
+**Version 0.0.4** — supersedes 0.0.3. `agents/` gains a second non-reviewer, artifact-producing member, `remediation-planner`. Every section that enumerates the class or its members is extended to include it; the layout, the overlay mechanism, and the tool-grant *policy* itself are untouched. The enumerations move together deliberately: 0.0.3's `:175` certified a table that no longer existed, and an enumeration that stops describing its own membership is the defect this version exists to avoid repeating — including the two places that previously listed which sections had changed, which is why this one does not.
 
 - **Status:** Accepted (2026-09-22)
 - **Version:** 0.0.4
@@ -209,7 +209,7 @@ Adding an artifact class or a generator input means adding both halves and revis
 
 ## Code being removed
 
-None. Version 0.0.4 records a new member of the `agents/` class and retires nothing — no code, directory, symlink, or artifact, and no existing agent changes behaviour. The text it supersedes is 0.0.3's §Tool grants and §Precedence, and both are *extended* rather than corrected: each was accurate for the membership it described and became incomplete when `remediation-planner` was added. Both remain readable in the deprecated 0.0.3 file, which is the point of versioning ADRs rather than editing them.
+None. Version 0.0.4 retires nothing — no code, directory, symlink, or artifact — and no existing agent changes behaviour. What it supersedes is 0.0.3's enumerations of the class and its members, *extended* rather than corrected: each was accurate for the membership it described and became incomplete when `remediation-planner` was added. They remain readable in the deprecated 0.0.3 file, which is the point of versioning ADRs rather than editing them.
 
 ## Consequences
 
