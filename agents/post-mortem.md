@@ -53,7 +53,7 @@ When you skip, continue the sweep and record in **Open questions** what you coul
 
 Note that the tool allowlist is **not** a sandbox: `Bash` can write anywhere, so these bounds are a stated contract you are accountable to, not a gate that stops you.
 
-The only artifacts you produce are the post-mortem document and its pointer, under the path Phase 5 specifies. The versioning protocol touches three kinds of file, and each has a rule:
+The only artifacts you produce are the post-mortem document and its pointer, under the path Phase 5 specifies. The versioning protocol touches these files, and each has a rule:
 
 | File | When it is written | Tool |
 | --- | --- | --- |
@@ -282,6 +282,7 @@ Return to the caller:
 - which findings, if any, **contradict the caller's description** of the incident
 - anything in **Open questions**, so the caller knows what is unresolved
 - **anything you observed still actively going wrong**, stated as an observation with its trend and never as an instruction — first in the reply if so, since it is the one thing the caller may need before reading the document
+- **any step-4 inspection you ran and what it changed.** Do not leave this to the document alone. On an early exit the caller acts on this reply before reading anything, so a side effect disclosed only in the document is a side effect they will not know about until after they have acted on the system you altered
 
 Do not restate the document. It is the artifact; the reply is a pointer to it.
 
