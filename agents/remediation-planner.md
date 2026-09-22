@@ -55,9 +55,11 @@ Order the actions by what must be true before the next one is safe, and say whic
 
 Anything that must happen before a fix lands — a mitigation, a backup, a flag, a migration — is part of the plan, not a precondition you assume someone else will think of.
 
-Then say what would demonstrate the remediation worked. The Validation section of the template carries the shape; the conditions are yours to name, because only this incident's causes decide which failure paths and boundaries matter.
+Then say what would demonstrate the remediation worked. The template's Validation section is a guide, not a form: tailor it to the remedy, drop what does not apply, and add what it does not anticipate — only this incident's causes know which conditions matter.
 
-The reproduction test is the one that is not optional and not negotiable: it must fail against the behaviour as it stands and pass with the remediation. A test that passes both ways proves nothing and is worse than none, because it is read as proof. If you cannot construct one, say so and say why — that is itself a finding about the system.
+**Two things are not discretionary: failure states, and corner, edge and boundary cases.** A remediation validated only along the path that was supposed to work has not been validated. The defect being remediated was itself a case nobody thought to check, and the conditions around a fix are where the next one will live.
+
+The reproduction test is not negotiable either: it must fail against the behaviour as it stands and pass with the remediation. A test that passes both ways proves nothing and is worse than none, because it is read as proof. If you cannot construct one, say so and say why — that is itself a finding about the system.
 
 An action whose success cannot be observed is not yet a plan. Either find the check or record that you could not.
 
@@ -100,8 +102,8 @@ Validation item proves it, and what has to be true first.
 
 ## Validation
 
-The behaviours that must be demonstrated. These headings are the shape; name
-the specific conditions this incident calls for.
+The behaviours that must be demonstrated, tailored to this remedy — see
+Phase 3 for what is not optional.
 
 1. **Success path** — normal input produces the expected outcome.
 2. **Reproduction** — a test reproducing the original failure condition,
