@@ -156,7 +156,7 @@ Two cases have come up, and the class covers both:
 - **Compulsion.** The `adversarial-review-agent` rule makes `adversarial-pr-reviewer` and `adversarial-architecture-reviewer` mandatory on every PR. A rule that cannot be satisfied on a correctly provisioned machine is not a rule, so they have to reach every machine by the same path as every other shared resource.
 - **Independence.** `post-mortem` is required by no rule and invoked on demand. It is an agent because an agent investigating its own work carries an account of what it intended, and that account contaminates the investigation. Running it in a separate context is what makes the finding trustworthy — the separation *is* the feature.
 
-v0.0.2 recorded only the first case, because it was the only one that existed. Membership is **not** limited to rule-mandated reviewers, and an agent may write a durable artifact rather than only reporting back. What the class requires is that the artifact genuinely needs its own context; a procedure the calling agent should follow in-context is a skill, and a user-initiated sequence is a workflow. See the open issue on selection criteria for where that test should ultimately live.
+v0.0.2 recorded only the first case, because it was the only one that existed. Membership is **not** limited to rule-mandated reviewers, and an agent may write a durable artifact rather than only reporting back. What the class requires is that the artifact genuinely needs its own context; a procedure the calling agent should follow in-context is a skill, and a user-initiated sequence is a workflow. See #23 for where that test should ultimately live.
 
 `agents/` therefore joins `rules/`, `skills/`, and `workflows/` as a real, visible source directory at the repo root, with a matching relative symlink `.agents/agents -> ../agents` in the overlay. Nothing about the mechanism is new; only the enumeration changed.
 
@@ -169,10 +169,10 @@ Two properties distinguish this bucket from the other three, and both are delibe
 
 ### Tool grants
 
-Every agent declares a `tools:` allowlist. The policy is **least privilege for the job, decided per agent and stated in the definition**:
+Every agent declares a `tools:` allowlist. `Bash` is in every current grant and defeats any privilege bound, so the allowlist is **stated intent and an auditable contract, not a sandbox**. Adding `Write` to an agent that already holds `Bash` is a legibility choice, not a privilege escalation. The policy is **the narrowest grant that makes the agent's job legible, decided per agent and stated in the definition**:
 
-- `adversarial-pr-reviewer`, `adversarial-architecture-reviewer` — `Read, Grep, Glob, Bash`. They report; they produce no file.
-- `post-mortem` — the same plus `Write, Edit`. It produces a document, and needs both: `Write` creates the first one, `Edit` amends it thereafter without being able to blank or truncate it.
+- `adversarial-pr-reviewer`, `adversarial-architecture-reviewer` — `Read, Grep, Glob, Bash`. They are contracted to produce no artifact in the source tree. That is intent, not capability: both write a payload file and POST it to GitHub through `Bash`, as their own definitions instruct.
+- `post-mortem` — the same plus `Write, Edit`. It produces a document and needs both: `Write` creates the first one, `Edit` amends it thereafter. `Edit` does not make blanking impossible — the whole file as `old_string` and `""` as `new_string` would do it — but it makes blanking require deliberate construction rather than being the default failure mode of a careless `Write`. That is the whole of the argument for the grant, and it is enough.
 
 Two things follow, and the second matters more than it looks:
 
@@ -182,17 +182,20 @@ Two things follow, and the second matters more than it looks:
 
 ### Precedence: an agent definition may narrow, never widen
 
-ADR-003 orders the preamble above `rules/`. An agent definition is neither, and nothing stated where it sits — which became load-bearing with the first agent whose definition issues prohibitions that contradict always-on sections.
+ADR-003 orders the preamble above `rules/`. An agent definition is neither, and nothing stated where it sits (#21) — which became load-bearing with the first agent whose definition issues prohibitions that contradict always-on sections.
 
 **For the duration of its own run, an agent definition may impose constraints stricter than the preamble and `rules/`. It may not relax them. Where it appears to relax one, the preamble and `rules/` govern.**
 
-Narrowing is the safe direction, and the concrete cases are all narrowing:
+The comparison is made **per constraint, not per definition**. A definition that narrows on one axis and widens on another is not "net narrower" — the widening clause is void and the narrowing clauses stand. Do not evaluate a bundle: a relaxation packaged with an unrelated restriction and redescribed as a narrower composite is the exact move this rule exists to refuse.
+
+Narrowing is the safe direction. The cases adjudicated so far — not a claim about every clause in the class, which has not been audited end to end:
 
 - preamble §10 pre-authorises "fixing issues discovered during testing or validation"; `post-mortem` forbids fixing anything. **Stricter — the definition governs.**
 - preamble §4 pushes every discussion toward implementation; `post-mortem` forbids proposing solutions. **Stricter — the definition governs.**
 
 Those two are the same decision and it is deliberate: **establishing what happened and deciding what to do about it are separate concerns, and an investigator who is also proposing the fix will select evidence that supports it.** The narrowing is the artifact's reason for existing, not an exception carved out of the preamble for convenience. An agent whose value depends on independence has to be allowed to bind itself more tightly than the general case, or the general case dissolves it.
-- preamble §1 and `rules/destructive-actions.md` require permission before overwriting a file; `post-mortem` self-grants a scoped write. This is the one that is *not* obviously narrowing, which is why the definition has to state its path bound and its no-overwrite rule explicitly. With those, the write is narrower than the general permission it would otherwise need. Without them it would be widening, and would not be permitted.
+- `post-mortem` writes a document under `docs/releases/`. **Narrowing, and there is no self-grant to justify.** Creating a file is not on `rules/destructive-actions.md`'s list and preamble §10 pre-authorises it as routine within an approved scope — a scope `rules/documentation.md` now sanctions. Amending an existing file is where `destructive-actions` ("any existing content") and §10 ("modifying") point opposite ways, and ADR-003 already settles that class: the preamble governs. So the baseline permits both, and the definition's only contribution is "never overwrite an existing post-mortem", which forbids what the baseline would allow. Stricter.
+- **Capture-first is the exception, and it is recorded rather than smoothed over.** `agents/post-mortem.md` requires writing the document before escalating an urgent finding on a live system. Against preamble §1 ("choose the safest option or ask") that is **not** narrowing: it trades incident duration for evidence. It stands because Scott accepted it deliberately once the tradeoff was put to him — perishable evidence (queues drain, logs expire) is lost permanently, while the escalation delay is bounded by one file write. A recorded exception with a named reason is what this rule should be able to carry; an unrecorded one is what it exists to prevent.
 
 Before this, such a definition won only because its prose was emphatic. That is tone, not precedence, and it holds only until someone writes a less emphatic agent.
 

@@ -4,7 +4,7 @@
 - **Version:** 0.0.1
 - **Author:** Scott Lewis (with Claude as collaborator)
 - **Supersedes:** None (first ADR on index composition)
-- **Related:** [ADR-001 v0.0.2](../ADR-001-agents-repo-layout/ADR-001-agents-repo-layout-0.0.2.md) defines the repository *layout*; this ADR defines what the generated index *contains*.
+- **Related:** [ADR-001 v0.0.3](../ADR-001-agents-repo-layout/ADR-001-agents-repo-layout-0.0.3.md) defines the repository *layout*; this ADR defines what the generated index *contains*.
 
 ## Context
 
@@ -42,7 +42,7 @@ In every case the rule file is longer and more specific. The preamble's only pre
 
 ### The overlay carries a file, not just directories
 
-ADR-001's overlay was described purely as directory symlinks, one per artifact class. `.agents/AGENTS.preamble.md` is a symlink to a *file*, and it is not an artifact class at all — nothing distributes it. It is an input the generator reads. ADR-001 v0.0.2's invariant has been revised to account for this; the substance of why it exists lives here.
+ADR-001's overlay was described purely as directory symlinks, one per artifact class. `.agents/AGENTS.preamble.md` is a symlink to a *file*, and it is not an artifact class at all — nothing distributes it. It is an input the generator reads. ADR-001's invariant has been revised to account for this (current version 0.0.3); the substance of why it exists lives here.
 
 ## Decision
 

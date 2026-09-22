@@ -10,6 +10,17 @@ Do not over-write existing docs except when the changes are cosmetic, syntactica
 
 We will use semantic versioning for documentation. We will not over-write or discard old documentation, but will instead create new versions and link to them. Deprecated documents will have an h1 title of `[DEPRECATED]` at the very top of the first page.
 
+## Where documents live
+
+| Location | Holds | Versioning |
+| --- | --- | --- |
+| `docs/adr/ADR-NNN-<slug>/` | Architecture decision records | SemVer per the section above |
+| `docs/releases/<version>/` | Dated incident records for the release that was running — post-mortems and the like | **Not SemVer.** Keyed by the release under investigation and named by date and event |
+
+The versioning scheme above governs **design documents** — artifacts that state a decision and can be revised when the decision changes. It does not govern **incident records**, which describe one event at one moment. A `-0.0.2.md` suffix on a post-mortem is meaningless: the incident does not get a second version, and correcting the record is done in place by striking through and amending so the change in understanding stays visible.
+
+`docs/releases/<version>/` is therefore a sanctioned documentation location with its own naming convention, not an exception carved out of the ADR scheme. It is written by the `post-mortem` agent, which states its own path bound and its rule for a pre-existing file at that path. Adding another documentation tree under `docs/` means recording it here first.
+
 ## ADR Structure
 
 Each significant design change should create a new ADR with a new version. ADRs will follow the semantic versioning format in their file names (e.g., `ADR-001-title-of-decision-0.0.1.md`). The initial version of an ADR will be `0.0.1`. If the ADR is updated, a new version will be created (e.g., `ADR-001-title-of-decision-0.0.2.md`), and the old version will be marked as deprecated with an h1 title of `[DEPRECATED]` at the very top of the first page.
