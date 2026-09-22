@@ -1,15 +1,11 @@
-# [DEPRECATED]
-
-> Superseded by [ADR-001-agents-repo-layout-0.0.3.md](./ADR-001-agents-repo-layout-0.0.3.md), which restates the `agents/` class rationale to cover non-reviewer, artifact-producing agents, and adds a tool-grant policy and a precedence entry for agent definitions. The layout and the overlay invariant are unchanged. Retained for design history; do not implement from this version.
-
 # ADR-001: Global Agents Repository Layout — Visible Source with a `.agents/` Overlay
 
-**Version 0.0.2** — supersedes 0.0.1. Adds `agents/` as a fourth artifact class. The overlay mechanism itself is unchanged; 0.0.1 enumerated exactly three real directories and that enumeration is now incomplete.
+**Version 0.0.3** — supersedes 0.0.2. The `agents/` class is unchanged; what changes is the *reason recorded for it*. 0.0.2 justified the class by the two rule-mandated reviewers that were its only members. The class now also holds an optional, non-reviewer agent that writes a durable artifact, so that justification no longer describes its own membership. Also records two things 0.0.2 left unstated: how tool grants are decided, and where an agent definition sits in the precedence chain.
 
-- **Status:** Accepted (2026-09-19)
-- **Version:** 0.0.2
+- **Status:** Accepted (2026-09-22)
+- **Version:** 0.0.3
 - **Author:** Scott Lewis (with Claude as collaborator)
-- **Supersedes:** 0.0.1 (2026-05-28)
+- **Supersedes:** 0.0.2 (2026-09-19)
 
 ## Context
 
@@ -153,7 +149,14 @@ if they grow.
 
 ## The fourth artifact class: `agents/`
 
-Claude Code loads subagent definitions from `~/.claude/agents/*.md`. The `adversarial-review-agent` rule makes two of them — `adversarial-pr-reviewer` and `adversarial-architecture-reviewer` — mandatory on every PR, so they have to reach every provisioned machine by the same path as every other shared resource. That makes them a shared agentic resource, not a local convenience, and the layout has to carry them.
+Claude Code loads subagent definitions from `~/.claude/agents/*.md`. The class exists because a subagent runs in **its own context**, and sometimes that separation is the whole point of the artifact rather than an implementation detail.
+
+Two cases have come up, and the class covers both:
+
+- **Compulsion.** The `adversarial-review-agent` rule makes `adversarial-pr-reviewer` and `adversarial-architecture-reviewer` mandatory on every PR. A rule that cannot be satisfied on a correctly provisioned machine is not a rule, so they have to reach every machine by the same path as every other shared resource.
+- **Independence.** `post-mortem` is required by no rule and invoked on demand. It is an agent because an agent investigating its own work carries an account of what it intended, and that account contaminates the investigation. Running it in a separate context is what makes the finding trustworthy — the separation *is* the feature.
+
+v0.0.2 recorded only the first case, because it was the only one that existed. Membership is **not** limited to rule-mandated reviewers, and an agent may write a durable artifact rather than only reporting back. What the class requires is that the artifact genuinely needs its own context; a procedure the calling agent should follow in-context is a skill, and a user-initiated sequence is a workflow. See #23 for where that test should ultimately live.
 
 `agents/` therefore joins `rules/`, `skills/`, and `workflows/` as a real, visible source directory at the repo root, with a matching relative symlink `.agents/agents -> ../agents` in the overlay. Nothing about the mechanism is new; only the enumeration changed.
 
@@ -163,6 +166,31 @@ Two properties distinguish this bucket from the other three, and both are delibe
 
 - **It is Claude-only.** `LocalTools` names `claude` alone, so the bucket fans out to `.claude/agents` and to no other tool directory. The other three buckets fan out to every configured target.
 - **Each agent is a single flat file**, `agents/<name>.md`, like `rules/`. It does not use the `<name>/SKILL.md` directory shape that `skills/` uses.
+
+### Tool grants
+
+Every agent declares a `tools:` allowlist. `Bash` is in every current grant and defeats any privilege bound, so the allowlist is **stated intent and an auditable contract, not a sandbox**. Adding `Write` to an agent that already holds `Bash` is a legibility choice, not a privilege escalation. The policy is **the narrowest grant that makes the agent's job legible, decided per agent and stated in the definition**:
+
+- `adversarial-pr-reviewer`, `adversarial-architecture-reviewer` — `Read, Grep, Glob, Bash`. They are contracted to produce no artifact in the source tree. That is intent, not capability: both write a payload file and POST it to GitHub through `Bash`, as their own definitions instruct.
+- `post-mortem` — the same plus `Write, Edit`. It produces versioned documents and needs both. The split is by whether the target file exists, not by whether it is the first: `Write` creates a file that does not yet exist — the first version, each superseding version, and the pointer on first creation — and `Edit` changes one that already does, including the pointer on every subsequent supersession. `Edit` does not make blanking impossible — the whole file as `old_string` and `""` as `new_string` would do it — but it makes blanking require deliberate construction rather than being the default failure mode of a careless `Write`. That is the whole of the argument for the grant, and it is enough.
+
+Two things follow, and the second matters more than it looks:
+
+**An agent that writes must bound where.** The grant alone says what the agent *can* touch, never what it *should*. A write-capable agent states its target path and the rule for a pre-existing file at that path, in its own definition.
+
+**The allowlist is not a sandbox.** `Bash` is in every current grant and can write anywhere, call anything, and delete anything. The allowlist therefore expresses intent and makes behaviour auditable against a stated contract — it does not enforce. Do not design as though an agent is confined by its `tools:` line, and do not describe it that way to a reader.
+
+### Precedence: an agent definition may narrow, never widen
+
+ADR-003 orders the preamble above `rules/`. An agent definition is neither, and nothing stated where it sits (#21) — which became load-bearing with the first agent whose definition issues prohibitions that contradict always-on sections.
+
+**For the duration of its own run, an agent definition may impose constraints stricter than the preamble and `rules/`. It may not relax them. Where it appears to relax one, the preamble and `rules/` govern.**
+
+The comparison is made **per constraint, not per definition**. A definition that narrows on one axis and widens on another is not "net narrower" — the widening clause is void and the narrowing clauses stand. Do not evaluate a bundle: a relaxation packaged with an unrelated restriction and redescribed as a narrower composite is the exact move this rule exists to refuse.
+
+Narrowing is the safe direction, and the cases so far are all narrowing: `post-mortem` forbids fixing anything where preamble §10 pre-authorises it, and forbids proposing solutions where §4 pushes toward implementation. Both are the same decision — establishing what happened and deciding what to do about it are separate concerns, and an investigator who is also proposing the fix will select evidence that supports it. The narrowing is the artifact's reason for existing, not an exception carved out for convenience.
+
+Before this, such a definition won only because its prose was emphatic. That is tone, not precedence, and it holds only until someone writes a less emphatic agent.
 
 ### Invariant
 
@@ -180,7 +208,7 @@ Adding an artifact class or a generator input means adding both halves and revis
 
 ## Code being removed
 
-None. Version 0.0.2 is additive: it registers a fourth artifact class and removes nothing. Version 0.0.1 is superseded as a document but no code, directory, or symlink it described is retired — `rules/`, `skills/`, and `workflows/` keep the exact shape 0.0.1 gave them.
+None. Version 0.0.3 changes only what is recorded — no code, directory, symlink, or artifact is retired, and no existing agent changes behaviour. The superseded text is v0.0.2's class rationale, which is replaced rather than deleted: it remains readable in the deprecated 0.0.2 file, which is the point of versioning ADRs rather than editing them.
 
 ## Consequences
 

@@ -6,15 +6,20 @@ folder and update this pointer.
 
 ## Current version
 
-[ADR-001-agents-repo-layout-0.0.2.md](./ADR-001-agents-repo-layout-0.0.2.md) — Accepted (2026-09-19)
+[ADR-001-agents-repo-layout-0.0.3.md](./ADR-001-agents-repo-layout-0.0.3.md) — Accepted (2026-09-22)
 
 ## Version history
 
-- **0.0.2** (2026-09-19) — Accepted. Adds `agents/` as a fourth artifact class
-  (real directory at the repo root, `.agents/agents -> ../agents` in the overlay),
-  and states the invariant that every root artifact directory must have a matching
-  overlay symlink and vice versa. The overlay mechanism is unchanged.
+- **0.0.3** (2026-09-22) — Accepted. Restates the `agents/` class rationale to
+  cover non-reviewer, artifact-producing agents; adds a tool-grant policy
+  (the narrowest grant that makes the agent's job legible, stated per agent, and the
+  allowlist is not a sandbox); and
+  adds a precedence entry: an agent definition may narrow the preamble and
+  `rules/` for its own run, never widen them. Layout and overlay invariant
+  unchanged.
+- **0.0.2** (2026-09-19) — Superseded by 0.0.3. Added `agents/` as a fourth
+  artifact class and stated the three-category overlay invariant.
 - **0.0.1** (2026-05-28) — Superseded by 0.0.2. Initial decision: visible source
   folders (`rules/`, `skills/`, `workflows/`) at the repo root, with a hidden
-  `.agents/` overlay of relative symlinks so `sync-agents` works inside the global
-  repo.
+  `.agents/` overlay of relative symlinks so `sync-agents` works inside the
+  global repo.
