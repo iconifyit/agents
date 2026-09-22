@@ -12,14 +12,16 @@ We will use semantic versioning for documentation. We will not over-write or dis
 
 ## Where documents live
 
-| Location | Holds | Versioning |
+| Location | Holds | Naming |
 | --- | --- | --- |
-| `docs/adr/ADR-NNN-<slug>/` | Architecture decision records | SemVer per the section above |
-| `docs/releases/<version>/` | Dated incident records for the release that was running — post-mortems and the like | **Not SemVer.** Keyed by the release under investigation and named by date and event |
+| `docs/adr/ADR-NNN-<slug>/` | Architecture decision records | `ADR-NNN-<slug>-N.N.N.md` plus a pointer document |
+| `docs/releases/<release>/` | Post-mortems and other incident records, filed under the release that was running | `<slug>-N.N.N.md` plus a pointer document |
 
-The versioning scheme above governs **design documents** — artifacts that state a decision and can be revised when the decision changes. It does not govern **incident records**, which describe one event at one moment. A `-0.0.2.md` suffix on a post-mortem is meaningless: the incident does not get a second version, and correcting the record is done in place by striking through and amending so the change in understanding stays visible.
+**Both use the SemVer scheme above. There is no second versioning convention.** The rules in Documentation Versioning apply unchanged: substantive revisions create a new version rather than overwriting, superseded versions carry a `[DEPRECATED]` h1, and a pointer document always names the current version.
 
-`docs/releases/<version>/` is therefore a sanctioned documentation location with its own naming convention, not an exception carved out of the ADR scheme. It is written by the `post-mortem` agent, which states its own path bound and its rule for a pre-existing file at that path. Adding another documentation tree under `docs/` means recording it here first.
+The point is that versioning is determined by a rule rather than by the author's judgment about whether a given document "feels like" the kind that gets revised. An incident record is revised more often than people expect — a cause is misattributed, a timeline is corrected once a log is recovered, a second failure surfaces a week later — and each of those is a substantive change to a document others may already have read and acted on. Superseding it visibly is what lets a reader tell which account they have.
+
+Adding another documentation tree under `docs/` means recording it in this table first, and it uses this same scheme unless there is a stated reason it cannot.
 
 ## ADR Structure
 

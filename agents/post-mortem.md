@@ -49,7 +49,7 @@ The one thing you write is the post-mortem document itself, at the path Phase 5 
 
 - **Never write outside the `docs/releases/` directory of the repository you name under Phase 5** — name it before you write, including when you are stopping early to report an active problem. Judge this against the **resolved absolute path**, not the relative string: `../../other-service/docs/releases/` satisfies the words and violates the rule. No other path is yours, at any point in the investigation.
 - **`Write` creates, `Edit` amends.** `Write` is for the first document for a given unit of work and nothing else. Every subsequent touch uses `Edit`, which does exact-string replacement and cannot blank, truncate, or silently shorten the file.
-- **Never overwrite an existing post-mortem.** If a document already exists at the target path, amend it with `Edit` rather than replacing it with `Write` — a prior investigation of the same incident is evidence, and `Write` is whole-file replacement. This is the same rule as "correct in place" in the Notes, stated where the tool choice is made.
+- **Never overwrite an existing versioned post-mortem.** A substantive revision creates the next version and deprecates the old one; only a cosmetic fix is amended in place, with `Edit`, never with `Write` — a prior investigation of the same incident is evidence, and `Write` is whole-file replacement. This is the same rule as "correct in place" in the Notes, stated where the tool choice is made.
 
 **If you observe something still actively going wrong: capture first, then report the observation.** Write the document with everything established so far — marked `Status: ongoing`, with the unfinished phases named in Open questions — *before* raising it. Then report it, and stop.
 
@@ -136,11 +136,25 @@ Then check the things no single component owns:
 
 **State the root before you write.** The path below is relative to one repository, and Phase 2 assumes one repository and one version. A multi-service incident has several of each — which is exactly the case Phase 3's cross-component sweep is written for. Name the repository the document belongs to, say why that one, and record the versions of the other services involved in the document rather than splitting it across trees. One unit of work, one document, one home.
 
-Create `docs/releases/{version}/` under that repository if it does not exist, using the version exactly as the repo expresses it. Name the file for the event and date, with a slug that is readable in a directory listing:
+Create `docs/releases/<release>/` under that repository if it does not exist, using the release version exactly as the repo expresses it.
+
+**Post-mortems are versioned on the same SemVer scheme as ADRs** — see `rules/documentation.md`. There is no separate convention for incident records, and the version is set by rule rather than by your judgment about whether this document is the revisable kind:
 
 ```
-docs/releases/2.0.0/post-mortem-2026-09-21-nightly-run.md
+docs/releases/2.0.0/
+    post-mortem-2026-09-21-nightly-run.md          # pointer — always names the current version
+    post-mortem-2026-09-21-nightly-run-0.0.1.md    # first investigation
+    post-mortem-2026-09-21-nightly-run-0.0.2.md    # supersedes it after a substantive correction
 ```
+
+The slug is the date and the event, readable in a directory listing. The first document you write is `-0.0.1.md`, and you write the pointer alongside it.
+
+**Revising an earlier post-mortem.** Never overwrite a versioned file. Decide by the rule, not by feel:
+
+- **Cosmetic, syntactic, or minimal** — a typo, a broken link, a formatting fix: amend the current version in place with `Edit`.
+- **Substantive** — a cause reattributed, a timeline corrected, a failure added or withdrawn, a conclusion changed: write the next version, add a `# [DEPRECATED]` h1 at the top of the superseded file pointing forward, and update the pointer. Anything that would change what a reader concludes is substantive.
+
+Within a version, correct by striking through and amending rather than silently replacing, so how the understanding changed stays visible. Across versions, the superseded file is the record of what was previously believed — which is why it is deprecated rather than deleted.
 
 Structure:
 
@@ -242,5 +256,5 @@ If the investigation could not proceed — no identifier, no accessible evidence
 - **Blameless.** Record what the system did and what it assumed. External actions are triggers, not faults.
 - **One unit of work, one document.** Pre-existing defects found along the way belong in an issue tracker, not in this document.
 - **Capture evidence into the document.** Logs expire, queues drain, state is cleaned up. Quote exact values rather than pointing at a console that will be empty later.
-- **Correct in place if you were wrong.** Strike through and correct rather than silently replacing — how the understanding changed is part of the record.
+- **Correct visibly if you were wrong.** Within a version, strike through and amend rather than silently replacing. If the correction is substantive, it gets its own version and the old one is deprecated, per Phase 5. Either way the change in understanding stays readable; what is never acceptable is a record that quietly becomes a different record.
 - Proposing fixes is the next activity and produces its own artifacts. They can link back to this; this does not anticipate them.
