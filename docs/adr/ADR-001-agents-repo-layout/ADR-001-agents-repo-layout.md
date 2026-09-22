@@ -6,11 +6,15 @@ folder and update this pointer.
 
 ## Current version
 
-[ADR-001-agents-repo-layout-0.0.3.md](./ADR-001-agents-repo-layout-0.0.3.md) — Accepted (2026-09-22)
+[ADR-001-agents-repo-layout-0.0.4.md](./ADR-001-agents-repo-layout-0.0.4.md) — Accepted (2026-09-22)
 
 ## Version history
 
-- **0.0.3** (2026-09-22) — Accepted. Restates the `agents/` class rationale to
+- **0.0.4** (2026-09-22) — Accepted. Records `remediation-planner` as a second
+  non-reviewer, artifact-producing member of `agents/`: its tool grant (identical
+  to `post-mortem`'s) and its narrowing (it may not implement). Layout, overlay
+  invariant, class rationale and tool-grant policy unchanged.
+- **0.0.3** (2026-09-22) — Superseded by 0.0.4. Restates the `agents/` class rationale to
   cover non-reviewer, artifact-producing agents; adds a tool-grant policy
   (the narrowest grant that makes the agent's job legible, stated per agent, and the
   allowlist is not a sandbox); and

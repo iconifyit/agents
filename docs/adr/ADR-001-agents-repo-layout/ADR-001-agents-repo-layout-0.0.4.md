@@ -1,15 +1,11 @@
-# [DEPRECATED]
-
-> Superseded by [ADR-001-agents-repo-layout-0.0.4.md](./ADR-001-agents-repo-layout-0.0.4.md).
-
 # ADR-001: Global Agents Repository Layout — Visible Source with a `.agents/` Overlay
 
-**Version 0.0.3** — supersedes 0.0.2. The `agents/` class is unchanged; what changes is the *reason recorded for it*. 0.0.2 justified the class by the two rule-mandated reviewers that were its only members. The class now also holds an optional, non-reviewer agent that writes a durable artifact, so that justification no longer describes its own membership. Also records two things 0.0.2 left unstated: how tool grants are decided, and where an agent definition sits in the precedence chain.
+**Version 0.0.4** — supersedes 0.0.3. Layout, overlay invariant, class rationale and tool-grant policy are unchanged. What changes is membership: `agents/` now holds a second non-reviewer, artifact-producing agent, `remediation-planner`, and both §Tool grants and §Precedence enumerate their members. An enumeration that stops describing its own membership is how `:175` of 0.0.3 came to certify a table that no longer existed.
 
 - **Status:** Accepted (2026-09-22)
-- **Version:** 0.0.3
+- **Version:** 0.0.4
 - **Author:** Scott Lewis (with Claude as collaborator)
-- **Supersedes:** 0.0.2 (2026-09-19)
+- **Supersedes:** 0.0.3 (2026-09-22)
 
 ## Context
 
@@ -177,6 +173,7 @@ Every agent declares a `tools:` allowlist. `Bash` is in every current grant and 
 
 - `adversarial-pr-reviewer`, `adversarial-architecture-reviewer` — `Read, Grep, Glob, Bash`. They are contracted to produce no artifact in the source tree. That is intent, not capability: both write a payload file and POST it to GitHub through `Bash`, as their own definitions instruct.
 - `post-mortem` — the same plus `Write, Edit`. It produces versioned documents and needs both. The split is by whether the target file exists, not by whether it is the first: `Write` creates a file that does not yet exist — the first version, each superseding version, and the pointer on first creation — and `Edit` changes one that already does, including the pointer on every subsequent supersession. `Edit` does not make blanking impossible — the whole file as `old_string` and `""` as `new_string` would do it — but it makes blanking require deliberate construction rather than being the default failure mode of a careless `Write`. That is the whole of the argument for the grant, and it is enough.
+- `remediation-planner` — the same grant, for the same reason: it writes a versioned plan beside the post-mortem on the same scheme, so it needs the same create-versus-change split. It holds no capability `post-mortem` lacks. What separates them is not what they can do but what each is forbidden to do with it, which is a precedence question rather than a grant one.
 
 Two things follow, and the second matters more than it looks:
 
@@ -192,7 +189,7 @@ ADR-003 orders the preamble above `rules/`. An agent definition is neither, and 
 
 The comparison is made **per constraint, not per definition**. A definition that narrows on one axis and widens on another is not "net narrower" — the widening clause is void and the narrowing clauses stand. Do not evaluate a bundle: a relaxation packaged with an unrelated restriction and redescribed as a narrower composite is the exact move this rule exists to refuse.
 
-Narrowing is the safe direction, and the cases so far are all narrowing: `post-mortem` forbids fixing anything where preamble §10 pre-authorises it, and forbids proposing solutions where §4 pushes toward implementation. Both are the same decision — establishing what happened and deciding what to do about it are separate concerns, and an investigator who is also proposing the fix will select evidence that supports it. The narrowing is the artifact's reason for existing, not an exception carved out for convenience.
+Narrowing is the safe direction, and the cases so far are all narrowing: `post-mortem` forbids fixing anything where preamble §10 pre-authorises it, and forbids proposing solutions where §4 pushes toward implementation. Both are the same decision — establishing what happened and deciding what to do about it are separate concerns, and an investigator who is also proposing the fix will select evidence that supports it. `remediation-planner` narrows adjacently: it may not implement anything, where §10 pre-authorises carrying an assigned task through to completion. In both cases the narrowing is the artifact's reason for existing, not an exception carved out for convenience — investigating, planning, and implementing are split precisely so that no one agent's conclusions are inherited unexamined by the next.
 
 Before this, such a definition won only because its prose was emphatic. That is tone, not precedence, and it holds only until someone writes a less emphatic agent.
 
