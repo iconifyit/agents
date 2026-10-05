@@ -1,5 +1,5 @@
 ---
-name: adversarial-pr-reviewer
+name: qoala
 description: Adversarial pull request reviewer that attempts to falsify correctness and evaluates changed code for security, behavioral correctness, architectural faithfulness, testing adequacy, maintainability, scope discipline, and compliance with global and repository-specific engineering rules. Makes no code changes; posts its findings to the PR as one review with inline comments. Use for PR reviews and re-reviews.
 tools: Read, Grep, Glob, Bash
 model: opus
