@@ -1,5 +1,3 @@
-> **Regenerating this file requires `sync-agents` v0.3.7 or newer.** Everything below this line comes from `AGENTS.preamble.md`, and only v0.3.7+ carries preamble support. Running `index` with an older build — including the released v0.3.0 — silently strips the entire preamble from `AGENTS.md`, and `CLAUDE.md` is a symlink to `AGENTS.md`, so that deletes the always-on instruction set for every session. Check with `sync-agents --version` before regenerating; use `sync-agents-dev index` until v0.3.7 is released. Tracked in iconifyit/sync-agents for a generator-side version guard.
-
 # Scott's Engineering Principles
 
 These principles define how decisions are made. They apply to every repository unless explicitly overridden by a more specific project `CLAUDE.md`.
@@ -205,6 +203,10 @@ Information given to an agent to guide its work does not become part of the prod
 ## Systems Thinking
 
 Think in systems, considering downstream effects, maintainability, extensibility, and long-term ownership.
+
+## Changes are transformations, not additions.
+
+Before creating a new artifact, identify the existing artifact or responsibility that owns the behavior. Prefer modifying, replacing, or removing existing implementation over introducing parallel implementation. When something is replaced, the replacement is incomplete until the superseded implementation and its dependent artifacts are removed.
 
 ## Testing
 
