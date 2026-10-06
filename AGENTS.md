@@ -9,7 +9,7 @@ trigger: always_on
 
 This file indexes all rules, skills, and workflows defined in `.agents/`.
 
-> **Regenerating this file requires `sync-agents` v0.3.7 or newer.** Everything below this line comes from `AGENTS.preamble.md`, and only v0.3.7+ carries preamble support. Running `index` with an older build — including the released v0.3.0 — silently strips the entire preamble from `AGENTS.md`, and `CLAUDE.md` is a symlink to `AGENTS.md`, so that deletes the always-on instruction set for every session. Check with `sync-agents --version` before regenerating; use `sync-agents-dev index` until v0.3.7 is released. Tracked in iconifyit/sync-agents for a generator-side version guard.
+<!-- sync-agents:preamble -->
 
 # Scott's Engineering Principles
 
@@ -216,6 +216,10 @@ Information given to an agent to guide its work does not become part of the prod
 ## Systems Thinking
 
 Think in systems, considering downstream effects, maintainability, extensibility, and long-term ownership.
+
+## Changes are transformations, not additions.
+
+Before creating a new artifact, identify the existing artifact or responsibility that owns the behavior. Prefer modifying, replacing, or removing existing implementation over introducing parallel implementation. When something is replaced, the replacement is incomplete until the superseded implementation and its dependent artifacts are removed.
 
 ## Testing
 
@@ -434,6 +438,7 @@ Otherwise, it should remain behavior within an existing component.
 - [ask-first](rules/ask-first.md)
 - [asking-permission](rules/asking-permission.md)
 - [autonomy](rules/autonomy.md)
+- [code-changes](rules/code-changes.md)
 - [coding-options](rules/coding-options.md)
 - [coding-style](rules/coding-style.md)
 - [commit-before-session-end](rules/commit-before-session-end.md)
@@ -521,42 +526,3 @@ Otherwise, it should remain behavior within an existing component.
 
 _No state snapshots yet. Agents will create STATE_*context*_*timestamp*.md files as they work._
 
-<!-- sync-agents:claude-imports:start -->
-<!-- managed by sync-agents; do not edit between the markers -->
-@.claude/rules/adr-required.md
-@.claude/rules/adversarial-review-agent.md
-@.claude/rules/agent-responses.md
-@.claude/rules/approved-design-authority.md
-@.claude/rules/ask-first.md
-@.claude/rules/asking-permission.md
-@.claude/rules/autonomy.md
-@.claude/rules/coding-options.md
-@.claude/rules/coding-style.md
-@.claude/rules/commit-before-session-end.md
-@.claude/rules/concise-answers.md
-@.claude/rules/database.md
-@.claude/rules/destructive-actions.md
-@.claude/rules/documentation.md
-@.claude/rules/garbage-collection.md
-@.claude/rules/git-workflow.md
-@.claude/rules/go-coding-style.md
-@.claude/rules/how-to-use-adrs.md
-@.claude/rules/idiomatic-beats-clever.md
-@.claude/rules/javascript-coding-style.md
-@.claude/rules/memory-updates.md
-@.claude/rules/no-hard-wrap.md
-@.claude/rules/no-jumping-to-conclusions.md
-@.claude/rules/one-claude-branch.md
-@.claude/rules/persona.md
-@.claude/rules/pre-existing-issues.md
-@.claude/rules/python-coding-style.md
-@.claude/rules/remove-the-obsolete.md
-@.claude/rules/repo-versioning.md
-@.claude/rules/solve-for-intent.md
-@.claude/rules/state.md
-@.claude/rules/test-design.md
-@.claude/rules/testing.md
-@.claude/rules/verification.md
-@.claude/rules/when-you-make-a-mistake-stop.md
-@.claude/rules/workflow.md
-<!-- sync-agents:claude-imports:end -->
