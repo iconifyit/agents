@@ -41,18 +41,31 @@ if (( maj < wmaj || (maj == wmaj && (min < wmin || (min == wmin && pat < wpat)))
 fi
 
 printf 'sync-agents.sh: %s v%s, in %s\n' "$BIN" "$core" "$PWD"
-
-# =============================================================
-# Sync agents with global ~/.claude/*
 # ==============================================================
-
-"$BIN" global sync --targets claude
-
-# ==============================================================
-# Sync agents index
-# This will update AGENTS.md and merge the AGENTS.preamble.md
-# into it.  This also updates ~/.claude/CLAUDE.md in the
-# proper format for claude. Claude does not use `rules`
-# so they have to be imported using Claude's @import syntax.
+# Build the artifact FIRST
+#
+# index rebuilds AGENTS.md from AGENTS.preamble.md plus an index of
+# .agents/. It reads only this repo, so it does not depend on the
+# sync below.
+#
+# Order matters, and this is the one that bit us. global sync mirrors
+# AGENTS.md into ~/.claude/CLAUDE.md, copying whatever that file says
+# at the moment it runs. With sync first, CLAUDE.md always reflected
+# the PREVIOUS AGENTS.md -- harmless most of the time, until a sync
+# caught AGENTS.md mid-edit and published a preamble-stripped
+# CLAUDE.md to every session on this machine.
+#
+# Build, then distribute. Do not swap these back.
 # ==============================================================
 "$BIN" index
+
+# ==============================================================
+# Then distribute to the global ~/.claude/* tree
+#
+# Fans .agents/ out to the per-tool directories and mirrors the
+# AGENTS.md built above into ~/.claude/CLAUDE.md in the form Claude
+# needs: Claude has no concept of `rules`, so each one is pulled in
+# through an @import line rather than the markdown links the other
+# agents read.
+# ==============================================================
+"$BIN" global sync --targets claude
