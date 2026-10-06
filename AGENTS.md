@@ -195,9 +195,23 @@ Think like a senior engineer who has been assigned ownership of a task. Your res
 
 ## Documentation
 
--   Preserve design history.
--   Version ADRs.
--   Comments explain why, not what.
+### Core principle : Documentation is about construction, not chronology.
+
+* Document the system as it exists: what it does and how it works.
+* Explain why only when rationale is necessary to understand a non-obvious design decision, constraint, or tradeoff.
+* Preserve design rationale, not development history. Alternatives belong in ADRs when understanding why they were rejected is material to understanding the resulting architecture.
+* Do not carry implementation conversations, prompts, corrections, review feedback, intermediate approaches, or prior implementations into documentation merely because they occurred.
+* Prefer direct descriptions of the current system over chronological language such as previously, now, changed, removed, no longer, instead of, or originally. Use chronology only when the chronology itself is relevant.
+* Version ADRs.
+* Comments explain why, not what.
+
+Relevance test: If the development conversation disappeared, would this information still help someone understand the system? If not, it does not belong in the documentation.
+
+Truth is necessary but not sufficient; documentation must also be relevant to the system and its audience.
+
+### Operational context must not leak into product artifacts.
+
+Information given to an agent to guide its work does not become part of the product merely because the agent received it. Before carrying information from its working context into code, tests, documentation, comments, configuration, or other persistent artifacts, the agent must establish that the information belongs to the resulting system independently of the conversation that produced it.
 
 ## Systems Thinking
 
@@ -205,23 +219,32 @@ Think in systems, considering downstream effects, maintainability, extensibility
 
 ## Testing
 
-**Maxim: Tests preserve discovered knowledge as executable system constraints. Test what must remain true, especially when things go wrong.**
+**Maxim: Tests preserve meaningful knowledge about required system behavior as executable constraints. Test what must remain true, especially when things go wrong.**
 
--   Treat tests as executable specifications of required behavior, not merely confirmation of the happy path.
--   Drive testing by behavior and risk. Consider success, rejection, boundaries, dependency failure, concurrency, retries, partial completion, recovery, and other material failure modes.
--   Failure behavior is first-class behavior. Critical failure and recovery paths require the same or greater verification rigor as successful execution.
--   When practical, develop new behavior test-first using Red → Green → Refactor. A new test must first be observed failing for the expected reason before implementation makes it pass.
--   Every confirmed defect or unexpected failure reveals new knowledge about the system. Reproduce that failure with an automated regression test before or as part of the correction whenever practical, then retain the test as a permanent constraint against recurrence.
--   Characterize existing working behavior before significant refactoring or replacement so unintended behavioral changes are detectable.
--   Verify component boundaries with contract and integration tests appropriate to the boundary.
--   Express important system invariants directly and test them as properties where practical.
--   Test observable behavior rather than implementation details. Avoid coupling tests to internal call sequences or structure unless that structure is itself part of the contract.
--   Test behavior at the lowest level that can prove it, then add broader integration and end-to-end tests to prove that the pieces actually work together.
--   Use realistic data.
--   Freeze time when appropriate.
--   Tests must fail when logic is broken.
--   Assert meaningful behavior.
--   Test failures should be actionable: failures should make clear what behavior was violated and provide enough evidence to diagnose the problem.
+**A test must earn its existence by the meaningful uncertainty it removes.**
+
+- Test what matters, not merely what is available or easy to test. The existence of code, a branch, an uncovered line, or a change does not by itself create a testing obligation.
+- Tests must establish meaningful claims about system behavior, outcomes, state, contracts, invariants, or material failure modes. Do not add tests that merely demonstrate obvious implementation facts or behavior already guaranteed elsewhere.
+- Coverage measures execution, not proof. Use coverage to identify behavior worth examining, not as an objective that mechanically demands additional tests.
+- Tests derive from the system's intended behavior, not from the development conversation or mechanics of a diff. Instructions to remove, rename, move, or replace code are verified through implementation and review unless they independently express a durable system constraint.
+- Prefer the smallest set of tests that provides strong evidence of correctness. Redundant, trivial, implementation-coupled, or historically motivated tests are liabilities, not harmless extras.
+- Treat tests as maintained system assets with ongoing execution, maintenance, debugging, and resource costs. Adding a test requires justification just as adding production code does.
+- Treat tests as executable specifications of required behavior, not merely confirmation of the happy path.
+- Drive testing by behavior and risk. Consider success, rejection, boundaries, dependency failure, concurrency, retries, partial completion, recovery, and other material failure modes.
+- Failure behavior is first-class behavior. Critical failure and recovery paths require the same or greater verification rigor as successful execution.
+- When practical, develop new behavior test-first using Red → Green → Refactor. A new test must first be observed failing for the expected reason before implementation makes it pass.
+- Every confirmed defect or unexpected failure is evidence worth examining. When it reveals a previously unprotected behavioral requirement or credible recurrence risk, reproduce it with an automated regression test whenever practical and retain that test as a constraint against recurrence.
+- Characterize existing working behavior before significant refactoring or replacement so unintended behavioral changes are detectable.
+- Verify component boundaries with contract and integration tests appropriate to the boundary.
+- Express important system invariants directly and test them as properties where practical.
+- Test observable behavior rather than implementation details. Avoid coupling tests to internal call sequences or structure unless that structure is itself part of the contract.
+- Test behavior at the lowest level that can prove it, then add broader integration and end-to-end tests to prove that the pieces actually work together.
+- Use realistic data.
+- Freeze time when appropriate.
+- Tests must fail when logic is broken.
+- Assert meaningful behavior.
+- Test failures should be actionable: failures should make clear what behavior was violated and provide enough evidence to diagnose the problem.
+
 
 ## Language & Style
 
@@ -407,6 +430,7 @@ Otherwise, it should remain behavior within an existing component.
 - [adr-required](rules/adr-required.md)
 - [adversarial-review-agent](rules/adversarial-review-agent.md)
 - [agent-responses](rules/agent-responses.md)
+- [approved-design-authority](rules/approved-design-authority.md)
 - [ask-first](rules/ask-first.md)
 - [asking-permission](rules/asking-permission.md)
 - [autonomy](rules/autonomy.md)
@@ -488,9 +512,10 @@ Otherwise, it should remain behavior within an existing component.
 
 ## Agents
 
-- [adversarial-architecture-reviewer](agents/adversarial-architecture-reviewer.md) — Adversarially review an implementation against the governing design artifacts, architectural invariants, task scope, and engineering rules.…
-- [adversarial-pr-reviewer](agents/adversarial-pr-reviewer.md) — Adversarial pull request reviewer that attempts to falsify correctness and evaluates changed code for security, behavioral correctness,…
+- [archie](agents/archie.md) — Independently review software changes against the adopted architecture, governing design, task intent, and engineering rules. Protect…
 - [post-mortem](agents/post-mortem.md) — Investigate one unit of work that went wrong — a run, request, job, build, batch, transaction — and record EVERY failure in it, with…
+- [qoala](agents/qoala.md) — Adversarial pull request reviewer that attempts to falsify correctness and evaluates changed code for security, behavioral correctness,…
+- [remediation-planner](agents/remediation-planner.md) — Turn ONE established causal unit — a cause and every failure it produced — into a proposed plan of corrective action — what to…
 
 ## State
 
@@ -501,6 +526,7 @@ _No state snapshots yet. Agents will create STATE_*context*_*timestamp*.md files
 @.claude/rules/adr-required.md
 @.claude/rules/adversarial-review-agent.md
 @.claude/rules/agent-responses.md
+@.claude/rules/approved-design-authority.md
 @.claude/rules/ask-first.md
 @.claude/rules/asking-permission.md
 @.claude/rules/autonomy.md

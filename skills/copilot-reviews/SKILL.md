@@ -16,7 +16,7 @@ description: >
 
 # copilot-reviews
 
-**NOTE**: The `adversarial-review-agent` rule requires an `adversarial-pr-reviewer` and an `adversarial-architecture-reviewer` review on **every** PR, unconditionally. They are not a Copilot fallback and this skill does not gate them — they run whether or not Copilot responds. See [adversarial-review-agent](../../rules/adversarial-review-agent.md) for the triage thresholds and the convergence criteria; do not restate them here.
+**NOTE**: The `adversarial-review-agent` rule requires an `qoala` and an `archie` review on **every** PR, unconditionally. They are not a Copilot fallback and this skill does not gate them — they run whether or not Copilot responds. See [adversarial-review-agent](../../rules/adversarial-review-agent.md) for the triage thresholds and the convergence criteria; do not restate them here.
 
 The point of this skill: **make the PR itself the system of record.** When Copilot leaves a review comment, the addressing fix should be linked back on the PR thread (with the commit SHA), the thread should be resolved, and a re-review should be triggered — all programmatically, without asking the user to click anything.
 

@@ -1,27 +1,11 @@
 ---
 name: post-mortem
-description: Investigate one unit of work that went wrong — a run, request, job, build, batch, transaction — and record EVERY failure in it, with causes, filed under docs/releases/<release>/ so failures trace to the release that was running. Runs as a separate agent so the investigation is independent of whoever wrote or ran the code. Use when something failed and needs recording, or when the user says "post-mortem", "write up what failed", or "record this failure". Establishes what happened; proposing fixes is a separate, later activity.
-tools: Read, Grep, Glob, Bash, Write, Edit
-model: opus
+description: "Investigate one unit of work that went wrong — a run, request, job, build, batch, transaction — and record EVERY failure in it, with causes, filed under docs/releases/{version}/ so failures trace to the release that was running. Use when something failed and needs recording, or when the user says \"post-mortem\", \"write up what failed\", \"record this failure\", or \"/post-mortem\". Establishes what happened; proposing fixes is a separate, later activity."
 ---
 
 # Post-mortem
 
 Investigate one unit of work end to end, find **every** failure in it, and record what happened and why.
-
-## Why this is a separate agent
-
-You are deliberately not the agent that wrote the code, made the change, or ran the job. An agent investigating its own work carries an account of what it intended, and that account is the most contaminating thing in an investigation: intended behaviour reads as actual behaviour, and the first explanation matching the author's mental model feels like the explanation.
-
-So treat every account of what the code does as a claim to check — the caller's summary, commit messages, comments. Where the caller's description and the evidence disagree, the evidence wins, and the disagreement is itself worth recording. If the caller hands you a diagnosis, it is one hypothesis among those you generate.
-
-## Boundaries
-
-You **investigate; you do not repair**. Do not fix defects, commit, push, deploy, restart services, drain queues, or clear state — even when the fix is obvious and the system is still broken. That decision belongs to your caller, who has context you do not.
-
-Prefer the least invasive observation that answers the question, and remember that a read is not automatically harmless on a live system. Where an inspection has a side effect, say so in the document. Where the only way to establish a fact would damage the system or the evidence, don't: record in Open questions what you could not establish and what would establish it.
-
-Writing the post-mortem is the one artifact you produce.
 
 Two rules that shape everything below:
 
@@ -29,7 +13,7 @@ Two rules that shape everything below:
 
 **No solutions.** Fixes are designed afterwards, once the causes are understood and agreed. A document that argues for a fix stops being evidence, and the argument outlives the facts.
 
-## Scope
+## Scope: the unit of work
 
 Identify the thing being investigated and its identifier before starting. Depending on the system that is a run id, request id, correlation id, job id, build number, batch, transaction, session, or deployment.
 
@@ -87,20 +71,14 @@ Then check the things no single component owns:
   - the **trigger** — what was different this time, often external and unremarkable
   - the **cause** — what made the trigger fatal, usually an unstated design assumption
   - **contributing conditions** — what made it worse, or harder to see
-- Before accepting a cause, look for the evidence that would show it is wrong. A cause that has not survived that is a hypothesis, and belongs in the document as one.
-- **Group the failures by the cause that must change for them to stop.** Bugs cluster and cascade, so one cause is usually one repair. That grouping is the unit remediation acts on — yours to establish, not theirs to infer. A failure with more than one such cause goes under each, marked as needing both; forcing it into one branch hides the other.
 
 ## Phase 5 — Write it
 
-Create `docs/releases/<release>/` if it does not exist, using the version exactly as the repo expresses it. Name the file for the **incident date** — not the date you write it — and the event, and version it on the same SemVer scheme as ADRs, with a pointer document alongside. `rules/documentation.md` has the scheme.
+Create `docs/releases/{version}/` if it does not exist, using the version exactly as the repo expresses it. Name the file for the event and date, with a slug that is readable in a directory listing:
 
 ```
-docs/releases/2.0.0/
-    post-mortem-2026-09-21-nightly-run.md          # pointer to the current version
-    post-mortem-2026-09-21-nightly-run-0.0.1.md
+docs/releases/2.0.0/post-mortem-2026-09-21-nightly-run.md
 ```
-
-The date identifies which incident; the version identifies which revision of the investigation. A substantive correction — anything that changes what a reader concludes — is a new version with a `# [DEPRECATED]` header on the one it supersedes. A typo is amended in place.
 
 Structure:
 
@@ -132,8 +110,8 @@ so the boundary between last-good and first-bad is visible.
 
 ## Failures
 
-One subsection per distinct failure, keyed F1, F2, … — the keys the Causes
-section groups by. Every failure found, not only the reported one. For each:
+One numbered subsection per distinct failure. Every failure found, not
+only the reported one. For each:
 
 - what happened
 - the evidence, quoted exactly
@@ -142,22 +120,9 @@ section groups by. Every failure found, not only the reported one. For each:
 
 ## Causes
 
-Grouped by cause, because the cause is the unit a repair acts on. Give each
-a key and list the failures it produced, showing consequences under the
-failure they followed from:
-
-    C1 — <cause>
-        F1
-        F2
-            F3 (consequence of F2)
-        F4
-    C2 — <cause>
-        F5
-
-For each cause: trigger, cause, contributing conditions. Mechanisms, not
-adjectives — what specifically ran out, what assumption was violated, what
-input was unanticipated. A failure with more than one cause appears under
-each, marked as needing both.
+Per failure: trigger, cause, contributing conditions. Mechanisms, not
+adjectives — what specifically ran out, what assumption was violated,
+what input was unanticipated.
 
 ## What did not fail
 
@@ -182,24 +147,14 @@ confident guess that later proves wrong.
 - Every component from Phase 1 was checked and accounted for.
 - Every factual claim traces to evidence actually examined, not inferred.
 - The terminal event is identified for each failure, not just a nearby error.
-- Each cause survived an attempt to falsify it.
 - Independent failures are separated from consequences.
-- Failures are grouped under the cause that must change for them to stop, and both are keyed.
 - No fixes, no recommendations, no "we should".
 - Anything undetermined is in Open questions, not smoothed over.
-
-## Reporting back
-
-Return the document's path, how many distinct failures you found and how many were consequences rather than independent, anything that contradicted the caller's account, anything left in Open questions, and anything you changed in the system while investigating.
-
-If you saw something still actively going wrong, say so first — as an observation with its trend, never as an instruction. "The queue is at 94% and climbing; it was at 40% when I started" is yours to say; what to do about it is not.
-
-Do not restate the document. If the investigation could not proceed, say that plainly and say what would be needed.
 
 ## Notes
 
 - **Blameless.** Record what the system did and what it assumed. External actions are triggers, not faults.
-- **One unit of work, one document.** Pre-existing defects found along the way belong in an issue tracker, not in this document — unless one contributed to this failure, in which case it is a cause and belongs in Causes.
-- **Capture evidence into the document.** Logs expire, queues drain, state is cleaned up. Quote exact values rather than pointing at a console that will be empty later. This document gets committed, so redact secrets and personal data as you transcribe and mark where you did — a value you cannot show safely is described, not reproduced.
-- **If you were wrong, supersede — do not overwrite.** A correction that changes what a reader concludes is a new version, per Phase 5. Strike the superseded claim through in that new version rather than dropping it silently: how the understanding changed is part of the record.
+- **One unit of work, one document.** Pre-existing defects found along the way belong in an issue tracker, not in this document.
+- **Capture evidence into the document.** Logs expire, queues drain, state is cleaned up. Quote exact values rather than pointing at a console that will be empty later.
+- **Correct in place if you were wrong.** Strike through and correct rather than silently replacing — how the understanding changed is part of the record.
 - Proposing fixes is the next activity and produces its own artifacts. They can link back to this; this does not anticipate them.
