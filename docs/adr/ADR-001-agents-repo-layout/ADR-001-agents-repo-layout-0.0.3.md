@@ -157,7 +157,7 @@ Claude Code loads subagent definitions from `~/.claude/agents/*.md`. The class e
 
 Two cases have come up, and the class covers both:
 
-- **Compulsion.** The `adversarial-review-agent` rule makes `adversarial-pr-reviewer` and `adversarial-architecture-reviewer` mandatory on every PR. A rule that cannot be satisfied on a correctly provisioned machine is not a rule, so they have to reach every machine by the same path as every other shared resource.
+- **Compulsion.** The `objective-review-agent` rule makes `objective-pr-reviewer` and `objective-architecture-reviewer` mandatory on every PR. A rule that cannot be satisfied on a correctly provisioned machine is not a rule, so they have to reach every machine by the same path as every other shared resource.
 - **Independence.** `post-mortem` is required by no rule and invoked on demand. It is an agent because an agent investigating its own work carries an account of what it intended, and that account contaminates the investigation. Running it in a separate context is what makes the finding trustworthy — the separation *is* the feature.
 
 v0.0.2 recorded only the first case, because it was the only one that existed. Membership is **not** limited to rule-mandated reviewers, and an agent may write a durable artifact rather than only reporting back. What the class requires is that the artifact genuinely needs its own context; a procedure the calling agent should follow in-context is a skill, and a user-initiated sequence is a workflow. See #23 for where that test should ultimately live.
@@ -175,7 +175,7 @@ Two properties distinguish this bucket from the other three, and both are delibe
 
 Every agent declares a `tools:` allowlist. `Bash` is in every current grant and defeats any privilege bound, so the allowlist is **stated intent and an auditable contract, not a sandbox**. Adding `Write` to an agent that already holds `Bash` is a legibility choice, not a privilege escalation. The policy is **the narrowest grant that makes the agent's job legible, decided per agent and stated in the definition**:
 
-- `adversarial-pr-reviewer`, `adversarial-architecture-reviewer` — `Read, Grep, Glob, Bash`. They are contracted to produce no artifact in the source tree. That is intent, not capability: both write a payload file and POST it to GitHub through `Bash`, as their own definitions instruct.
+- `objective-pr-reviewer`, `objective-architecture-reviewer` — `Read, Grep, Glob, Bash`. They are contracted to produce no artifact in the source tree. That is intent, not capability: both write a payload file and POST it to GitHub through `Bash`, as their own definitions instruct.
 - `post-mortem` — the same plus `Write, Edit`. It produces versioned documents and needs both. The split is by whether the target file exists, not by whether it is the first: `Write` creates a file that does not yet exist — the first version, each superseding version, and the pointer on first creation — and `Edit` changes one that already does, including the pointer on every subsequent supersession. `Edit` does not make blanking impossible — the whole file as `old_string` and `""` as `new_string` would do it — but it makes blanking require deliberate construction rather than being the default failure mode of a careless `Write`. That is the whole of the argument for the grant, and it is enough.
 
 Two things follow, and the second matters more than it looks:
