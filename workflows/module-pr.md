@@ -72,7 +72,7 @@ Automated PR review (e.g. Copilot) re-audits the whole diff and surfaces a few
 findings per push, so each unaddressed issue costs a full round-trip. Front-load
 that review with a **dedicated review sub-agent** (via the Agent tool,
 `general-purpose`) pointed at `git diff develop...HEAD`. A separate agent reviews
-more adversarially than re-reading your own work, and catches the next round's
+more objectively than re-reading your own work, and catches the next round's
 findings before they're filed. Address everything it flags (real issues), then
 push. Also run a security review — e.g. the `security-review` skill in Claude Code — if the change touches
 security-sensitive surface.

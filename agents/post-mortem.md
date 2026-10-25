@@ -88,6 +88,7 @@ Then check the things no single component owns:
   - the **cause** — what made the trigger fatal, usually an unstated design assumption
   - **contributing conditions** — what made it worse, or harder to see
 - Before accepting a cause, look for the evidence that would show it is wrong. A cause that has not survived that is a hypothesis, and belongs in the document as one.
+- **Group the failures by the cause that must change for them to stop.** Bugs cluster and cascade, so one cause is usually one repair. That grouping is the unit remediation acts on — yours to establish, not theirs to infer. A failure with more than one such cause goes under each, marked as needing both; forcing it into one branch hides the other.
 
 ## Phase 5 — Write it
 
@@ -131,8 +132,8 @@ so the boundary between last-good and first-bad is visible.
 
 ## Failures
 
-One numbered subsection per distinct failure. Every failure found, not
-only the reported one. For each:
+One subsection per distinct failure, keyed F1, F2, … — the keys the Causes
+section groups by. Every failure found, not only the reported one. For each:
 
 - what happened
 - the evidence, quoted exactly
@@ -141,9 +142,22 @@ only the reported one. For each:
 
 ## Causes
 
-Per failure: trigger, cause, contributing conditions. Mechanisms, not
-adjectives — what specifically ran out, what assumption was violated,
-what input was unanticipated.
+Grouped by cause, because the cause is the unit a repair acts on. Give each
+a key and list the failures it produced, showing consequences under the
+failure they followed from:
+
+    C1 — <cause>
+        F1
+        F2
+            F3 (consequence of F2)
+        F4
+    C2 — <cause>
+        F5
+
+For each cause: trigger, cause, contributing conditions. Mechanisms, not
+adjectives — what specifically ran out, what assumption was violated, what
+input was unanticipated. A failure with more than one cause appears under
+each, marked as needing both.
 
 ## What did not fail
 
@@ -170,6 +184,7 @@ confident guess that later proves wrong.
 - The terminal event is identified for each failure, not just a nearby error.
 - Each cause survived an attempt to falsify it.
 - Independent failures are separated from consequences.
+- Failures are grouped under the cause that must change for them to stop, and both are keyed.
 - No fixes, no recommendations, no "we should".
 - Anything undetermined is in Open questions, not smoothed over.
 
