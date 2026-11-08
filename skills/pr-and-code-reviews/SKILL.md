@@ -1,6 +1,6 @@
 ---
 name: pr-and-code-reviews
-description: Perform adversarial pull request and code reviews that actively attempt to falsify correctness, security, architectural integrity, and verification claims, then report only concrete, reproducible, actionable findings with severity and disposition. Use when reviewing pull requests, diffs, patches, commits, implementation changes, or when asked to review code for defects, architecture violations, unsafe behavior, or inadequate tests.
+description: Perform objective investigative pull request and code reviews that actively attempt to falsify correctness, security, architectural integrity, and verification claims, then report only concrete, reproducible, actionable findings with severity and disposition. Use when reviewing pull requests, diffs, patches, commits, implementation changes, or when asked to review code for defects, architecture violations, unsafe behavior, or inadequate tests.
 ---
 
 # pr-and-code-reviews
@@ -9,7 +9,7 @@ description: Perform adversarial pull request and code reviews that actively att
 
 Use this skill whenever conducting a pull request or code review. Treat the proposed implementation as an unproven claim: actively attempt to falsify its correctness rather than confirming that it looks reasonable. Review the changed behavior against repository-specific architecture, contracts, engineering rules, tests, and the criteria below.
 
-The reviewer must try to identify concrete failure modes, but must never manufacture findings merely to satisfy the adversarial posture. A finding is valid only when it is specific, reproducible or grounded in a plausible execution path, and actionable. If attempts to falsify the implementation fail, approval is the correct outcome.
+The reviewer must try to identify concrete failure modes, but must never manufacture findings merely to satisfy the objective posture. A finding is valid only when it is specific, reproducible or grounded in a plausible execution path, and actionable. If attempts to falsify the implementation fail, approval is the correct outcome.
 
 When repository-specific instructions, ADRs, architecture documents, implementation plans, or component contracts exist, inspect the relevant sources before reaching a verdict. Repository-specific rules take precedence over generic guidance in this skill.
 
@@ -18,7 +18,7 @@ When repository-specific instructions, ADRs, architecture documents, implementat
 ```text
 Review PR #90 using the pr-and-code-reviews skill.
 
-Review this diff adversarially for correctness, architecture, security, recovery, idempotency, and verification defects.
+Review this diff objectively for correctness, architecture, security, recovery, idempotency, and verification defects.
 
 Re-review the PR after the latest fixes and report only findings that still apply.
 ```
@@ -53,9 +53,9 @@ When performing a pull request review, follow these instructions for selecting, 
 
 Review the proposed changes for defects that could make the pull request unsafe, incorrect, insufficiently tested, architecturally inconsistent, or unnecessarily difficult to maintain.
 
-#### Adversarial review posture
+#### objective review posture
 
-Treat review as an attempt to **falsify the correctness of the proposed change**, not as an attempt to confirm that the implementation looks reasonable.
+Treat review as an attempt to **objectively assess the correctness of the proposed change**, not as an attempt to confirm that the implementation looks reasonable.
 
 Assume that defects may exist and actively try to demonstrate where the change fails its behavioral, architectural, security, safety, or verification contracts. Approve the change only after reasonable attempts to falsify those claims have failed to identify an actionable defect.
 
@@ -68,7 +68,7 @@ modes, boundary conditions, concurrency, retries, partial execution, downstream 
 3. if the claim can be falsified, report the defect with concrete evidence and a
 plausible triggering condition;
 4. if the claim cannot be falsified after reasonable investigation, do not invent a
-finding merely to maintain an adversarial posture.
+finding merely to maintain an objective posture.
 
 Prefer questions such as:
 
@@ -86,7 +86,7 @@ should be touched?
 - Would the verification still pass if the important implementation were removed or
 materially broken?
 
-Do not confuse adversarial review with contrarian review. The objective is to find real defects, not to argue against implementation choices. A finding is valid only when it satisfies the evidence and reporting requirements in this document.
+Do not confuse objective review with contrarian review. The objective is to find real defects, not to argue against implementation choices. A finding is valid only when it satisfies the evidence and reporting requirements in this document.
 
 Evaluate the change against both:
 

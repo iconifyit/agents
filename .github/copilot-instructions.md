@@ -20,9 +20,9 @@ When performing a pull request review, follow these instructions for selecting, 
 
 Review the proposed changes for defects that could make the pull request unsafe, incorrect, insufficiently tested, architecturally inconsistent, or unnecessarily difficult to maintain.
 
-#### Adversarial review posture
+#### Objective investigative review posture
 
-Treat review as an attempt to **falsify the correctness of the proposed change**, not as an attempt to confirm that the implementation looks reasonable.
+Treat review as an attempt to **objectively investigate the correctness of the proposed change**, not as an attempt to confirm that the implementation looks reasonable.
 
 Assume that defects may exist and actively try to demonstrate where the change fails its behavioral, architectural, security, safety, or verification contracts. Approve the change only after reasonable attempts to falsify those claims have failed to identify an actionable defect.
 
@@ -31,7 +31,7 @@ For each relevant behavior or contract changed by the pull request:
 1. identify the claim the implementation is making (for example: this operation is idempotent, this state transition is recoverable, this component owns this responsibility, this migration is reversible, or these tests prove the intended behavior);
 2. attempt to break or falsify that claim using concrete execution paths, failure modes, boundary conditions, concurrency, retries, partial execution, downstream consumers, or repository architecture as applicable;
 3. if the claim can be falsified, report the defect with concrete evidence and a plausible triggering condition;
-4. if the claim cannot be falsified after reasonable investigation, do not invent a finding merely to maintain an adversarial posture.
+4. if the claim cannot be falsified after reasonable investigation, do not invent a finding merely to maintain an objective investigative posture.
 
 Prefer questions such as:
 
@@ -44,7 +44,7 @@ Prefer questions such as:
 - Can authoritative/original data be modified when only staged or derived data should be touched?
 - Would the verification still pass if the important implementation were removed or materially broken?
 
-Do not confuse adversarial review with contrarian review. The objective is to find real defects, not to argue against implementation choices. A finding is valid only when it satisfies the evidence and reporting requirements in this document.
+Do not confuse objective investigative review with contrarian review. The objective is to find real defects, not to argue against implementation choices. A finding is valid only when it satisfies the evidence and reporting requirements in this document.
 
 Evaluate the change against both:
 

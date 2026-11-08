@@ -153,7 +153,7 @@ if they grow.
 
 ## The fourth artifact class: `agents/`
 
-Claude Code loads subagent definitions from `~/.claude/agents/*.md`. The `adversarial-review-agent` rule makes two of them — `adversarial-pr-reviewer` and `adversarial-architecture-reviewer` — mandatory on every PR, so they have to reach every provisioned machine by the same path as every other shared resource. That makes them a shared agentic resource, not a local convenience, and the layout has to carry them.
+Claude Code loads subagent definitions from `~/.claude/agents/*.md`. The `objective-review-agent` rule makes two of them — `objective-pr-reviewer` and `objective-architecture-reviewer` — mandatory on every PR, so they have to reach every provisioned machine by the same path as every other shared resource. That makes them a shared agentic resource, not a local convenience, and the layout has to carry them.
 
 `agents/` therefore joins `rules/`, `skills/`, and `workflows/` as a real, visible source directory at the repo root, with a matching relative symlink `.agents/agents -> ../agents` in the overlay. Nothing about the mechanism is new; only the enumeration changed.
 
