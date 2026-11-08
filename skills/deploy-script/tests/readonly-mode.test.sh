@@ -9,8 +9,9 @@
 # `deploy.sh deploy synth`) must not skip the confirmations.
 #
 # Runs the real deploy.sh + deploy-lib.sh in a scratch repo with a stub `aws`
-# on PATH and a config whose run_action only records its arguments. Every
-# prompt is answered "n", so a mutating run must stop before run_action.
+# on PATH and a config whose run_action only records its arguments. Prompts are
+# answered "n" (or as a case specifies), so a mutating run must stop before
+# run_action.
 #
 # Usage:
 #   bash skills/deploy-script/tests/readonly-mode.test.sh [path/to/deploy-lib.sh]
@@ -24,11 +25,17 @@ kACCOUNT="123456789012"
 
 failures=0
 
-# Builds a scratch repo, runs deploy.sh with the given arguments (answering "n"
-# to every prompt), and prints "<exit status>|<run_action calls>|<prompted>".
+# All scratch repos live under one directory, removed on exit even when the
+# test is interrupted.
+kWORK="$(mktemp -d)"
+trap 'rm -rf "$kWORK"' EXIT
+
+# Builds a scratch repo, runs deploy.sh with the given arguments, and prints
+# "<exit status>|<run_action calls>|<prompted>|<summary shown>". Prompt answers
+# come from ANSWERS (one per line); every prompt is answered "n" by default.
 run_deploy() {
     local here bin
-    here="$(mktemp -d)"
+    here="$(mktemp -d "$kWORK/run.XXXXXX")"
     bin="$here/stub-bin"
     mkdir -p "$here/cli" "$bin"
     cp "$kSKILL_DIR/deploy.sh" "$here/cli/deploy.sh"
@@ -53,13 +60,16 @@ esac
 EOF
     chmod +x "$bin/aws"
 
-    local output status calls prompted=false
-    output="$(cd "$here" && yes n | PATH="$bin:$PATH" AWS_PROFILE=test-profile bash cli/deploy.sh "$@" 2>&1)"
+    local output status calls prompted=false summary=false
+    output="$(cd "$here" && printf '%b\n' "${ANSWERS:-n\nn}" | PATH="$bin:$PATH" AWS_PROFILE=test-profile bash cli/deploy.sh "$@" 2>&1)"
     status=$?
     calls="$(cat "$here/run-action.log" 2>/dev/null)"
+    # `read -p` prints no prompt when stdin is not a terminal, so the prompts
+    # are detected by what the engine prints around them.
     grep -q -E 'Deployment cancelled|DEPLOYMENT SUMMARY' <<< "$output" && prompted=true
+    grep -q 'DEPLOYMENT SUMMARY' <<< "$output" && summary=true
     rm -rf "$here"
-    echo "$status|$calls|$prompted"
+    echo "$status|$calls|$prompted|$summary"
 }
 
 # Asserts one run's outcome.
@@ -72,7 +82,7 @@ expect_run() {
     result="$(run_deploy "$@")"
     status="${result%%|*}"
     calls="$(cut -d'|' -f2 <<< "$result")"
-    prompted="${result##*|}"
+    prompted="$(cut -d'|' -f3 <<< "$result")"
     if [ "$calls" = "$expected_calls" ] && [ "$prompted" = "$expected_prompted" ]; then
         echo "ok   - $description"
         return
@@ -96,6 +106,17 @@ expect_run "deploy is confirmed"                       ""              true  dep
 expect_run "no argument (deploy) is confirmed"         ""              true
 expect_run "a trailing read-only word does not skip confirmation" "" true  deploy synth
 expect_run "a trailing diff does not skip confirmation"           "" true  deploy diff
+
+# Confirming the account still leads to the final go/no-go: declining it stops
+# before the action.
+result="$(ANSWERS='y\nn' run_deploy deploy synth)"
+if [ "$(cut -d'|' -f2 <<< "$result")" = "" ] && [ "${result##*|}" = "true" ]; then
+    echo "ok   - after the account is confirmed, the final go/no-go is still asked"
+else
+    echo "FAIL - after the account is confirmed, the final go/no-go is still asked"
+    echo "       result: $result (expected no run_action call and the summary shown)"
+    failures=$((failures + 1))
+fi
 
 if [ "$failures" -gt 0 ]; then
     echo "$failures failure(s)"
