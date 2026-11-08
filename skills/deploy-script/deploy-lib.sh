@@ -17,8 +17,9 @@
 #                        Set it per stack to name the tool (e.g. "CDK Deployment").
 #   REQUIRED_TOOLS       array of CLIs that must be on PATH           (optional)
 #   REQUIRED_VARS        array of env var names that must be set      (optional)
-#   READONLY_ARGS        array of args that mean "read-only" — skip   (optional)
-#                        the confirmation + backup (e.g. synth diff plan)
+#   READONLY_ARGS        array of read-only commands; a run whose     (optional)
+#                        FIRST argument is one skips the confirmation
+#                        + backup (e.g. synth diff plan)
 #   BACKUP_BUCKET        S3 bucket to snapshot pre-action             (optional)
 #   BACKUP_PREFIX        S3 key prefix under that bucket
 #                        (required and non-empty when BACKUP_BUCKET is set)
@@ -295,11 +296,14 @@ main() {
     # value, before .env is read, is the only thing preventing that — the
     # natural refactor of "validate config first, then decide the path" breaks
     # it silently.
-    local readonly_mode=false a r
-    for a in "$@"; do
-        for r in "${READONLY_ARGS[@]:-}"; do
-            [ -n "$r" ] && [ "$a" = "$r" ] && readonly_mode=true
-        done
+    #
+    # Only the FIRST argument decides. It is the command run_action runs (the
+    # presets use "$1"); later arguments are flags or extra words. Matching any
+    # argument let `deploy.sh deploy synth` take the read-only path, skipping
+    # both confirmations, while run_action still deployed.
+    local readonly_mode=false r
+    for r in "${READONLY_ARGS[@]:-}"; do
+        [ -n "$r" ] && [ "${1:-}" = "$r" ] && readonly_mode=true
     done
 
     title_banner

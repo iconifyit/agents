@@ -61,7 +61,7 @@ Claude authors the files; the human runs them (see the **never-deploy** rule).
 | `VERIFY_AWS_ACCOUNT` | `true`/`false` **(required)** | run the account-confirm prompt. Must be an exact boolean — any other value aborts. `false` skips the account comparison but **not** the `AWS_PROFILE` requirement |
 | `REQUIRED_TOOLS` | array | CLIs that must be on PATH (dependency check) |
 | `REQUIRED_VARS` | array | additional env var names that must be non-empty |
-| `READONLY_ARGS` | array | args that mean "read-only" (e.g. `synth diff plan`) — skip confirmation + backup |
+| `READONLY_ARGS` | array | commands that are read-only (e.g. `synth diff plan`). A run is read-only — no confirmation, no backup — only when the **first** argument is one of them |
 | `BACKUP_BUCKET` / `BACKUP_PREFIX` | string | optional pre-action S3 snapshot + restore-on-failure |
 | `run_action()` | **function (required)** | the command the guardrails wrap; receives `"$@"` |
 | `build_artifacts()` | function (optional) | build steps (zip, layer install) — runs every command |
@@ -72,7 +72,7 @@ Claude authors the files; the human runs them (see the **never-deploy** rule).
 ```text
 main "$@":
   require run_action()                         # config must define it
-  detect read-only mode (args ∈ READONLY_ARGS)
+  detect read-only mode (first arg ∈ READONLY_ARGS)
   load_env_file                                # robust parser (below)
   check_tools                                  # REQUIRED_TOOLS on PATH
   require_config                               # guardrail: AWS_PROFILE + EXPECTED_AWS_ACCOUNT
@@ -120,8 +120,10 @@ main "$@":
 7. **Run the LOCAL `cdk` binary** (CDK preset) — `"$HERE/node_modules/.bin/cdk"`,
    never `npx cdk`/bare `cdk`: a global dotenvx-wrapped shim can shadow the CLI
    and exit 0 without synthesizing — a silent no-op deploy.
-8. **Read-only actions stay fast** — args in `READONLY_ARGS` (e.g. `synth`,
-   `diff`) skip confirmation + backup.
+8. **Read-only actions stay fast** — a first argument in `READONLY_ARGS` (e.g.
+   `synth`, `diff`) skips confirmation + backup. Only the first argument
+   counts: it is the command `run_action` runs, so `deploy.sh deploy synth` is
+   still confirmed.
 9. **Claude never runs it** — author the files; the human deploys.
 
 ## The robust `.env` loader (in the engine — do not reinvent per stack)
