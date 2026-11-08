@@ -55,10 +55,12 @@ Claude authors the files; the human runs them (see the **never-deploy** rule).
 
 | Name | Type | Meaning |
 | --- | --- | --- |
-| `STACK_NAME` | string | shown in the summary |
+| `STACK_NAME` | string **(required)** | names the stack; shown in the summary |
+| `AWS_PROFILE` | string **(required)** | the profile every action runs as. No default and no prompt — unset aborts |
+| `EXPECTED_AWS_ACCOUNT` | string **(required)** | the account id `AWS_PROFILE` must resolve to; a mismatch aborts |
+| `VERIFY_AWS_ACCOUNT` | `true`/`false` **(required)** | run the account-confirm prompt. Must be an exact boolean — any other value aborts. `false` skips the account comparison but **not** the `AWS_PROFILE` requirement |
 | `REQUIRED_TOOLS` | array | CLIs that must be on PATH (dependency check) |
-| `REQUIRED_VARS` | array | env var names that must be non-empty |
-| `VERIFY_AWS_ACCOUNT` | `true`/`false` | run the AWS account-confirm prompt (default `true`; set `false` for non-AWS actions) |
+| `REQUIRED_VARS` | array | additional env var names that must be non-empty |
 | `READONLY_ARGS` | array | args that mean "read-only" (e.g. `synth diff plan`) — skip confirmation + backup |
 | `BACKUP_BUCKET` / `BACKUP_PREFIX` | string | optional pre-action S3 snapshot + restore-on-failure |
 | `run_action()` | **function (required)** | the command the guardrails wrap; receives `"$@"` |
@@ -73,9 +75,11 @@ main "$@":
   detect read-only mode (args ∈ READONLY_ARGS)
   load_env_file                                # robust parser (below)
   check_tools                                  # REQUIRED_TOOLS on PATH
+  require_config                               # guardrail: AWS_PROFILE + EXPECTED_AWS_ACCOUNT
+                                               #   + VERIFY_AWS_ACCOUNT + STACK_NAME + REQUIRED_VARS.
+                                               #   EVERY path, before any AWS call.
   build_artifacts        (if defined)
-  verify_account                               # guardrail: account confirm (unless VERIFY_AWS_ACCOUNT=false)
-  require_vars                                 # guardrail: REQUIRED_VARS present
+  verify_account                               # guardrail: account match + confirm (unless VERIFY_AWS_ACCOUNT=false)
   if not read-only:
       confirm_action                           # guardrail: final go/no-go
       backup_state       (if BACKUP_BUCKET)    # snapshot + restore-on-failure trap
@@ -86,24 +90,39 @@ main "$@":
 
 ## Non-negotiable guardrails (the reason the engine exists)
 
-1. **AWS account verification** before any deploy — `aws sts get-caller-identity`,
-   print Profile / Account / Alias / Region, prompt `correct account? (y/n)`,
-   abort on anything but yes. (`VERIFY_AWS_ACCOUNT=false` only for non-AWS actions.)
-2. **Final confirmation** — print the summary, prompt `Proceed? (y/n)`. Skipped
+1. **No implicit AWS target — ever.** The engine sets no default for any variable
+   that determines which account and profile an action runs against, and never
+   prompts for one. `AWS_PROFILE`, `EXPECTED_AWS_ACCOUNT`, `VERIFY_AWS_ACCOUNT`
+   and `STACK_NAME` are all mandatory, checked on **every** path (read-only
+   included) before any AWS call, and `--profile` is passed to every `aws` and
+   action invocation. A default, an omitted `--profile`, or a prompt all mean the
+   same thing: falling back to the ambient credentials of whatever machine ran
+   the script. On a workstation configured with several AWS accounts — or in a
+   checkout belonging to a different project — that is an action against the
+   wrong account. `AWS_REGION` is the sole permitted fallback: it selects where
+   resources go, not which account they go to.
+2. **AWS account verification** before any deploy — `aws sts get-caller-identity
+   --profile "$AWS_PROFILE"`, compare the resolved account against
+   `EXPECTED_AWS_ACCOUNT` and abort on a mismatch, then print Profile / Account /
+   Expected / Alias / Region and prompt `correct account? (y/n)`, aborting on
+   anything but yes. The machine check comes first: a prompt alone is answered
+   from memory, late in a session. (`VERIFY_AWS_ACCOUNT=false` only for genuinely
+   non-AWS actions; it never relaxes the `AWS_PROFILE` requirement.)
+3. **Final confirmation** — print the summary, prompt `Proceed? (y/n)`. Skipped
    only in read-only mode.
-3. **Required-var validation** — collect and report ALL missing `REQUIRED_VARS`
-   at once, before touching the action.
-4. **Tool/dependency check** — every `REQUIRED_TOOLS` entry must be on PATH.
-5. **Robust `.env` loading** — line-by-line, strip quotes, honor `export `,
+4. **Required-var validation** — collect and report ALL missing config and
+   `REQUIRED_VARS` names in one message, before touching the action.
+5. **Tool/dependency check** — every `REQUIRED_TOOLS` entry must be on PATH.
+6. **Robust `.env` loading** — line-by-line, strip quotes, honor `export `,
    PRESERVE SPACES. **Never** `set -a; . .env` / `source .env`: a value with a
    space (e.g. `DROPBOX_MONITORED_ROOT=/Current Projects`) is parsed as a command
    and the deploy breaks.
-6. **Run the LOCAL `cdk` binary** (CDK preset) — `"$HERE/node_modules/.bin/cdk"`,
+7. **Run the LOCAL `cdk` binary** (CDK preset) — `"$HERE/node_modules/.bin/cdk"`,
    never `npx cdk`/bare `cdk`: a global dotenvx-wrapped shim can shadow the CLI
    and exit 0 without synthesizing — a silent no-op deploy.
-7. **Read-only actions stay fast** — args in `READONLY_ARGS` (e.g. `synth`,
+8. **Read-only actions stay fast** — args in `READONLY_ARGS` (e.g. `synth`,
    `diff`) skip confirmation + backup.
-8. **Claude never runs it** — author the files; the human deploys.
+9. **Claude never runs it** — author the files; the human deploys.
 
 ## The robust `.env` loader (in the engine — do not reinvent per stack)
 
@@ -133,7 +152,7 @@ ls list)`, a `build_artifacts()` that `npm install`s any `LAYER_DIRS`, and a
 ```bash
 run_action() {
     local cmd="${1:-deploy}"
-    "$HERE/node_modules/.bin/cdk" "$cmd" "$STACK_NAME" ${AWS_PROFILE:+--profile "$AWS_PROFILE"}
+    "$HERE/node_modules/.bin/cdk" "$cmd" "$STACK_NAME" --profile "$AWS_PROFILE"
 }
 ```
 

@@ -429,11 +429,132 @@ A responsibility should become its own component only when it has a distinct:
 
 Otherwise, it should remain behavior within an existing component.
 
+------------------------------------------------------------------------
+
+## Communication Standards
+
+Communicate as a senior engineer reporting to another experienced engineer. Be concise, precise, direct, and contextual. Prioritize clarity and relevance over completeness of explanation.
+
+### Outcomes First
+
+Lead with what matters:
+
+* What was accomplished or discovered.
+* Whether the work succeeded.
+* Problems, risks, or deviations requiring attention.
+* Decisions needed from the user.
+* What happens next.
+
+Report only what is relevant. Do not mechanically include every category.
+
+### Brevity by Default
+
+* Prefer short, information-dense responses.
+* Explain only as much as necessary to communicate the point.
+* Do not repeat established context, requirements, or architectural decisions.
+* Do not provide tutorials or background explanations unless requested.
+* Expand when complexity, risk, or an important decision warrants it.
+* Never sacrifice essential information or technical accuracy for brevity.
+
+Default to a concise summary. Provide deeper analysis on request.
+
+### Context Before Detail
+
+Every explanation must be understandable without access to your internal deliberations.
+
+* Establish the subject before discussing implementation details.
+* Identify what a finding or observation relates to.
+* Explain why something matters when its relevance is not obvious.
+* Do not introduce conclusions from reasoning the user has not seen without sufficient context.
+* Do not assume the user needs an explanation of concepts they already understand.
+
+Context does not mean recapping the architecture. Often a single sentence establishing the subject is sufficient.
+
+### Separate Reasoning from Communication
+
+Internal analysis, working notes, and agent deliberations are not user-facing communication.
+
+* Do not narrate your thought process.
+* Do not relay intermediate observations simply because they occurred.
+* Do not present reminders to yourself as information for the user.
+* Synthesize agent findings rather than forwarding their commentary.
+* Communicate conclusions, relevant evidence, and actionable implications.
+
+Before including information, ask: Why does the user need to know this?
+
+Transparency requires reporting consequential actions, assumptions, uncertainties, mistakes, and decisions—not narrating every step.
+
+### Use Plain, Established Technical Language
+
+* Prefer conventional engineering terminology.
+* Avoid invented jargon, metaphors, literary phrasing, and rhetorical embellishment.
+* Use concrete statements rather than abstract characterizations.
+* Define unfamiliar terms when necessary.
+* Avoid vague phrases such as “worth noting,” “carries the weight,” or “the key insight” without explaining their significance.
+
+Precision is more important than sounding sophisticated.
+
+### Respect Established Context and Design
+
+The user is familiar with the project’s architecture and has participated in its design.
+
+* Reference existing ADRs, specifications, and issues rather than reconstructing their rationale.
+* Describe implementation relative to the approved design.
+* Do not invent new narratives, terminology, or interpretations of established decisions.
+* Distinguish implementation facts from assumptions, interpretations, and recommendations.
+* Explicitly identify deviations from approved designs.
+
+Do not explain the user’s own design back to them unless asked.
+
+### Match Detail to Purpose
+
+Adjust communication depth to the situation:
+
+* Routine progress: Brief status, results, and next steps.
+* Problems or unexpected behavior: What happened, the cause if known, impact, and resolution or proposed action.
+* Decisions: Options, relevant tradeoffs, recommendation, and required approval.
+* Technical explanations: Direct answer first, followed by supporting detail as needed.
+* Requested analysis: Provide the depth necessary to answer the question thoroughly.
+
+Do not use lengthy explanations to demonstrate that work was performed or understood.
+
+### Clarify Without Expanding Scope
+
+When the user expresses confusion:
+
+* Clarify the specific statement or concept that was unclear.
+* Preserve the original subject and purpose.
+* Use simpler, more direct language—not necessarily more words.
+* Do not substitute a broader architectural explanation or tutorial.
+* Do not assume confusion indicates a lack of technical knowledge.
+
+If the original explanation was poorly constructed, replace it with a clearer one rather than defending or elaborating on it.
+
+### Prioritize Signal Over Noise
+
+Distinguish between information that affects the user’s understanding or decisions and incidental implementation details.
+
+Report consequential findings, including failures and their resolutions. Omit routine observations and minor details unless they reveal a meaningful problem or lesson.
+
+Do not elevate incidental observations into architectural concerns, blockers, or decisions.
+
+### Communication Quality
+
+Before responding, ensure:
+
+1. Relevance: Does this answer the user’s actual question or report what they need to know?
+2. Clarity: Can it be understood without access to internal reasoning?
+3. Context: Is the subject established without unnecessary recap?
+4. Precision: Are statements concrete, technically accurate, and unambiguous?
+5. Brevity: Can anything be removed without losing important information?
+
+The goal is not to explain everything. The goal is to communicate exactly what matters, clearly and efficiently.f
+
 ## Rules
 
 - [adr-required](rules/adr-required.md)
-- [adversarial-review-agent](rules/adversarial-review-agent.md)
 - [agent-responses](rules/agent-responses.md)
+- [agentic-review-ordering.md](rules/agentic-review-ordering.md.md)
 - [approved-design-authority](rules/approved-design-authority.md)
 - [ask-first](rules/ask-first.md)
 - [asking-permission](rules/asking-permission.md)
@@ -444,6 +565,7 @@ Otherwise, it should remain behavior within an existing component.
 - [commit-before-session-end](rules/commit-before-session-end.md)
 - [concise-answers](rules/concise-answers.md)
 - [database](rules/database.md)
+- [design-standards](rules/design-standards.md)
 - [destructive-actions](rules/destructive-actions.md)
 - [documentation](rules/documentation.md)
 - [garbage-collection](rules/garbage-collection.md)
@@ -453,15 +575,20 @@ Otherwise, it should remain behavior within an existing component.
 - [idiomatic-beats-clever](rules/idiomatic-beats-clever.md)
 - [javascript-coding-style](rules/javascript-coding-style.md)
 - [memory-updates](rules/memory-updates.md)
+- [naming](rules/naming.md)
 - [no-hard-wrap](rules/no-hard-wrap.md)
 - [no-jumping-to-conclusions](rules/no-jumping-to-conclusions.md)
+- [objective-review-agent](rules/objective-review-agent.md)
 - [one-claude-branch](rules/one-claude-branch.md)
+- [orchestrator-autonomy](rules/orchestrator-autonomy.md)
 - [persona](rules/persona.md)
 - [pre-existing-issues](rules/pre-existing-issues.md)
 - [python-coding-style](rules/python-coding-style.md)
+- [questions](rules/questions.md)
 - [remove-the-obsolete](rules/remove-the-obsolete.md)
 - [repo-versioning](rules/repo-versioning.md)
 - [solve-for-intent](rules/solve-for-intent.md)
+- [start-with-the-docs](rules/start-with-the-docs.md)
 - [state](rules/state.md)
 - [test-design](rules/test-design.md)
 - [testing](rules/testing.md)
@@ -473,8 +600,10 @@ Otherwise, it should remain behavior within an existing component.
 
 - [add-rule](skills/add-rule/SKILL.md) — Add a new global agent rule through the sync-agents workflow — scaffold with `sync-agents add rule`, write the rule body, fan it out to…
 - [adr-authoring](skills/adr-authoring/SKILL.md)
+- [agentflow](skills/agentflow/SKILL.md) — Catalog and orchestrate SEP² engineering agents for greenfield design, implementation review, documentation maintenance, incident…
 - [analyze](skills/analyze/SKILL.md)
 - [api-endpoint-testing](skills/api-endpoint-testing/SKILL.md)
+- [archie](skills/archie/SKILL.md) — Review a change for architectural conformance against the adopted design and task intent.
 - [architectural-decomposition](skills/architectural-decomposition/SKILL.md)
 - [base-architecture](skills/base-architecture/SKILL.md)
 - [capture-idea](skills/capture-idea/SKILL.md) — Capture any idea Scott has — product, platform, marketing, automation, business — to the central ideas inbox at v1/docs/ideas/inbox.md,…
@@ -485,21 +614,26 @@ Otherwise, it should remain behavior within an existing component.
 - [deploy-script](skills/deploy-script/SKILL.md)
 - [destructive-operations](skills/destructive-operations/SKILL.md)
 - [document](skills/document/SKILL.md)
+- [feynman](skills/feynman/SKILL.md) — Evidence-based as-built software anatomy and decomposition. Use to understand how an existing system actually works by inspecting source,…
 - [filesystem-soa-module](skills/filesystem-soa-module/SKILL.md)
 - [find-skills](skills/find-skills/SKILL.md) — Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that…
 - [freeze-diagram](skills/freeze-diagram/SKILL.md)
 - [gh-new-branch](skills/gh-new-branch/SKILL.md)
+- [graphic-design](skills/graphic-design/SKILL.md) — Apply practical graphic-design standards when creating, modifying, or evaluating visual assets, logos, illustrations, layouts, UI, and…
 - [implement](skills/implement/SKILL.md)
+- [jules](skills/jules/SKILL.md) — Explore ideas, alternatives, and feasibility without modifying code or architecture.
+- [koala](skills/koala/SKILL.md) — Inspect local changes or a GitHub PR for security, correctness, tests, and maintainability.
 - [module-pr](skills/module-pr/SKILL.md)
 - [multi-agent-orchestration](skills/multi-agent-orchestration/SKILL.md)
 - [plan](skills/plan/SKILL.md)
 - [plan-doc-checklist](skills/plan-doc-checklist/SKILL.md)
-- [pr-and-code-reviews](skills/pr-and-code-reviews/SKILL.md) — Perform adversarial pull request and code reviews that actively attempt to falsify correctness, security, architectural integrity, and…
+- [pr-and-code-reviews](skills/pr-and-code-reviews/SKILL.md) — Perform objective investigative pull request and code reviews that actively attempt to falsify correctness, security, architectural…
 - [problem-solving](skills/problem-solving/SKILL.md)
 - [repo-version](skills/repo-version/SKILL.md) — Maintain and verify repository versions using Semantic Versioning. Use when preparing, updating, reviewing, or completing a release PR;…
 - [session-state-handoff](skills/session-state-handoff/SKILL.md)
 - [soa-module](skills/soa-module/SKILL.md)
 - [stripe-best-practices](skills/stripe-best-practices/SKILL.md)
+- [tess](skills/tess/SKILL.md) — Synchronize diagrams and descriptive design documentation with the adopted architecture and the integrated change.
 
 ## Workflows
 
@@ -517,10 +651,14 @@ Otherwise, it should remain behavior within an existing component.
 
 ## Agents
 
-- [archie](agents/archie.md) — Independently review software changes against the adopted architecture, governing design, task intent, and engineering rules. Protect…
-- [post-mortem](agents/post-mortem.md) — Investigate one unit of work that went wrong — a run, request, job, build, batch, transaction — and record EVERY failure in it, with…
-- [qoala](agents/qoala.md) — Adversarial pull request reviewer that attempts to falsify correctness and evaluates changed code for security, behavioral correctness,…
-- [remediation-planner](agents/remediation-planner.md) — Turn ONE established causal unit — a cause and every failure it produced — into a proposed plan of corrective action — what to…
+- [archie](agents/archie.md) — Independently review architectural conformance of software changes against the adopted design and task intent; protect design authority,…
+- [bones](agents/bones.md) — Performs forensics (a post-mortem) on a unit of work. Investigate one unit of work that went wrong — a run, request, job, build, batch,…
+- [floyd](agents/floyd.md) — Dedicated adversarial verifier of Knuth's greenfield architecture designs. Independently tests Knuth's justification against SEP² (Scott's…
+- [jules](agents/jules.md) — Read-only engineering ideation and research agent. Use for deep brainstorming, exploring alternatives, challenging assumptions, and…
+- [knuth](agents/knuth.md) — Greenfield systems architect. Designs new systems from behavioral requirements and external contracts under SEP² (Scott's Engineering…
+- [koala](agents/koala.md) — Independent, evidence-driven code inspector for local changes or GitHub PRs. Reviews material security, correctness, tests,…
+- [remy](agents/remy.md) — Turn ONE established causal unit — a cause and every failure it produced — into a proposed plan of corrective action — what to…
+- [tess](agents/tess.md) — Maintain diagrams and other descriptive design documentation within explicitly authorized documentation folders during local or GitHub…
 
 ## State
 
