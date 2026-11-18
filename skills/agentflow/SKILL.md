@@ -34,6 +34,8 @@ Use installed identifiers when dispatching. Bones and Remy are role renames; rec
 
 Treat Knuth and Floyd as a pair whenever greenfield design is undertaken. Do not use Knuth alone or substitute Archie for Floyd.
 
+**Invoke Knuth, never Floyd.** Floyd is the second half of the pair rather than a free-standing reviewer, and Knuth is responsible for submitting each checkpoint to him and working with him to convergence. The orchestrator invokes Knuth, and the two of them talk to each other directly; findings and revisions do not pass through the orchestrator, and Floyd invoked on his own has no design to verify.
+
 1. **Knuth establishes the baseline** from requirements, contracts, constraints, and SEP². Material requirement changes remain outside its authority.
 2. **Knuth produces conceptual design**, including requirement coverage, boundaries, component necessity, responsibilities, state ownership, interactions, and consequential alternatives. Knuth self-evaluates it; Floyd independently verifies it against original sources.
 3. **Resolve conceptual objections before detailed technical design.** Knuth revises its own artifacts; Floyd reviews the stable revision and subsequent deltas. Escalate substantive impasses rather than looping indefinitely.
