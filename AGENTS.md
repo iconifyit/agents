@@ -588,6 +588,7 @@ The goal is not to explain everything. The goal is to communicate exactly what m
 - [remove-the-obsolete](rules/remove-the-obsolete.md)
 - [repo-versioning](rules/repo-versioning.md)
 - [solve-for-intent](rules/solve-for-intent.md)
+- [speak-clearly](rules/speak-clearly.md)
 - [start-with-the-docs](rules/start-with-the-docs.md)
 - [state](rules/state.md)
 - [test-design](rules/test-design.md)
@@ -598,6 +599,7 @@ The goal is not to explain everything. The goal is to communicate exactly what m
 
 ## Skills
 
+- [ada](skills/ada/SKILL.md) — Estimate software delivery effort and recommend scope, phasing, and pricing.
 - [add-rule](skills/add-rule/SKILL.md) — Add a new global agent rule through the sync-agents workflow — scaffold with `sync-agents add rule`, write the rule body, fan it out to…
 - [adr-authoring](skills/adr-authoring/SKILL.md)
 - [agentflow](skills/agentflow/SKILL.md) — Catalog and orchestrate SEP² engineering agents for greenfield design, implementation review, documentation maintenance, incident…
@@ -606,6 +608,7 @@ The goal is not to explain everything. The goal is to communicate exactly what m
 - [archie](skills/archie/SKILL.md) — Review a change for architectural conformance against the adopted design and task intent.
 - [architectural-decomposition](skills/architectural-decomposition/SKILL.md)
 - [base-architecture](skills/base-architecture/SKILL.md)
+- [bones](skills/bones/SKILL.md) — Investigate one unit of work that went wrong and record every failure in it, with its causes.
 - [capture-idea](skills/capture-idea/SKILL.md) — Capture any idea Scott has — product, platform, marketing, automation, business — to the central ideas inbox at v1/docs/ideas/inbox.md,…
 - [copilot-reviews](skills/copilot-reviews/SKILL.md)
 - [cover-letter-writing](skills/cover-letter-writing/SKILL.md)
@@ -617,11 +620,13 @@ The goal is not to explain everything. The goal is to communicate exactly what m
 - [feynman](skills/feynman/SKILL.md) — Evidence-based as-built software anatomy and decomposition. Use to understand how an existing system actually works by inspecting source,…
 - [filesystem-soa-module](skills/filesystem-soa-module/SKILL.md)
 - [find-skills](skills/find-skills/SKILL.md) — Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that…
+- [floyd](skills/floyd/SKILL.md) — Verify Knuth's designs for adherence to SEP², idiomatic practices, and the acceptance criteria.
 - [freeze-diagram](skills/freeze-diagram/SKILL.md)
 - [gh-new-branch](skills/gh-new-branch/SKILL.md)
 - [graphic-design](skills/graphic-design/SKILL.md) — Apply practical graphic-design standards when creating, modifying, or evaluating visual assets, logos, illustrations, layouts, UI, and…
 - [implement](skills/implement/SKILL.md)
 - [jules](skills/jules/SKILL.md) — Explore ideas, alternatives, and feasibility without modifying code or architecture.
+- [knuth](skills/knuth/SKILL.md) — Design a new system from behavioral requirements and external contracts.
 - [koala](skills/koala/SKILL.md) — Inspect local changes or a GitHub PR for security, correctness, tests, and maintainability.
 - [module-pr](skills/module-pr/SKILL.md)
 - [multi-agent-orchestration](skills/multi-agent-orchestration/SKILL.md)
@@ -629,6 +634,7 @@ The goal is not to explain everything. The goal is to communicate exactly what m
 - [plan-doc-checklist](skills/plan-doc-checklist/SKILL.md)
 - [pr-and-code-reviews](skills/pr-and-code-reviews/SKILL.md) — Perform objective investigative pull request and code reviews that actively attempt to falsify correctness, security, architectural…
 - [problem-solving](skills/problem-solving/SKILL.md)
+- [remy](skills/remy/SKILL.md) — Turn one established cause and the failures it produced into a plan of corrective action.
 - [repo-version](skills/repo-version/SKILL.md) — Maintain and verify repository versions using Semantic Versioning. Use when preparing, updating, reviewing, or completing a release PR;…
 - [session-state-handoff](skills/session-state-handoff/SKILL.md)
 - [soa-module](skills/soa-module/SKILL.md)
@@ -651,9 +657,10 @@ The goal is not to explain everything. The goal is to communicate exactly what m
 
 ## Agents
 
+- [ada](agents/ada.md) — Estimate software delivery effort and recommend scope, phasing, and pricing. Use for implementation and testing estimates, MVP tradeoffs,…
 - [archie](agents/archie.md) — Independently review architectural conformance of software changes against the adopted design and task intent; protect design authority,…
 - [bones](agents/bones.md) — Performs forensics (a post-mortem) on a unit of work. Investigate one unit of work that went wrong — a run, request, job, build, batch,…
-- [floyd](agents/floyd.md) — Dedicated adversarial verifier of Knuth's greenfield architecture designs. Independently tests Knuth's justification against SEP² (Scott's…
+- [floyd](agents/floyd.md) — Dedicated verifier of Knuth's greenfield architecture designs. Independently tests Knuth's justification against SEP² (Scott's Engineering…
 - [jules](agents/jules.md) — Read-only engineering ideation and research agent. Use for deep brainstorming, exploring alternatives, challenging assumptions, and…
 - [knuth](agents/knuth.md) — Greenfield systems architect. Designs new systems from behavioral requirements and external contracts under SEP² (Scott's Engineering…
 - [koala](agents/koala.md) — Independent, evidence-driven code inspector for local changes or GitHub PRs. Reviews material security, correctness, tests,…

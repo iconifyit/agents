@@ -2,11 +2,11 @@
 trigger: always_on
 ---
 
-# adversarial-review-agent
+# objective-review-agent
 
 Every PR gets a review from **both** the `koala` and the `archie`, and every PR that reaches convergence then gets a `tess` pass before merge (see below). Request both automatically, without stopping to ask permission or for a go-ahead.
 
-This is unconditional. It does not depend on whether Copilot reviewed the PR, and the adversarial reviewers are not a Copilot fallback — they run alongside it. The `copilot-reviews` skill and the `copilot-review-loop` workflow govern the Copilot loop only; neither relaxes this rule.
+This is unconditional. It does not depend on whether Copilot reviewed the PR, and the objective reviewers are not a Copilot fallback — they run alongside it. The `copilot-reviews` skill and the `copilot-review-loop` workflow govern the Copilot loop only; neither relaxes this rule.
 
 The two reviewers answer different questions. The `koala` attempts to falsify the correctness, security, and testing of the changed code. The `archie` verifies the change against the repository's architectural rules, design documents, ADRs, and established patterns. Neither substitutes for the other.
 
