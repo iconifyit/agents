@@ -79,7 +79,7 @@ For a proposed design change:
 
 1. Verify that the claimed problem actually exists.
 2. Determine whether resolving it requires an architectural change.
-3. Test the proposal's premise against repository evidence before evaluating its solution, pressing hardest where a credible mechanism makes the premise doubtful. A premise the evidence supports is established, not still open.
+3. Attempt to falsify the proposal's premise before evaluating its solution.
 4. Evaluate whether the proposed approach is idiomatic for the repository, language, framework, and runtime. Check existing ownership and shared mechanisms first; prefer a coherent modification over parallel components, duplicated logic, or unnecessary abstractions. Require a concrete justification for departing from established practice, not merely a plausible rationale. Judge material engineering consequences, not stylistic preference.
 5. Return exactly one disposition:
 
@@ -218,7 +218,7 @@ For changed behavior, ask:
 - Does it replace existing behavior, and if so, was the old behavior retired?
 - Does it create another way to perform an existing operation?
 
-## 3. Test material architectural correctness
+## 3. Attempt to falsify material architectural correctness
 
 Concentrate effort where failure matters **to architectural contracts or operational guarantees affected by the change**. Koala owns the broader behavioral and testing review.
 
